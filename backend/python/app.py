@@ -6,45 +6,20 @@ app.json.ensure_ascii = False
 
 @app.route('/search', methods=['GET'])
 def search():
-    """
-    Universal search endpoint supporting multiple search types.
-    
-    Required params:
-        q: search keywords
-        type: search type (text, images, videos, news)
-    
-    Common optional params:
-        region: region code (default: wt-wt)
-        safesearch: on, moderate, off (default: off)
-        timelimit: d, w, m, y (default: y)
-        max_results: maximum number of results (default: 10)
-    
-    Image-specific params:
-        size: Small, Medium, Large, Wallpaper
-        color: color, Monochrome, Red, Orange, Yellow, Green, Blue, Purple, Pink, Brown, Black, Gray, Teal, White
-        type_image: photo, clipart, gif, transparent, line
-        layout: Square, Tall, Wide
-        license_image: any, Public, Share, ShareCommercially, Modify, ModifyCommercially
-    
-    Video-specific params:
-        resolution: high, standard
-        duration: short, medium, long
-        license_videos: creativeCommon, youtube
-    """
     keywords = request.args.get('q')
     search_type = request.args.get('type', 'text').lower()
     
     if not keywords:
         return jsonify({"error": "Missing required parameter: q"}), 400
     
-    if search_type not in ['text', 'images', 'videos', 'news']:
-        return jsonify({"error": "Invalid search type. Must be: text, images, videos, or news"}), 400
+    if search_type not in ['text', 'images', 'videos', 'news', 'books']:
+        return jsonify({"error": "Invalid search type. Must be: text, images, videos, news, or books"}), 400
     
-    # Common parameters
-    region = request.args.get('region', 'wt-wt')
-    safesearch = request.args.get('safesearch', 'off')
-    timelimit = request.args.get('timelimit', 'y')
+    region = request.args.get('region', 'us-en')
+    safesearch = request.args.get('safesearch', 'moderate')
+    timelimit = request.args.get('timelimit')
     max_results = request.args.get('max_results', 10, type=int)
+    page = request.args.get('page', 1, type=int)
     
     try:
         ddgs = DDGS()
@@ -56,43 +31,62 @@ def search():
                 region=region,
                 safesearch=safesearch,
                 timelimit=timelimit,
-                backend=backend,
-                max_results=max_results
+                max_results=max_results,
+                page=page,
+                backend=backend
             )
         
         elif search_type == 'images':
+            backend = request.args.get('backend', 'auto')
             results = ddgs.images(
                 keywords,
                 region=region,
                 safesearch=safesearch,
                 timelimit=timelimit,
+                max_results=max_results,
+                page=page,
+                backend=backend,
                 size=request.args.get('size'),
                 color=request.args.get('color'),
                 type_image=request.args.get('type_image'),
                 layout=request.args.get('layout'),
-                license_image=request.args.get('license_image'),
-                max_results=max_results
+                license_image=request.args.get('license_image')
             )
         
         elif search_type == 'videos':
+            backend = request.args.get('backend', 'auto')
             results = ddgs.videos(
                 keywords,
                 region=region,
                 safesearch=safesearch,
                 timelimit=timelimit,
+                max_results=max_results,
+                page=page,
+                backend=backend,
                 resolution=request.args.get('resolution'),
                 duration=request.args.get('duration'),
-                license_videos=request.args.get('license_videos'),
-                max_results=max_results
+                license_videos=request.args.get('license_videos')
             )
         
         elif search_type == 'news':
+            backend = request.args.get('backend', 'auto')
             results = ddgs.news(
                 keywords,
                 region=region,
                 safesearch=safesearch,
                 timelimit=timelimit,
-                max_results=max_results
+                max_results=max_results,
+                page=page,
+                backend=backend
+            )
+        
+        elif search_type == 'books':
+            backend = request.args.get('backend', 'auto')
+            results = ddgs.books(
+                keywords,
+                max_results=max_results,
+                page=page,
+                backend=backend
             )
         
         return jsonify({
@@ -108,25 +102,28 @@ def search():
 
 @app.route('/', methods=['GET'])
 def index():
-    """API documentation"""
     return jsonify({
-        "message": "DuckDuckGo Multi-Type Search API",
+        "message": "DDGS Multi-Type Search API",
         "endpoint": "/search",
-        "description": "Universal search endpoint supporting text, images, videos, and news",
+        "description": "Universal search endpoint supporting text, images, videos, news, and books",
         "required_params": {
             "q": "search keywords",
-            "type": "text | images | videos | news"
+            "type": "text | images | videos | news | books"
         },
         "optional_params": {
             "common": {
-                "region": "region code (default: wt-wt)",
-                "safesearch": "on | moderate | off (default: off)",
-                "timelimit": "d | w | m | y (default: y)",
-                "max_results": "number (default: 10)"
+                "region": "region code (default: us-en)",
+                "safesearch": "on | moderate | off (default: moderate)",
+                "timelimit": "d | w | m | y (default: None)",
+                "max_results": "number (default: 10)",
+                "page": "page number (default: 1)",
+                "backend": "auto (default) or specific backend"
             },
-            "text_only": {
-                "backend": "auto | html | lite | bing (default: auto)"
-            },
+            "text_backends": "bing, brave, duckduckgo, google, grokipedia, mojeek, yandex, yahoo, wikipedia",
+            "images_backends": "duckduckgo",
+            "videos_backends": "duckduckgo",
+            "news_backends": "bing, duckduckgo, yahoo",
+            "books_backends": "annasarchive",
             "images_only": {
                 "size": "Small | Medium | Large | Wallpaper",
                 "color": "color | Monochrome | Red | Orange | Yellow | Green | Blue | Purple | Pink | Brown | Black | Gray | Teal | White",
@@ -142,9 +139,11 @@ def index():
         },
         "examples": {
             "text": "/search?q=python&type=text&max_results=5",
+            "text_with_backend": "/search?q=python&type=text&backend=google&max_results=5",
             "images": "/search?q=butterfly&type=images&color=Monochrome&max_results=10",
             "videos": "/search?q=tutorials&type=videos&duration=short&resolution=high",
             "news": "/search?q=technology&type=news&timelimit=d",
+            "books": "/search?q=sea+wolf+jack+london&type=books&max_results=10",
             "pdf_search": "/search?q=machine+learning+filetype:pdf&type=text&max_results=20"
         }
     })
