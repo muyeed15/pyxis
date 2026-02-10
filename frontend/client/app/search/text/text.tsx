@@ -60,7 +60,7 @@ export default function TextResultsList({ results }: TextResultsListProps) {
             initial="hidden"
             whileInView="visible"
             viewport={{ 
-              once: false,
+              once: true, // Changed to true: animates only once, then stays static
               amount: 0.2,
               margin: "0px 0px -50px 0px"
             }}
