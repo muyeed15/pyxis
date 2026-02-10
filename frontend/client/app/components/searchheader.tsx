@@ -25,14 +25,19 @@ export default function SearchHeader() {
     setSuggestions([]);
   }, [searchParams]);
 
+
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setShowSuggestions(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, []);
 
   useEffect(() => {
@@ -43,7 +48,8 @@ export default function SearchHeader() {
       }
 
       try {
-        const res = await fetch(`http://127.0.0.1:5000/autocomplete?q=${encodeURIComponent(query)}`);
+   
+        const res = await fetch(`http://192.168.0.200:5000/autocomplete?q=${encodeURIComponent(query)}`);
         if (res.ok) {
           const data = await res.json();
           setSuggestions(data.suggestions || []);
@@ -57,17 +63,21 @@ export default function SearchHeader() {
     return () => clearTimeout(timeoutId);
   }, [query]);
 
+
   const handleSearch = (e?: React.FormEvent, overrideQuery?: string) => {
     if (e) e.preventDefault();
     const finalQuery = overrideQuery || query;
     
     if (finalQuery.trim()) {
-      if (finalQuery !== initialQuery) {
-        setIsLoading(true);
-      }
+      setIsLoading(true); 
       setShowSuggestions(false);
       setSuggestions([]);
+      
       router.push(`/search/text?q=${encodeURIComponent(finalQuery)}`);
+
+      if (finalQuery === initialQuery) {
+        setTimeout(() => setIsLoading(false), 800);
+      }
     }
   };
 
@@ -81,8 +91,9 @@ export default function SearchHeader() {
     }
   };
 
+
   const ghostText = showSuggestions && suggestions.length > 0 && query.trim() && suggestions[0].toLowerCase().startsWith(query.toLowerCase())
-    ? suggestions[0]
+    ? query + suggestions[0].slice(query.length)
     : '';
 
   return (
@@ -103,6 +114,7 @@ export default function SearchHeader() {
         <div ref={containerRef} className="flex-1 max-w-2xl relative">
           <form onSubmit={handleSearch} className="relative w-full text-gray-500 focus-within:text-black dark:focus-within:text-white">
             
+            {/* Ghost Text Layer */}
             <input
               type="text"
               readOnly
@@ -111,6 +123,7 @@ export default function SearchHeader() {
               aria-hidden="true"
             />
 
+            {/* Input Layer */}
             <input
               type="text"
               value={query}
@@ -157,7 +170,7 @@ export default function SearchHeader() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                     <span className="text-black dark:text-gray-200">
-                      <span className="font-semibold">{query}</span>
+                      <span className="font-semibold">{suggestion.substring(0, query.length)}</span>
                       {suggestion.substring(query.length)}
                     </span>
                   </div>
