@@ -1,0 +1,2110 @@
+category,entity
+countries,Afghanistan
+countries,Albania
+countries,Algeria
+countries,Andorra
+countries,Angola
+countries,Antigua and Barbuda
+countries,Argentina
+countries,Armenia
+countries,Australia
+countries,Austria
+countries,Azerbaijan
+countries,Bahamas
+countries,Bahrain
+countries,Bangladesh
+countries,Barbados
+countries,Belarus
+countries,Belgium
+countries,Belize
+countries,Benin
+countries,Bhutan
+countries,Bolivia
+countries,Bosnia and Herzegovina
+countries,Botswana
+countries,Brazil
+countries,Brunei
+countries,Bulgaria
+countries,Burkina Faso
+countries,Burundi
+countries,Cabo Verde
+countries,Cambodia
+countries,Cameroon
+countries,Canada
+countries,Central African Republic
+countries,Chad
+countries,Chile
+countries,China
+countries,Colombia
+countries,Comoros
+countries,Congo
+countries,Costa Rica
+countries,Croatia
+countries,Cuba
+countries,Cyprus
+countries,Czech Republic
+countries,Denmark
+countries,Djibouti
+countries,Dominica
+countries,Dominican Republic
+countries,East Timor
+countries,Ecuador
+countries,Egypt
+countries,El Salvador
+countries,Equatorial Guinea
+countries,Eritrea
+countries,Estonia
+countries,Eswatini
+countries,Ethiopia
+countries,Fiji
+countries,Finland
+countries,France
+countries,Gabon
+countries,Gambia
+countries,Georgia
+countries,Germany
+countries,Ghana
+countries,Greece
+countries,Grenada
+countries,Guatemala
+countries,Guinea
+countries,Guinea-Bissau
+countries,Guyana
+countries,Haiti
+countries,Honduras
+countries,Hungary
+countries,Iceland
+countries,India
+countries,Indonesia
+countries,Iran
+countries,Iraq
+countries,Ireland
+countries,Israel
+countries,Italy
+countries,Jamaica
+countries,Japan
+countries,Jordan
+countries,Kazakhstan
+countries,Kenya
+countries,Kiribati
+countries,Korea North
+countries,Korea South
+countries,Kosovo
+countries,Kuwait
+countries,Kyrgyzstan
+countries,Laos
+countries,Latvia
+countries,Lebanon
+countries,Lesotho
+countries,Liberia
+countries,Libya
+countries,Liechtenstein
+countries,Lithuania
+countries,Luxembourg
+countries,Madagascars
+countries,Malawi
+countries,Malaysia
+countries,Maldives
+countries,Mali
+countries,Malta
+countries,Marshall Islands
+countries,Mauritania
+countries,Mauritius
+countries,Mexico
+countries,Micronesia
+countries,Moldova
+countries,Monaco
+countries,Mongolia
+countries,Montenegro
+countries,Morocco
+countries,Mozambique
+countries,Myanmar
+countries,Namibia
+countries,Nauru
+countries,Nepal
+countries,Netherlands
+countries,New Zealand
+countries,Nicarsagua
+countries,Niger
+countries,Nigeria
+countries,North Macedonia
+countries,Norway
+countries,Oman
+countries,Pakistan
+countries,Palau
+countries,Panama
+countries,Papua New Guinea
+countries,Paraguay
+countries,Peru
+countries,Philippines
+countries,Poland
+countries,Portugal
+countries,Qatar
+countries,Romania
+countries,Russia
+countries,Rwanda
+countries,Saint Kitts and Nevis
+countries,Saint Lucia
+countries,Saint Vincent and the Grenadines
+countries,Samoa
+countries,San Marino
+countries,Sao Tome and Principe
+countries,Saudi Arabia
+countries,Senegal
+countries,Serbia
+countries,Seychelles
+countries,Sierra Leone
+countries,Singapore
+countries,Slovakia
+countries,Slovenia
+countries,Solomon Islands
+countries,Somalia
+countries,South Africa
+countries,South Sudan
+countries,Spain
+countries,Sri Lanka
+countries,Sudan
+countries,Suriname
+countries,Sweden
+countries,Switzerland
+countries,Syria
+countries,Taiwan
+countries,Tajikistan
+countries,Tanzania
+countries,Thailand
+countries,Togo
+countries,Tonga
+countries,Trinidad and Tobago
+countries,Tunisia
+countries,Turkey
+countries,Turkmenistan
+countries,Tuvalu
+countries,Uganda
+countries,Ukraine
+countries,United Arab Emirates
+countries,United Kingdom
+countries,United States
+countries,Uruguay
+countries,Uzbekistan
+countries,Vanuatu
+countries,Vatican City
+countries,Venezuela
+countries,Vietnam
+countries,Yemen
+countries,Zambia
+countries,Zimbabwe
+regions,Dhaka Division
+regions,Chittagong Division
+regions,Rajshahi Division
+regions,Khulna Division
+regions,Barisal Division
+regions,Sylhet Division
+regions,Rangpur Division
+regions,Mymensingh Division
+cities,Dhaka
+cities,Chittagong
+cities,Khulna
+cities,Rajshahi
+cities,Sylhet
+cities,Barisal
+cities,Rangpur
+cities,Comilla
+cities,Narayanganj
+cities,Gazipur
+landmarks,Sundarbans
+landmarks,Cox's Bazar
+landmarks,Saint Martin's Island
+landmarks,Ahsan Manzil
+landmarks,Lalbagh Fort
+landmarks,Shat Gambuj Mosque
+landmarks,Somapura Mahavihara
+culture,Panta Ilish
+culture,Shari
+culture,Nakshi Kantha
+culture,Bangla New Year
+culture,Ekushey February
+culture,Durga Puja
+organizations,Grameen Bank
+organizations,BRAC
+organizations,Bangladesh Army
+organizations,Bangladesh Navy
+organizations,Bangladesh Air Force
+organizations,University of Dhaka
+organizations,BUET
+organizations,Square Pharmaceuticals
+cars,Toyota
+cars,Honda
+cars,Ford
+cars,BMW
+cars,Mercedes-Benz
+cars,Audi
+cars,Volkswagen
+cars,Tesla
+cars,Nissan
+cars,Chevrolet
+cars,Hyundai
+cars,Kia
+cars,Volvo
+cars,Mazda
+cars,Subaru
+cars,Lexus
+cars,Porsche
+cars,Ferrari
+cars,Lamborghini
+cars,Jaguar
+pc,CPU
+pc,GPU
+pc,RAM
+pc,SSD
+pc,HDD
+pc,Motherboard
+pc,Power Supply
+pc,CPU Cooler
+pc,Case
+pc,Monitor
+pc,Keyboard
+pc,Mouse
+brand,Intel
+brand,AMD
+brand,NVIDIA
+brand,ASUS
+brand,MSI
+brand,Gigabyte
+brand,ASRock
+brand,EVGA
+brand,Corsair
+brand,Logitech
+brand,Razer
+brand,HyperX
+os,Windows
+os,Linux
+os,macOS
+os,Android
+os,iOS
+os,Chrome OS
+programming,Python
+programming,JavaScript
+programming,Java
+programming,C++
+programming,C#
+programming,PHP
+programming,Go
+programming,Rust
+programming,Swift
+programming,Kotlin
+programming,Ruby
+programming,TypeScript
+social_media,Facebook
+social_media,Twitter
+social_media,Instagram
+social_media,LinkedIn
+social_media,TikTok
+social_media,Snapchat
+social_media,Pinterest
+social_media,Reddit
+social_media,YouTube
+social_media,WhatsApp
+social_media,Telegram
+search_engines,Google
+search_engines,Bing
+search_engines,Yahoo
+search_engines,DuckDuckGo
+search_engines,Baidu
+services,Amazon
+services,eBay
+services,Alibaba
+services,Shopify
+services,Walmart
+services,Target
+services,Netflix
+services,Spotify
+services,YouTube Premium
+services,Disney+
+services,Hulu
+services,Amazon Prime Video
+services,GitHub
+services,Steam
+services,Google
+services,Gmail
+services,YouTube
+services,Facebook
+services,Instagram
+services,Twitter
+services,WhatsApp
+services,Telegram
+services,Discord
+services,Slack
+services,Microsoft Teams
+services,Spotify
+services,Netflix
+services,Amazon Prime Video
+services,Disney+
+services,Hulu
+services,Apple Music
+services,Apple TV+
+services,Apple App Store
+services,Google Play Store
+services,Microsoft Store
+services,Epic Games Store
+services,EA Origin
+services,Ubisoft Connect
+services,GOG.com
+services,Twitch
+services,LinkedIn
+services,TikTok
+services,Pinterest
+services,Reddit
+services,Snapchat
+services,Skype
+services,WeChat
+services,LINE
+services,Viber
+services,Signal
+services,ProtonMail
+services,Outlook
+services,Yahoo Mail
+services,iCloud
+services,Dropbox
+services,Google Drive
+services,OneDrive
+services,Box
+services,Mega
+services,iCloud Drive
+services,Amazon Drive
+services,Trello
+services,Asana
+services,Notion
+services,Evernote
+services,Google Keep
+services,Microsoft OneNote
+services,Adobe Creative Cloud
+services,Canva
+services,Figma
+services,Sketch
+services,InVision
+services,WordPress
+services,Wix
+services,Squarespace
+services,Shopify
+services,Amazon
+services,eBay
+services,AliExpress
+services,Walmart
+services,Target
+services,Best Buy
+services,Apple Store
+services,Microsoft Store Online
+services,Newegg
+services,Alibaba
+services,JD.com
+services,Rakuten
+services,Etsy
+services,PayPal
+services,Stripe
+services,Square
+services,Venmo
+services,Cash App
+services,Apple Pay
+services,Google Pay
+services,Samsung Pay
+services,Payoneer
+services,Wise
+services,Revolut
+services,TransferWise
+services,Binance
+services,Coinbase
+services,Kraken
+services,Robinhood
+services,E*TRADE
+services,TD Ameritrade
+services,Charles Schwab
+services,Fidelity
+services,Chase
+services,Bank of America
+services,Wells Fargo
+services,Citibank
+services,HDFC Bank
+services,ICICI Bank
+services,SBI
+services,Standard Chartered
+services,HSBC
+services,Uber
+services,UBER Eats
+services,Lyft
+services,DoorDash
+services,Grubhub
+services,Postmates
+services,Swiggy
+services,Zomato
+services,Foodpanda
+services,Airbnb
+services,Booking.com
+services,Expedia
+services,TripAdvisor
+services,Agoda
+services,MakeMyTrip
+services,Kayak
+services,Google Maps
+services,Apple Maps
+services,Waze
+services,Google Earth
+services,Weather Channel
+services,AccuWeather
+services,Weather Underground
+services,Yahoo Weather
+services,Apple Weather
+services,Google Translate
+services,Microsoft Translator
+services,DeepL
+services,Duolingo
+services,Babbel
+services,Rosetta Stone
+services,Google Classroom
+services,Canvas
+services,Blackboard
+services,Google Meet
+services,Zoom
+services,Webex
+services,GoToMeeting
+services,BlueJeans
+services,Google Search
+services,Bing
+services,Yahoo
+services,DuckDuckGo
+services,Startpage
+services,Ecosia
+services,Brave Search
+services,Baidu
+services,Yandex
+services,Naver
+services,Google Chrome
+services,Mozilla Firefox
+services,Microsoft Edge
+services,Safari
+services,Opera
+services,Brave
+services,Vivaldi
+services,Tor Browser
+services,Microsoft Office 365
+services,Google Workspace
+services,LibreOffice
+services,Apache OpenOffice
+services,Windows 10
+services,Windows 11
+services,macOS
+services,Linux
+services,Android
+services,iOS
+services,Chrome OS
+services,Google Photos
+services,Apple Photos
+services,Adobe Lightroom
+services,VSCO
+services,Instagram
+services,Snapseed
+services,Google Calendar
+services,Apple Calendar
+services,Outlook Calendar
+services,Fantastical
+services,Google Tasks
+services,Microsoft To Do
+services,Todoist
+services,Things
+services,OmniFocus
+services,Amazon Web Services
+services,Microsoft Azure
+services,Google Cloud Platform
+services,IBM Cloud
+services,Oracle Cloud
+services,DigitalOcean
+services,Linode
+services,Vultr
+services,Heroku
+services,Netlify
+services,Vercel
+services,Cloudflare
+services,Akamai
+services,WordPress.com
+services,Medium
+services,Substack
+services,Ghost
+services,Quora
+services,Stack Overflow
+services,GitLab
+services,Bitbucket
+services,SourceForge
+services,Jira
+services,Confluence
+services,ServiceNow
+services,Salesforce
+services,Zendesk
+services,HubSpot
+services,Marketo
+services,Google Analytics
+services,Google Search Console
+services,Google Ads
+services,Facebook Ads
+services,Instagram Ads
+services,Amazon Advertising
+services,Microsoft Advertising
+services,TikTok Ads
+services,YouTube Studio
+services,Twitch Studio
+services,OBS Studio
+services,Streamlabs OBS
+services,Lightstream
+services,Nvidia ShadowPlay
+services,AMD ReLive
+services,Google Podcasts
+services,Apple Podcasts
+services,Spotify Podcasts
+services,Audible
+services,Scribd
+services,OverDrive
+services,Kindle
+services,Google Books
+services,Apple Books
+services,Kobo
+services,Goodreads
+services,IMDb
+services,Rotten Tomatoes
+services,Metacritic
+services,Letterboxd
+services,MyAnimeList
+services,AniList
+services,Crunchyroll
+services,Funimation
+services,HIDIVE
+services,VRV
+services,Disney+ Hotstar
+services,Netflix
+services,Amazon Prime Video
+services,HBO Max
+services,Paramount+
+services,Peacock
+services,Apple TV+
+services,YouTube Premium
+services,Spotify
+services,Apple Music
+services,Amazon Music
+services,Tidal
+services,Deezer
+services,Pandora
+services,SoundCloud
+services,Bandcamp
+services,Shazam
+services,Shazam
+services,Genius
+services,Discogs
+services,Beatport
+services,Trakt
+services,TV Time
+services,Reelgood
+services,JustWatch
+services,Flixster
+services,Google Fit
+services,Apple Health
+services,MyFitnessPal
+services,Strava
+services,Nike Training Club
+services,Adidas Training
+services,Calm
+services,Headspace
+services,BetterHelp
+services,Talkspace
+services,7 Cups
+services,Pacifica
+services,Whatnot
+services,Depop
+services,Grailed
+services,StockX
+services,GOAT
+services,Facebook Marketplace
+services,Craigslist
+services,OfferUp
+services,Letgo
+services,Nextdoor
+services,Google News
+services,Apple News
+services,Mix
+services,Flipboard
+services,SmartNews
+services,Inoreader
+services,Feedly
+services,Pocket
+services,Instapaper
+services,Goodreads
+services,Ancestry
+services,23andMe
+services,MyHeritage
+services,FamilySearch
+services,Grammarly
+services,Hemingway Editor
+services,ProWritingAid
+services,Google Scholar
+services,Microsoft Academic
+services,PubMed
+services,IEEE Xplore
+services,ScienceDirect
+services,SpringerLink
+services,Wiley Online Library
+services,Taylor & Francis Online
+services,Oxford Academic
+services,Cambridge Core
+services,JSTOR
+services,Google Patents
+services,USPTO
+services,EPO
+services,WIPO
+services,Google Flights
+services,Skyscanner
+services,Google Hotels
+services,Hotels.com
+services,Trivago
+services,Rentalcarss.com
+services,Google Pay
+services,Apple Wallet
+services,Samsung Wallet
+services,Google Pay Send
+services,PayPal.Me
+services,GoFundMe
+services,Kickstarter
+services,Indiegogo
+services,Patreon
+services,OnlyFans
+services,Twitch Subscriptions
+services,YouTube Memberships
+services,Google Domains
+services,Namecheap
+services,GoDaddy
+services,Bluehost
+services,SiteGround
+services,HostGator
+services,WP Engine
+services,Kinsta
+services,Cloudways
+services,A2 Hosting
+services,InMotion Hosting
+services,DigitalOcean
+services,Vultr
+services,Linode
+services,OVHcloud
+services,Hetzner
+services,Google Colab
+services,Kaggle
+services,DataCamp
+services,Coursera
+services,edX
+services,Udemy
+services,Skillshare
+services,LinkedIn Learning
+services,MasterClass
+services,Brilliant
+services,Khan Academy
+services,Codecademy
+services,freeCodeCamp
+services,The Odin Project
+services,Scrimba
+services,Frontend Mentor
+services,LeetCode
+services,HackerRank
+services,CodeWars
+services,Topcoder
+services,AtCoder
+services,Codeforces
+services,Exercism
+services,Advent of Code
+services,Google Fonts
+services,Adobe Fonts
+services,Font Squirrel
+services,DaFont
+services,1001 Fonts
+services,Google Icons
+services,Font Awesome
+services,Feather Icons
+services,Material Icons
+services,Bootstrap Icons
+services,The Noun Project
+services,Flaticon
+services,Iconfinder
+services,Unsplash
+services,Pexels
+services,Pixabay
+services,Shutterstock
+services,Getty Images
+services,iStock
+services,Adobe Stock
+services,Depositphotos
+services,Canva Pro
+services,Remove.bg
+services,TinyPNG
+services,Squoosh
+services,ImageOptim
+services,ShortPixel
+services,Google PageSpeed Insights
+services,GTmetrix
+services,Pingdom
+services,WebPageTest
+services,Google Lighthouse
+services,Screaming Frog
+services,Ahrefs
+services,Semrush
+services,Moz
+services,SimilarWeb
+services,Alexa
+services,BuzzSumo
+services,Google Trends
+services,AnswerThePublic
+services,Keyword Tool
+services,Ubersuggest
+services,SpyFu
+services,Majestic
+services,Cognism
+services,Zoominfo
+services,Apollo.io
+services,LinkedIn Sales Navigator
+services,HubSpot CRM
+services,Salesforce CRM
+services,Zoho CRM
+services,Pipedrive
+services,Close
+services,Insightly
+services,Nimble
+services,Copper
+services,Microsoft Dynamics 365
+services,Oracle NetSuite
+services,SAP CRM
+services,SugarCRM
+services,Agile CRM
+services,Less Annoying CRM
+services,Google My Business
+services,Yelp
+services,TripAdvisor for Business
+services,Facebook Business
+services,Instagram Business
+services,Google Business Profile
+services,Bing Places
+services,Apple Business Connect
+services,Angi
+services,HomeAdvisor
+services,Thumbtack
+services,Fiverr
+services,Upwork
+services,Freelancer
+services,Toptal
+services,Guru
+services,PeoplePerHour
+services,99designs
+services,DesignCrowd
+services,Behance
+services,Dribbble
+services,ArtStation
+services,DeviantArt
+services,Google Arts & Culture
+services,Wikipedia
+services,Wikimedia Commons
+services,Wiktionary
+services,Wikiquote
+services,Wikibooks
+services,Wikivoyage
+services,Wikisource
+services,Wikidata
+services,MediaWiki
+services,Fandom
+services,Google Forms
+services,Typeform
+services,SurveyMonkey
+services,Qualtrics
+services,JotForm
+services,Microsoft Forms
+services,Google Sheets
+services,Microsoft Excel
+services,Apple Numbers
+services,Airtable
+services,Smartsheet
+services,Google Slides
+services,Microsoft PowerPoint
+services,Apple Keynote
+services,Prezi
+services,Canva Presentations
+services,Visme
+services,Haiku Deck
+services,Zoom Meetings
+services,Google Meet
+services,Microsoft Teams
+services,Skype
+services,Webex
+services,GoToMeeting
+services,BlueJeans
+services,Whereby
+services,Jitsi Meet
+services,Google Chat
+services,Slack
+services,Discord
+services,Microsoft Teams Chat
+services,Telegram Groups
+services,WhatsApp Groups
+services,Signal Groups
+services,Clubhouse
+services,Twitter Spaces
+services,Reddit Talk
+services,Spotify Live
+services,Google Voice
+services,Skype Number
+services,Line Out
+services,Google Fi
+services,Mint Mobile
+services,Visible
+services,Republic Wireless
+services,Google Stadia
+services,NVIDIA GeForce Now
+services,Xbox Cloud Gaming
+services,PlayStation Now
+services,Amazon Luna
+services,Shadow
+services,Boosteroid
+services,Google Pay
+services,Apple Pay
+services,Samsung Pay
+services,Google Wallet
+services,Apple Wallet
+services,Samsung Wallet
+services,PayPal
+services,Venmo
+services,Cash App
+services,Zelle
+services,Wise
+services,Revolut
+services,N26
+services,Chime
+services,Current
+services,Aspiration
+services,Acorns
+services,Robinhood
+services,Webull
+services,SoFi
+services,Betterment
+services,Wealthfront
+services,Vanguard
+services,Fidelity Go
+services,Schwab Intelligent Portfolios
+services,Personal Capital
+services,Mint
+services,YNAB
+services,EveryDollar
+services,PocketGuard
+services,Goodbudget
+services,Google One
+services,Microsoft 365
+services,Adobe Creative Cloud
+services,Apple One
+services,Amazon Prime
+services,Costco
+services,Sam's Club
+services,BJ's Wholesale Club
+services,Instacarst
+services,Shipt
+services,Amazon Fresh
+services,Walmart+
+services,Target Same Day Delivery
+services,Doordash Drive
+services,Uber Direct
+services,Postmates Unlimited
+services,Grubhub+
+services,Spotify Premium
+services,YouTube Premium
+services,Netflix Premium
+services,Hulu (No Ads)
+services,Disney+ Bundle
+services,Apple One
+services,Google Workspace
+services,Microsoft 365 Family
+services,Adobe Photography Plan
+services,Canva Pro
+services,Notion Personal Pro
+services,Todoist Premium
+services,1Password Families
+services,LastPass Premium
+services,Dashlane Premium
+services,ExpressVPN
+services,NordVPN
+services,Surfshark
+services,CyberGhost
+services,Private Internet Access
+services,ProtonVPN
+services,TunnelBear
+services,Windscribe
+services,Hide.me
+services,Google One VPN
+services,Microsoft Defender
+services,Norton 360
+services,McAfee Total Protection
+services,Kaspersky Total Security
+services,Bitdefender Total Security
+services,Malwarebytes Premium
+services,ESET Internet Security
+services,Avast Premium Security
+services,AVG Ultimate
+services,Trend Micro Maximum Security
+services,Webroot SecureAnywhere
+services,F-Secure SAFE
+services,Sophos Home Premium
+services,Panda Dome
+services,ZoneAlarm Extreme Security
+services,Comodo Internet Security
+services,GlassWire
+services,Windows Defender
+services,Google Play Protect
+services,Apple Security Updates
+services,Linux Security Patches
+services,Chrome OS Updates
+services,Android Security Updates
+services,iOS Security Updates
+services,Windows Updates
+services,macOS Updates
+services,Ubuntu Updates
+services,Fedora Updates
+services,Arch Linux Updates
+services,Debian Updates
+services,CentOS Updates
+services,Red Hat Updates
+services,SUSE Updates
+services,Alpine Linux Updates
+services,OpenBSD Updates
+services,FreeBSD Updates
+services,NetBSD Updates
+services,Gentoo Updates
+services,Slackware Updates
+services,Mageia Updates
+services,Mandriva Updates
+services,PCLinuxOS Updates
+services,Zorin OS Updates
+services,Linux Mint Updates
+services,elementary OS Updates
+services,Pop!_OS Updates
+services,Manjaro Updates
+services,EndeavourOS Updates
+services,Garuda Linux Updates
+services,ArcoLinux Updates
+services,Artix Linux Updates
+services,openSUSE Updates
+services,Fedora Silverblue Updates
+services,NixOS Updates
+services,Guix System Updates
+services,Chrome OS Flex Updates
+services,CloudReady Updates
+services,FydeOS Updates
+services,Android-x86 Updates
+services,Bliss OS Updates
+services,PrimeOS Updates
+services,Phoenix OS Updates
+services,Remix OS Updates
+services,LineageOS Updates
+services,GrapheneOS Updates
+services,/e/OS Updates
+services,CalyxOS Updates
+services,Ubuntu Touch Updates
+services,PostmarketOS Updates
+services,PureOS Updates
+services,Tails Updates
+services,Whonix Updates
+services,Qubes OS Updates
+services,Parrot OS Updates
+services,Kali Linux Updates
+services,BlackArch Updates
+services,ArchStrike Updates
+services,Pentoo Updates
+services,BackBox Updates
+services,Bugtraq Updates
+services,CAINE Updates
+services,DEFT Updates
+services,Matriux Updates
+services,NodeZero Updates
+services,SamuraiWTF Updates
+services,Network Security Toolkit Updates
+services,Security Onion Updates
+services,ROCK NSM Updates
+services,SIFT Workstation Updates
+services,REMnux Updates
+services,FLARE VM Updates
+services,Commando VM Updates
+services,Windows Sandbox
+services,Windows Subsystem for Linux
+services,Docker Desktop
+services,VMware Workstation
+services,VirtualBox
+services,Parallels Desktop
+services,QEMU
+services,Hyper-V
+services,KVM
+services,Xen
+services,Proxmox VE
+services,OpenStack
+services,OpenNebula
+services,CloudStack
+services,OpenShift
+services,Rancher
+services,Kubernetes
+services,Docker Swarm
+services,Apache Mesos
+services,Nomad
+services,Terraform
+services,Ansible
+services,Puppet
+services,Chef
+services,SaltStack
+services,CloudFormation
+services,Azure Resource Manager
+services,Google Cloud Deployment Manager
+services,Pulumi
+services,Crossplane
+services,Atlantis
+services,Spacelift
+services,Terraform Cloud
+services,Terraform Enterprise
+services,GitLab CI/CD
+services,Jenkins
+services,CircleCI
+services,Travis CI
+services,GitHub Actions
+services,Bitbucket Pipelines
+services,AWS CodePipeline
+services,Azure DevOps
+services,Google Cloud Build
+services,Buildkite
+services,Drone
+services,Concourse
+services,GoCD
+services,Bamboo
+services,TeamCity
+services,Codeship
+services,Semaphore
+services,Buddy
+services,Spinnaker
+services,FluxCD
+services,Argo CD
+services,Jenkins X
+services,Keel
+services,Weave Flux
+services,Flagger
+services,Linkerd
+services,Consul
+services,Envoy
+services,NGINX
+services,Apache HTTP Server
+services,Microsoft IIS
+services,Lighttpd
+services,Caddy
+services,Traefik
+services,HAProxy
+services,Amazon Route 53
+services,Cloudflare DNS
+services,Google Cloud DNS
+services,Akamai
+services,Fastly
+services,StackPath
+services,KeyCDN
+services,BunnyCDN
+services,G-Core Labs
+services,CDN77
+services,BelugaCDN
+services,QUIC.cloud
+services,Section.io
+services,Microsoft Azure CDN
+services,IBM Cloud CDN
+services,Oracle Cloud CDN
+services,Alibaba Cloud CDN
+services,Tencent Cloud CDN
+services,Baidu Cloud CDN
+services,Naver Cloud Platform
+services,Nhn Cloud
+services,Kakao Cloud
+services,LINE Works
+services,Yahoo Japan Cloud
+services,Rakuten Cloud
+services,SoftBank Cloud
+services,NTT Communications Cloud
+services,Fujitsu Cloud
+services,Hitachi Cloud
+services,NEC Cloud
+services,Panasonic Cloud
+services,Sony Cloud
+services,Toshiba Cloud
+services,Mitsubishi Cloud
+services,Sharp Cloud
+services,Canon Cloud
+services,Epson Cloud
+services,Brother Cloud
+services,Ricoh Cloud
+services,Kyocera Cloud
+services,Konica Minolta Cloud
+services,Xerox Cloud
+services,HP Cloud
+services,Dell Cloud
+services,Lenovo Cloud
+services,Acer Cloud
+services,Asus Cloud
+services,MSI Cloud
+services,Gigabyte Cloud
+services,Intel Cloud
+services,AMD Cloud
+services,NVIDIA Cloud
+services,Qualcomm Cloud
+services,MediaTek Cloud
+services,Broadcom Cloud
+services,Marvell Cloud
+services,Microchip Cloud
+services,STM Cloud
+services,NXP Cloud
+services,Infineon Cloud
+services,Renesas Cloud
+services,Texas Instruments Cloud
+services,Analog Devices Cloud
+services,Maxim Integrated Cloud
+services,ON Semiconductor Cloud
+services,Diodes Incorporated Cloud
+services,Vishay Cloud
+services,ROHM Cloud
+services,Murata Cloud
+services,TDK Cloud
+services,Taiyo Yuden Cloud
+services,AVX Cloud
+services,KEMET Cloud
+services,Vishay Cloud
+services,Panasonic Electronic Components Cloud
+services,Omron Cloud
+services,Keyence Cloud
+services,Cognex Cloud
+services,Basler Cloud
+services,FLIR Cloud
+services,Testo Cloud
+services,Fluke Cloud
+services,Tektronix Cloud
+services,Keysight Cloud
+services,Rohde & Schwarz Cloud
+services,Anritsu Cloud
+services,Yokogawa Cloud
+services,National Instruments Cloud
+services,Advantest Cloud
+services,Teradyne Cloud
+services,Xcerra Cloud
+services,Cohu Cloud
+services,ASML Cloud
+services,KLA Cloud
+services,Lam Research Cloud
+services,Applied Materials Cloud
+services,Tokyo Electron Cloud
+services,Screen Holdings Cloud
+services,Nikon Cloud
+services,Canon Semiconductor Equipment Cloud
+services,Hitachi High-Tech Cloud
+services,JEOL Cloud
+services,Shimadzu Cloud
+services,HORIBA Cloud
+services,Rigaku Cloud
+services,Malvern Panalytical Cloud
+services,Anton Paar Cloud
+services,Bruker Cloud
+services,Thermo Fisher Scientific Cloud
+services,Agilent Cloud
+services,PerkinElmer Cloud
+services,Waters Cloud
+services,Shimadzu Scientific Instruments Cloud
+services,Hitachi Scientific Instruments Cloud
+services,JEOL Scientific Instruments Cloud
+services,Rigaku Scientific Instruments Cloud
+services,Malvern Panalytical Scientific Instruments Cloud
+services,Anton Paar Scientific Instruments Cloud
+services,Bruker Scientific Instruments Cloud
+services,Thermo Fisher Scientific Instruments Cloud
+services,Agilent Scientific Instruments Cloud
+services,PerkinElmer Scientific Instruments Cloud
+services,Waters Scientific Instruments Cloud
+services,Mettler Toledo Cloud
+services,Sartorius Cloud
+services,Ohaus Cloud
+services,Adam Equipment Cloud
+services,A&D Company Cloud
+services,Shimadzu Medical Systems Cloud
+services,Hitachi Medical Systems Cloud
+services,Toshiba Medical Systems Cloud
+services,Canon Medical Systems Cloud
+services,Siemens Healthineers Cloud
+services,Philips Healthcarse Cloud
+services,GE Healthcarse Cloud
+services,Fujifilm Healthcarse Cloud
+services,Hologic Cloud
+services,Mindray Cloud
+services,Samsung Healthcarse Cloud
+services,LG Healthcarse Cloud
+services,Hyundai Healthcarse Cloud
+services,SK Healthcarse Cloud
+services,KT Healthcarse Cloud
+services,Naver Healthcarse Cloud
+services,Kakao Healthcarse Cloud
+services,LINE Healthcarse Cloud
+services,SoftBank Healthcarse Cloud
+services,NTT Healthcarse Cloud
+services,Docomo Healthcarse Cloud
+services,KDDI Healthcarse Cloud
+services,Rakuten Healthcarse Cloud
+services,Yahoo Japan Healthcarse Cloud
+services,Amazon Healthcarse Cloud
+services,Google Healthcarse Cloud
+services,Microsoft Healthcarse Cloud
+services,Apple Healthcarse Cloud
+services,IBM Healthcarse Cloud
+services,Oracle Healthcarse Cloud
+services,SAP Healthcarse Cloud
+services,Salesforce Healthcarse Cloud
+services,Adobe Healthcarse Cloud
+services,Intel Healthcarse Cloud
+services,NVIDIA Healthcarse Cloud
+services,Qualcomm Healthcarse Cloud
+services,Medtronic Cloud
+services,Boston Scientific Cloud
+services,Abbott Cloud
+services,Johnson & Johnson Cloud
+services,Daraz
+services,Chaldal
+services,AjkerDeal
+services,Pickaboo
+services,BDShop
+services,Rokomari
+services,Foodpanda
+services,HungryNaki
+services,Pathao Food
+services,Pathao
+services,UBER Bangladesh
+services,Shohoz
+services,Bdjobs
+services,Chakri
+services,IRAS (IUB)
+services,University of Dhaka Portal
+services,BUET Portal
+services,RUET Portal
+services,KUET Portal
+services,CUET Portal
+services,SUST Portal
+services,Jahangirnagar University Portal
+services,Rajshahi University Portal
+services,Chittagong University Portal
+services,National University Portal
+services,Bangladesh Open University Portal
+services,BRAC University Portal
+services,North South University Portal
+services,East West University Portal
+services,AIUB Portal
+services,IUB Portal
+services,UIU Portal
+services,Daffodil International University Portal
+services,Green University Portal
+services,University of Liberal Arts Bangladesh Portal
+services,BUP Portal
+services,MIST Portal
+services,BUTEX Portal
+services,University Grants Commission Portal
+services,Ministry of Education Portal
+services,Dhaka University Central Library System
+services,BUET Central Library
+services,National Digital Library
+services,Bangladesh Research and Education Network
+services,Online Admission System
+services,Exam Management System
+services,Grade Submission Portal
+services,Teacher Evaluation System
+services,Online Course Registration
+services,Student Information System
+services,Faculty Portal
+services,Alumni Portal
+services,Research Repository
+services,Thesis Submission System
+services,Journal Management System
+services,Conference Management System
+services,Online Fee Payment
+services,Hall Management System
+services,Transport Management System
+services,LMS (Learning Management System)
+services,Moodle Portal
+services,Google Classroom for University
+services,Microsoft Teams for Education
+services,Zoom University License
+services,Turnitin Portal
+services,Plagiarism Checker Portal
+services,Online Exam Proctoring
+services,Digital Attendance System
+services,Campus WiFi Portal
+services,Student Email Portal
+services,Online Result Publication
+services,Transcript Request System
+services,Certificate Verification Portal
+services,Scholarship Management System
+services,Financial Aid Portal
+services,Research Grant Portal
+services,Internship Placement System
+services,Job Placement Portal
+services,Career Services Portal
+services,Alumni Network Portal
+services,Event Management System
+services,Club and Society Portal
+services,Sports Management System
+services,Health Services Portal
+services,Counseling Services Portal
+services,Disability Services Portal
+services,International Student Portal
+services,Study Abroad Portal
+services,Exchange Program Portal
+services,MOOC Platform
+services,Online Degree Portal
+services,Distance Learning Portal
+services,Continuing Education Portal
+services,Professional Development Portal
+services,Faculty Development Portal
+services,Research Collaboration Portal
+services,Industry-Academia Portal
+services,Innovation and Incubation Portal
+services,Startup Support Portal
+services,Patent and IP Portal
+services,Quality Assurance Portal
+services,Accreditation Portal
+services,Ranking and Rating Portal
+services,University Performance Dashboard
+services,Strategic Planning Portal
+services,Budget Management System
+services,Procurement Portal
+services,Asset Management System
+services,Human Resources Portal
+services,Payroll Management System
+services,Leave Management System
+services,Performance Appraisal System
+services,Grievance Redressal System
+services,Complaint Management Portal
+services,Anti-Ragging Portal
+services,Sexual Harassment Prevention Portal
+services,Disciplinary Committee Portal
+services,Legal Compliance Portal
+services,Audit and Compliance Portal
+services,Environmental Sustainability Portal
+services,Green Campus Initiative
+services,Digital Transformation Portal
+services,Smart Campus Portal
+services,University Mobile App
+services,E-Governance Portal
+services,Digital University Initiative
+services,Future Skills Portal
+services,Industry 4.0 Training Portal
+services,AI and ML Learning Portal
+services,Data Science Portal
+services,Cybersecurity Training Portal
+services,Blockchain Education Portal
+services,IoT Learning Platform
+services,Robotics and Automation Portal
+services,Biotechnology Portal
+services,Nanotechnology Portal
+services,Renewable Energy Portal
+services,Climate Change Research Portal
+services,Public Health Portal
+services,Medical Education Portal
+services,Legal Education Portal
+services,Business Education Portal
+services,Engineering Education Portal
+services,Arts and Humanities Portal
+services,Social Sciences Portal
+services,Natural Sciences Portal
+services,Agricultural Sciences Portal
+services,Fisheries and Marine Sciences Portal
+services,Veterinary Sciences Portal
+services,Pharmaceutical Sciences Portal
+services,Architecture and Planning Portal
+services,Fashion and Design Portal
+services,Media and Communication Portal
+services,Performing Arts Portal
+services,Sports Science Portal
+services,Military Science Portal
+services,Islamic Studies Portal
+services,Buddhist Studies Portal
+services,Christian Studies Portal
+services,Hindu Studies Portal
+services,Indigenous Studies Portal
+services,Gender Studies Portal
+services,Development Studies Portal
+services,Peace and Conflict Studies Portal
+services,Human Rights Portal
+services,Environmental Law Portal
+services,Intellectual Property Portal
+services,Corporate Governance Portal
+services,Public Administration Portal
+services,Diplomacy and International Relations Portal
+services,Tourism and Hospitality Portal
+services,Aviation Studies Portal
+services,Maritime Studies Portal
+services,Space Science Portal
+services,Astronomy Portal
+services,Geology Portal
+services,Archaeology Portal
+services,Anthropology Portal
+services,Paleontology Portal
+services,Bioinformatics Portal
+services,Computational Biology Portal
+services,Quantum Computing Portal
+services,Augmented Reality Portal
+services,Virtual Reality Portal
+services,Mixed Reality Portal
+services,Game Development Portal
+services,Animation and VFX Portal
+services,Digital Arts Portal
+services,Music Technology Portal
+services,Film Studies Portal
+services,Theater Technology Portal
+services,Dance Technology Portal
+services,Creative Writing Portal
+services,Translation Studies Portal
+services,Linguistics Portal
+services,Philology Portal
+services,Library Science Portal
+services,Archival Studies Portal
+services,Museum Studies Portal
+services,Cultural Heritage Portal
+services,Folk Culture Portal
+services,Traditional Knowledge Portal
+services,Indigenous Knowledge Portal
+services,Local Wisdom Portal
+services,Community Engagement Portal
+services,Social Outreach Portal
+services,Volunteer Management Portal
+services,CSR Portal
+services,Social Innovation Portal
+services,Entrepreneurship Development Portal
+services,bKash
+services,Nagad
+services,Rocket
+services,Upay
+services,Bongo BD
+services,Toffee
+services,Hoichoi
+services,Shohoz
+services,BDTicket
+services,Bproperty
+services,Flat.com.bd
+services,10 Minute School
+services,Shikho
+services,Practo
+services,DocTime
+services,Ekushey TV
+services,MyCash
+services,Grameenphone
+services,Robi
+services,Banglalink
+services,NID Server
+services,Surokkha
+services,E-Nothi
+services,Porichoy
+services,Mujib Borsho Portal
+services,Bikroy
+services,Cellbazaar
+news,Prothom Alo
+news,Daily Star
+news,Kaler Kantho
+news,Ittefaq
+news,Bangla Tribune
+news,BBC Bangla
+news,Channel i
+brands,Apple
+brands,Samsung
+brands,Sony
+brands,Panasonic
+brands,LG
+brands,Canon
+brands,Nikon
+brands,Nestlé
+brands,Coca-Cola
+brands,Pepsi
+brands,McDonald's
+brands,KFC
+brands,Starbucks
+brands,Adidas
+brands,Nike
+brands,Unilever
+brands,Procter & Gamble
+foods,Rice
+foods,Bread
+foods,Milk
+foods,Eggs
+foods,Chicken
+foods,Beef
+foods,Fish
+foods,Vegetables
+foods,Fruits
+foods,Pasta
+sports,Football
+sports,Cricket
+sports,Basketball
+sports,Tennis
+sports,Swimming
+sports,Athletics
+sports,Cycling
+sports,Volleyball
+sports,Badminton
+sports,Table Tennis
+education,Mathematics
+education,Science
+education,History
+education,Geography
+education,Literature
+education,Art
+education,Music
+education,Physical Education
+education,Computer Science
+education,Economics
+science,Biology
+science,Chemistry
+science,Physics
+science,Astronomy
+science,Geology
+science,Psychology
+science,Sociology
+science,Anthropology
+science,Ecology
+science,Genetics
+technology,Artificial Intelligence
+technology,Machine Learning
+technology,Blockchain
+technology,Cryptocurrency
+technology,Virtual Reality
+technology,Augmented Reality
+technology,Internet of Things
+technology,Cloud Computing
+technology,Cybersecurity
+technology,Data Science
+weather,Temperature
+weather,Humidity
+weather,Rainfall
+weather,Wind
+weather,Clouds
+weather,Sunny
+weather,Rainy
+weather,Snowy
+weather,Stormy
+weather,Foggy
+medical,Doctor
+medical,Hospital
+medical,Medicine
+medical,Surgery
+medical,Vaccine
+medical,Antibiotics
+medical,X-ray
+medical,Blood Test
+medical,Ambulance
+medical,Nurse
+finance,Bank
+finance,Loan
+finance,Investment
+finance,Stock
+finance,Bond
+finance,Insurance
+finance,Credit Card
+finance,Debit Card
+finance,Savings
+finance,Budget
+transportation,Car
+transportation,Bus
+transportation,Train
+transportation,Plane
+transportation,Ship
+transportation,Bicycle
+transportation,Motorcycle
+transportation,Taxi
+transportation,Subway
+transportation,Helicopter
+professions,Teacher
+professions,Doctor
+professions,Engineer
+professions,Lawyer
+professions,Accountant
+professions,Architect
+professions,Chef
+professions,Police Officer
+professions,Firefighter
+professions,Journalist
+entertainment,Music
+entertainment,Movies
+entertainment,TV Shows
+entertainment,Books
+entertainment,Video Games
+entertainment,Theater
+entertainment,Concerts
+entertainment,Museums
+entertainment,Art Galleries
+entertainment,Amusement Parks
+universities,University of Dhaka
+universities,Bangladesh University of Engineering and Technology (BUET)
+universities,University of Chittagong
+universities,University of Rajshahi
+universities,Jahangirnagar University
+universities,Bangladesh Agricultural University
+universities,University of Khulna
+universities,Islamic University Bangladesh
+universities,Shahjalal University of Science and Technology (SUST)
+universities,Bangabandhu Sheikh Mujibur Rahman Agricultural University
+universities,Bangabandhu Sheikh Mujib Medical University (BSMMU)
+universities,University of Barishal
+universities,University of Sylhet
+universities,Comilla University
+universities,Noakhali University of Science and Technology
+universities,Jagannath University
+universities,Begum Rokeya University
+universities,National University of Bangladesh
+universities,Bangladesh Open University
+universities,Islamic Arabic University
+universities,Bangabandhu Sheikh Mujibur Rahman Digital University
+universities,Rajshahi University of Engineering and Technology (RUET)
+universities,Khulna University of Engineering and Technology (KUET)
+universities,Chittagong University of Engineering and Technology (CUET)
+universities,Dhaka University of Engineering and Technology (DUET)
+universities,Bangladesh University of Textiles (BUTEX)
+universities,Bangladesh University of Professionals (BUP)
+universities,Military Institute of Science and Technology (MIST)
+universities,Sheikh Hasina University
+universities,Patuakhali Science and Technology University
+universities,Hajee Mohammad Danesh Science and Technology University
+universities,Mawlana Bhashani Science and Technology University
+universities,Pabna University of Science and Technology
+universities,Jashore University of Science and Technology
+universities,Rangamati Science and Technology University
+universities,Chandpur Science and Technology University
+universities,Lakshmipur Science and Technology University
+universities,Bangamata Sheikh Fojilatunnesa Mujib Science and Technology University
+universities,University of Development Alternative (UODA)
+universities,Ahsanullah University of Science and Technology
+universities,BRAC University
+universities,North South University
+universities,Independent University Bangladesh (IUB)
+universities,American International University-Bangladesh (AIUB)
+universities,East West University
+universities,Daffodil International University
+universities,University of Asia Pacific
+universities,International University of Business Agriculture and Technology (IUBAT)
+universities,Stamford University Bangladesh
+universities,United International University
+universities,University of Liberal Arts Bangladesh (ULAB)
+universities,Green University of Bangladesh
+universities,Manarat International University
+universities,Presidency University
+universities,Southeast University
+universities,City University
+universities,Prime University
+universities,University of Information Technology and Sciences (UITS)
+universities,World University of Bangladesh
+universities,Asian University of Bangladesh
+universities,Atish Dipankar University of Science and Technology
+universities,BGMEA University of Fashion and Technology (BUFT)
+universities,University of South Asia
+universities,Shanto-Mariam University of Creative Technology
+universities,Leading University
+universities,Metropolitan University
+universities,Port City International University
+universities,Bangladesh Army University of Engineering and Technology
+universities,Bangladesh Army University of Science and Technology
+universities,Bangladesh Navy University
+universities,Bangladesh Air Force University
+universities,Bangladesh University of Business and Technology (BUBT)
+universities,Central Women's University
+universities,European University of Bangladesh
+universities,Exim Bank Agricultural University Bangladesh
+universities,Faridpur Engineering College
+universities,Gono Bishwabidyalay
+universities,International Standard University
+universities,Islamic University of Technology (IUT)
+universities,Khulna Agricultural University
+universities,Millennium University
+universities,National Institute of Textile Engineering and Research (NITER)
+universities,Noakhali Science and Technology University
+universities,North Bengal International University
+universities,North East University Bangladesh
+universities,Notre Dame University Bangladesh
+universities,Queens University
+universities,Raffles University
+universities,Royal University of Dhaka
+universities,Shah Makhdum College
+universities,Sonargaon University
+universities,University of Creative Technology Chittagong
+universities,University of Global Village
+universities,University of Skill Enrichment and Technology
+universities,Varendra University
+universities,Victoria University of Bangladesh
+universities,Z. H. Sikder University of Science and Technology
+personalities,Steve Jobs
+personalities,Bill Gates
+personalities,Elon Musk
+personalities,Mark Zuckerberg
+personalities,Jeff Bezos
+personalities,Larry Page
+personalities,Sergey Brin
+personalities,Tim Cook
+personalities,Satya Nadella
+personalities,Sundar Pichai
+personalities,Cristiano Ronaldo
+personalities,Lionel Messi
+personalities,Neymar Jr
+personalities,LeBron James
+personalities,Michael Jordan
+personalities,Kobe Bryant
+personalities,Serena Williams
+personalities,Roger Federer
+personalities,Novak Djokovic
+personalities,Usain Bolt
+personalities,Mike Tyson
+personalities,Muhammad Ali
+personalities,Tiger Woods
+personalities,David Beckham
+personalities,Rafael Nadal
+personalities,Tom Hanks
+personalities,Leonardo DiCaprio
+personalities,Brad Pitt
+personalities,Robert Downey Jr
+personalities,Dwayne Johnson
+personalities,Johnny Depp
+personalities,Will Smith
+personalities,Tom Cruise
+personalities,Morgan Freeman
+personalities,Samuel L. Jackson
+personalities,Scarslett Johansson
+personalities,Angelina Jolie
+personalities,Jennifer Lawrence
+personalities,Meryl Streep
+personalities,Natalie Portman
+personalities,Emma Watson
+personalities,Julia Roberts
+personalities,Sandra Bullock
+personalities,Charlize Theron
+personalities,Nicole Kidman
+personalities,Taylor Swift
+personalities,Beyoncé
+personalities,Michael Jackson
+personalities,Madonna
+personalities,Elvis Presley
+personalities,Ed Sheeran
+personalities,Drake
+personalities,Rihanna
+personalities,Adele
+personalities,Bruno Mars
+personalities,Albert Einstein
+personalities,Isaac Newton
+personalities,Stephen Hawking
+personalities,Marie Curie
+personalities,Charles Darwin
+personalities,Nikola Tesla
+personalities,Galileo Galilei
+personalities,Richard Feynman
+personalities,Alan Turing
+personalities,Neil deGrasse Tyson
+personalities,Winston Churchill
+personalities,Nelson Mandela
+personalities,Martin Luther King Jr
+personalities,Abraham Lincoln
+personalities,Mahatma Gandhi
+personalities,Vladimir Putin
+personalities,Barack Obama
+personalities,Donald Trump
+personalities,Joe Biden
+personalities,Angela Merkel
+personalities,Pablo Picasso
+personalities,Vincent van Gogh
+personalities,Leonardo da Vinci
+personalities,Michelangelo
+personalities,Frida Kahlo
+personalities,Salvador Dalí
+personalities,Claude Monet
+personalities,Rembrandt
+personalities,Andy Warhol
+personalities,Banksy
+personalities,William Shakespeare
+personalities,J.K. Rowling
+personalities,George R.R. Martin
+personalities,Stephen King
+personalities,J.R.R. Tolkien
+personalities,Ernest Hemingway
+personalities,Mark Twain
+personalities,Agatha Christie
+personalities,Charles Dickens
+personalities,Jane Austen
+personalities,Socrates
+personalities,Plato
+personalities,Aristotle
+personalities,Friedrich Nietzsche
+personalities,Karl Marx
+personalities,Immanuel Kant
+personalities,Confucius
+personalities,René Descarstes
+personalities,Buddha
+personalities,John Locke
+personalities,Richard Branson
+personalities,Warren Buffett
+personalities,Jack Ma
+personalities,Oprah Winfrey
+personalities,Coco Chanel
+personalities,Walt Disney
+personalities,Howard Hughes
+personalities,Henry Ford
+personalities,John D. Rockefeller
+personalities,J.P. Morgan
+personalities,Sheikh Mujibur Rahman
+personalities,Sheikh Hasina
+personalities,Khaleda Zia
+personalities,Ziaur Rahman
+personalities,Hussain Muhammad Ershad
+personalities,Abul Hasnat
+personalities,Tajuddin Ahmad
+personalities,Syed Nazrul Islam
+personalities,Muhammad Mansur Ali
+personalities,AHM Qamaruzzaman
+personalities,Kazi Nazrul Islam
+personalities,Rabindranath Tagore
+personalities,Jasimuddin
+personalities,Shamsur Rahman
+personalities,Al Mahmud
+personalities,Humayun Ahmed
+personalities,Muhammad Zafar Iqbal
+personalities,Taslima Nasrin
+personalities,Buddhadeb Basu
+personalities,Satyajit Ray
+personalities,Mashrafe Mortaza
+personalities,Shakib Al Hasan
+personalities,Tamim Iqbal
+personalities,Mushfiqur Rahim
+personalities,Mahmudullah Riyad
+personalities,Mustafizur Rahman
+personalities,Siddikur Rahman
+personalities,Asif Hossain Khan
+personalities,Rumana Ahmed
+personalities,Jahanara Alam
+personalities,Runa Laila
+personalities,Sabina Yasmin
+personalities,Abdul Jabbar
+personalities,Andrew Kishore
+personalities,James
+personalities,Ayub Bachchu
+personalities,Habib Wahid
+personalities,Momtaz Begum
+personalities,Shayan Chowdhury Arnob
+personalities,Tahsan Rahman Khan
+personalities,Muhammad Yunus
+personalities,Sir Fazle Hasan Abed
+personalities,Salman F Rahman
+personalities,A. K. Azad
+personalities,Syed Manzur Elahi
+personalities,M. A. Hashem
+personalities,Sami Ahmed
+personalities,Rokia Afzal Rahman
+personalities,Latifur Rahman
+personalities,Sohail R.K. Hussain
+personalities,Ferdous Ahmed
+personalities,Shakib Khan
+personalities,Salman Shah
+personalities,Riaz Ahmed
+personalities,Anowar Hossain
+personalities,Alamgir
+personalities,Ilias Kanchan
+personalities,Manna
+personalities,Omar Sani
+personalities,Chanchal Chowdhury
+personalities,Shabnam
+personalities,Bobita
+personalities,Suchorita
+personalities,Kabori Sarwar
+personalities,Shabnur
+personalities,Purnima
+personalities,Moushumi
+personalities,Joya Ahsan
+personalities,Bidya Sinha Mim
+personalities,Nusrat Imrose Tisha
+personalities,Muhammad Shahidullah
+personalities,A. K. M. Nurul Islam
+personalities,Anisuzzaman
+personalities,Serajul Islam Choudhury
+personalities,Sirajul Haque
+personalities,Abul Barkat
+personalities,Sultana Zaman
+personalities,Firdausi Qadri
+personalities,Abul Hussam
+personalities,M. A. Wazed Miah
+personalities,Zainul Abedin
+personalities,Quamrul Hassan
+personalities,S. M. Sultan
+personalities,Murtaja Baseer
+personalities,Mohammad Kibria
+personalities,Rashid Choudhury
+personalities,Shahabuddin Ahmed
+personalities,Monirul Islam
+personalities,Rafiqun Nabi
+personalities,Hashem Khan
+personalities,Steven Spielberg
+personalities,Christopher Nolan
+personalities,Quentin Tarantino
+personalities,James Cameron
+personalities,Martin Scorsese
+personalities,Alfred Hitchcock
+personalities,Stanley Kubrick
+personalities,Francis Ford Coppola
+personalities,Peter Jackson
+personalities,Ridley Scott
+personalities,Anna Wintour
+personalities,Karl Lagerfeld
+personalities,Giorgio Armani
+personalities,Ralph Lauren
+personalities,Donatella Versace
+personalities,Tom Ford
+personalities,Vera Wang
+personalities,Calvin Klein
+personalities,Miuccia Prada
+personalities,Marc Jacobs
+personalities,Gordon Ramsay
+personalities,Julia Child
+personalities,Anthony Bourdain
+personalities,Jamie Oliver
+personalities,Marco Pierre White
+personalities,Thomas Keller
+personalities,Heston Blumenthal
+personalities,Alain Ducasse
+personalities,Ferran Adrià
+personalities,Massimo Bottura
+personalities,Christopher Columbus
+personalities,Marco Polo
+personalities,James Cook
+personalities,Ferdinand Magellan
+personalities,Vasco da Gama
+personalities,Amelia Earhart
+personalities,Neil Armstrong
+personalities,Buzz Aldrin
+personalities,Yuri Gagarin
+personalities,Jacques Cousteau
+personalities,Charlie Chaplin
+personalities,Jim Carrey
+personalities,Robin Williams
+personalities,Eddie Murphy
+personalities,Chris Rock
+personalities,Dave Chappelle
+personalities,Jerry Seinfeld
+personalities,Kevin Hart
+personalities,Ellen DeGeneres
+personalities,Rowan Atkinson
+personalities,Greta Thunberg
+personalities,David Attenborough
+personalities,Jane Goodall
+personalities,Wangari Maathai
+personalities,Al Gore
+personalities,Sylvia Earle
+personalities,Rachel Carson
+personalities,Jacques-Yves Cousteau
+personalities,Steve Irwin
+personalities,John Muir
+personalities,Pythagoras
+personalities,Euclid
+personalities,Archimedes
+personalities,Leonhard Euler
+personalities,Carl Friedrich Gauss
+personalities,Blaise Pascal
+personalities,Isaac Newton
+personalities,Albert Einstein
+personalities,Alan Turing
+personalities,John Nash
+personalities,Richard Feynman
+personalities,Niels Bohr
+personalities,Werner Heisenberg
+personalities,Erwin Schrödinger
+personalities,Max Planck
+personalities,Paul Dirac
+personalities,Enrico Fermi
+personalities,Michael Faraday
+personalities,James Clerk Maxwell
+personalities,Marie Curie
+personalities,Hippocrates
+personalities,Galen
+personalities,Avicenna
+personalities,Florence Nightingale
+personalities,Joseph Lister
+personalities,Alexander Fleming
+personalities,Jonas Salk
+personalities,Christian Barnard
+personalities,Ben Carson
+personalities,Atul Gawande
+personalities,Adam Smith
+personalities,Karl Marx
+personalities,John Maynard Keynes
+personalities,Milton Friedman
+personalities,Paul Samuelson
+personalities,Joseph Stiglitz
+personalities,Amartya Sen
+personalities,Thomas Piketty
+personalities,Nouriel Roubini
+personalities,John Nash
+personalities,Matlub Ali
+personalities,Abdul Gaffar Choudhury
+personalities,Shahriar Kabir
+personalities,Manik Saha
+personalities,Tasneem Khalil
+personalities,Anisul Hoque
+personalities,Zafar Sobhan
+personalities,Mahfuz Anam
+personalities,Reazuddin Ahmed
+personalities,Abed Khan
+personalities,Abdul Hamid Khan Bhashani
+personalities,Abdul Gaffar Choudhury
+personalities,Jahanara Imam
+personalities,Sultana Kamal
+personalities,Khushi Kabir
+personalities,Rokia Afzal Rahman
+personalities,Sara Zaker
+personalities,Mohammad Hanif
+personalities,Shireen Huq
+personalities,Nigar Sultana
+personalities,Malala Yousafzai
+personalities,Nelson Mandela
+personalities,Martin Luther King Jr
+personalities,Emma Goldman
+personalities,Rosa Parks
+personalities,Gloria Steinem
+personalities,Bell Hooks
+personalities,Simone de Beauvoir
+personalities,Betty Friedan
+personalities,Aung San Suu Kyi
+personalities,Naomi Campbell
+personalities,Kate Moss
+personalities,Cindy Crawford
+personalities,Claudia Schiffer
+personalities,Heidi Klum
+personalities,Gisele Bündchen
+personalities,Tyra Banks
+personalities,Adriana Lima
+personalities,Miranda Kerr
+personalities,Cara Delevingne
+personalities,Bibi Russell
+personalities,Maheen Khan
+personalities,Emdad Haque
+personalities,Sara Begum Kabori
+personalities,Kaniz Almas
+personalities,Shahrukh Amin
+personalities,Rokeya Sultana
+personalities,Rashid Talukder
+personalities,Farzana Shakil
+personalities,Shamlu Dudeja
+personalities,MrBeast
+personalities,PewDiePie
+personalities,Kylie Jenner
+personalities,Kim Kardashian
+personalities,Charli D'Amelio
+personalities,Addison Rae
+personalities,James Charles
+personalities,Jeffree Star
+personalities,Tana Mongeau
+personalities,David Dobrik
+personalities,Neil Armstrong
+personalities,Buzz Aldrin
+personalities,Yuri Gagarin
+personalities,Valentina Tereshkova
+personalities,Sally Ride
+personalities,Kalpana Chawla
+personalities,Sunita Williams
+personalities,Chris Hadfield
+personalities,Scott Kelly
+personalities,Mark Kelly
