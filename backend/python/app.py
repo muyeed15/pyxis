@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from ddgs import DDGS
 import os
 import urllib.parse
+from flask_cors import CORS
 
 try:
     from autocomplete.autocomplete import Autocomplete
@@ -19,6 +20,7 @@ except Exception as e:
     AUTOCOMPLETE_AVAILABLE = False
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}})
 app.json.ensure_ascii = False
 
 
