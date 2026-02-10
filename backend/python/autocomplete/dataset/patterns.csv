@@ -1,0 +1,19 @@
+type,pattern
+questions,how to
+questions,what is
+questions,where is
+questions,when is
+questions,why is
+questions,who is
+actions,download
+actions,login
+actions,sign up
+actions,create
+actions,delete
+actions,update
+modifiers,free
+modifiers,online
+modifiers,best
+modifiers,top
+modifiers,new
+modifiers,latest
