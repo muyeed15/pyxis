@@ -49,7 +49,7 @@ export default function SearchHeader() {
 
       try {
    
-        const res = await fetch(`http://192.168.0.200:5000/autocomplete?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_URL_BACKEND_API}//autocomplete?q=${encodeURIComponent(query)}`);
         if (res.ok) {
           const data = await res.json();
           setSuggestions(data.suggestions || []);
