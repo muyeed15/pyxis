@@ -25,7 +25,7 @@ export default function SearchHeader() {
     setSuggestions([]);
   }, [searchParams]);
 
-  // --- MOBILE FIX: Listen for touch events ---
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -48,8 +48,8 @@ export default function SearchHeader() {
       }
 
       try {
-        // --- FINAL FIX: Using Port 5000 (Matches your working browser link) ---
-        const res = await fetch(`http://192.168.0.174:5000/autocomplete?q=${encodeURIComponent(query)}`);
+   
+        const res = await fetch(`http://192.168.0.200:5000/autocomplete?q=${encodeURIComponent(query)}`);
         if (res.ok) {
           const data = await res.json();
           setSuggestions(data.suggestions || []);
@@ -63,19 +63,18 @@ export default function SearchHeader() {
     return () => clearTimeout(timeoutId);
   }, [query]);
 
-  // --- RELOAD TRANSITION FIX ---
+
   const handleSearch = (e?: React.FormEvent, overrideQuery?: string) => {
     if (e) e.preventDefault();
     const finalQuery = overrideQuery || query;
     
     if (finalQuery.trim()) {
-      setIsLoading(true); // Always trigger loading
+      setIsLoading(true); 
       setShowSuggestions(false);
       setSuggestions([]);
       
       router.push(`/search/text?q=${encodeURIComponent(finalQuery)}`);
 
-      // If URL won't change, manually stop loading after delay
       if (finalQuery === initialQuery) {
         setTimeout(() => setIsLoading(false), 800);
       }
@@ -92,7 +91,7 @@ export default function SearchHeader() {
     }
   };
 
-  // --- GHOST TEXT FIX: Case Insensitive Matching ---
+
   const ghostText = showSuggestions && suggestions.length > 0 && query.trim() && suggestions[0].toLowerCase().startsWith(query.toLowerCase())
     ? query + suggestions[0].slice(query.length)
     : '';
