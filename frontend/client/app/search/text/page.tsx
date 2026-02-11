@@ -33,7 +33,7 @@ export default async function TextSearchPage(props: PageProps) {
 
   if (query && typeof query === 'string') {
       // Fetch main search results
-      const apiUrl = `${flaskEndpoint}/search?q=${encodeURIComponent(query)}&type=text&max_results=10`;
+      const apiUrl = `${flaskEndpoint}/search?q=${encodeURIComponent(query)}&type=text&max_results=30`;
       try {
         const res = await fetch(apiUrl, { cache: 'no-store' });
         if (!res.ok) throw new Error(`Status: ${res.status}`);
