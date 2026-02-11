@@ -18,42 +18,22 @@ function SearchHeaderContent() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
   
-  // -- State: Search Logic --
+
   const [query, setQuery] = useState(initialQuery);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [richSuggestions, setRichSuggestions] = useState<RichSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // -- State: UI & Loading --
-  // We use a single loading state for both search submission and tab switching
   const [isLoading, setIsLoading] = useState(false);
 
-  // -- Derived State: Tabs --
-  // Determine current active tab from URL path (you might need to adjust this logic 
-  // depending on how exactly your routing works, but this matches your previous setup)
-  // Since this component is likely used on pages like /search/text, /search/image, etc.
-  // We can infer the tab from the pathname or assume a prop is passed. 
-  // However, to keep it self-contained like your SearchTabs, we'll assume standard segments.
-  // For now, we will default to 'text' if not easily determined, or you can parse window.location.
-  // NOTE: In a real Next.js app, you might want to use `usePathname` to set the active tab.
-  // For this implementation, I will rely on the link clicks setting the style.
-  // To highlight the correct tab on load, we check the pathname:
-  
-  // (We need usePathname to know which tab is active)
-  // Let's add the import dynamically or assume standard routing:
-  // Using simple check for now based on your previous 'currentTab' prop logic.
-  // We'll trust the user clicks for interaction, but for persistent highlighting,
-  // we'd typically need usePathname. I will add a simple logic here.
-  
-  // -- Effect: Reset on Navigation --
   useEffect(() => {
     setIsLoading(false);
     setShowSuggestions(false);
     setSuggestions([]);
   }, [searchParams]);
 
-  // -- Effect: Click Outside --
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -68,7 +48,7 @@ function SearchHeaderContent() {
     };
   }, []);
 
-  // -- Effect: Fetch Suggestions --
+
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (query.trim().length < 2) {
@@ -77,12 +57,11 @@ function SearchHeaderContent() {
         return;
       }
 
-      // 1. Fetch Text Suggestions
       const textPromise = fetch(`${process.env.NEXT_PUBLIC_URL_BACKEND_API}//autocomplete?q=${encodeURIComponent(query)}`)
         .then(res => res.ok ? res.json() : { suggestions: [] })
         .catch(() => ({ suggestions: [] })); 
 
-      // 2. Fetch Rich Entity (Wikipedia)
+
       const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&generator=prefixsearch&gpssearch=${encodeURIComponent(query)}&gpslimit=3&prop=pageimages|description|info&pithumbsize=200&inprop=url&format=json&formatversion=2&origin=*`;
       const wikiPromise = fetch(wikiUrl)
         .then(res => res.json())
@@ -112,7 +91,6 @@ function SearchHeaderContent() {
     return () => clearTimeout(timeoutId);
   }, [query]);
 
-  // -- Handlers --
   const handleSearch = (e?: React.FormEvent, overrideQuery?: string) => {
     if (e) e.preventDefault();
     const finalQuery = overrideQuery || query;
@@ -125,7 +103,6 @@ function SearchHeaderContent() {
       
       router.push(`/search/text?q=${encodeURIComponent(finalQuery)}`);
 
-      // Fallback to stop loading if navigation doesn't happen quickly (optional safety)
       if (finalQuery === initialQuery) {
         setTimeout(() => setIsLoading(false), 800);
       }
@@ -146,9 +123,6 @@ function SearchHeaderContent() {
     ? query + suggestions[0].slice(query.length)
     : '';
 
-
-  // -- Tabs Configuration --
-  // We define this here to keep it all in one file
   const tabs = [
     { 
       name: 'All', 
@@ -177,8 +151,6 @@ function SearchHeaderContent() {
     },
   ];
 
-  // Helper to determine active tab based on window location or default
-  // Ideally, you would use usePathname() here, but we can also rely on visual click state if simple
   const getCurrentTab = () => {
     if (typeof window !== 'undefined') {
        const path = window.location.pathname;
@@ -195,7 +167,7 @@ function SearchHeaderContent() {
   return (
     <header className="sticky top-0 bg-white dark:bg-black z-50 pt-6 border-b border-gray-200 dark:border-gray-800 transition-colors">
       
-      {/* 1. Main Header Row: Logo & Search Input */}
+      {/* 1.Logo & Search Input */}
       <div className="max-w-[1200px] mx-auto flex items-center gap-4 px-4 md:px-8 pb-4">
         
         <Link href="/" className="shrink-0">
@@ -340,7 +312,7 @@ function SearchHeaderContent() {
         </div>
       </div>
 
-      {/* 3. Loading Bar (Attached to bottom of Header) */}
+      {/* Loading Bar */}
       {isLoading && (
         <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gray-100 dark:bg-gray-800 overflow-hidden z-50">
           <motion.div
@@ -359,7 +331,7 @@ function SearchHeaderContent() {
   );
 }
 
-// Wrap in Suspense for useSearchParams
+
 export default function SearchHeader() {
   return (
     <Suspense fallback={<div className="h-24 w-full bg-white dark:bg-black" />}>
