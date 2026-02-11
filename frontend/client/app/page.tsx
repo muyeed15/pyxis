@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link"; 
+import Link from "next/link";
 import HomeSearchBar from './components/homesearchbar';
 
 export default function Home() {
@@ -8,7 +8,7 @@ export default function Home() {
       {/* Header - Mobile responsive padding */}
       <header className="flex items-center justify-end p-4 sm:p-6">
         {/*  signin route */}
-        <Link 
+        <Link
           href="/signin"
           className="bg-black dark:bg-white text-white dark:text-black px-4 py-2 sm:px-6 sm:py-2.5 rounded-full text-sm font-medium hover:opacity-80 transition-opacity"
         >
