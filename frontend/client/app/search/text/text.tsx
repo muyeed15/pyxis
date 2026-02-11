@@ -58,7 +58,7 @@ export default function TextResultsList({ results }: TextResultsListProps) {
             animate="visible"
           >
             <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
+                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden border border-gray-100">
                     <img 
                         src={faviconUrl} 
                         alt="" 
@@ -69,19 +69,19 @@ export default function TextResultsList({ results }: TextResultsListProps) {
                     />
                 </div>
                 <div className="flex flex-col min-w-0">
-                    <span className="text-sm text-gray-900 font-medium dark:text-gray-200 truncate">{hostname}</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 truncate">{item.href}</span>
+                    <span className="text-sm text-gray-900 font-medium truncate">{hostname}</span>
+                    <span className="text-xs text-gray-500 truncate">{item.href}</span>
                 </div>
             </div>
             
-            <a href={item.href} target="_blank" rel="noopener noreferrer" className="block mb-1 group-hover:underline decoration-black dark:decoration-white decoration-1">
-             <h3 className="text-xl text-black font-medium dark:text-white leading-tight line-clamp-2">
+            <a href={item.href} target="_blank" rel="noopener noreferrer" className="block mb-1 group-hover:underline decoration-black decoration-1">
+             <h3 className="text-xl text-black font-medium leading-tight line-clamp-2">
                 {item.title}
              </h3>
             </a>
 
             <div 
-              className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed line-clamp-2" 
+              className="text-sm text-gray-600 leading-relaxed line-clamp-2" 
               dangerouslySetInnerHTML={{ __html: item.body }}
             />
           </motion.div>
