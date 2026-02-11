@@ -43,7 +43,7 @@ export default function PageWrapper({
   const currentVisibleResults = fullResults.slice(0, visibleCount);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0a0a0a]">
+    <div className="min-h-screen bg-white">
       <SearchHeader />
 
       <AnimatePresence mode="wait">
@@ -79,7 +79,7 @@ export default function PageWrapper({
                     <div className="mt-8 mb-12">
                       <button
                         onClick={handleLoadMore}
-                        className="w-full py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors"
+                        className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors"
                       >
                         Show More Results
                       </button>
