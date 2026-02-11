@@ -30,22 +30,22 @@ export default function InstantAnswer({ answer, imageUrl, query }: InstantAnswer
             }}
           />
           <div className="absolute bottom-0 right-0 bg-black/60 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-tl-lg opacity-0 group-hover:opacity-100 transition-opacity">
-            <a 
+            <a
               href={`https://wikipedia.org/wiki/${encodeURIComponent(query)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:underline flex items-center gap-1"
             >
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm0 22C6.5 22 2 17.5 2 12S6.5 2 12 2s10 4.5 10 10-4.5 10-10 10z"/>
-                <path d="M11 7h2v2h-2zm0 4h2v6h-2z"/>
+                <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm0 22C6.5 22 2 17.5 2 12S6.5 2 12 2s10 4.5 10 10-4.5 10-10 10z" />
+                <path d="M11 7h2v2h-2zm0 4h2v6h-2z" />
               </svg>
               Wikipedia
             </a>
           </div>
         </div>
       )}
-      
+
       <div className="p-5">
         <div className="flex items-start justify-between gap-2 mb-3">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -54,20 +54,20 @@ export default function InstantAnswer({ answer, imageUrl, query }: InstantAnswer
             </svg>
             Instant Answer
           </h3>
-          <a 
+          <a
             href="https://duckduckgo.com"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[10px] text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-1 transition-colors flex-shrink-0"
           >
             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm0 22C6.5 22 2 17.5 2 12S6.5 2 12 2s10 4.5 10 10-4.5 10-10 10z"/>
-              <path d="M11 7h2v2h-2zm0 4h2v6h-2z"/>
+              <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm0 22C6.5 22 2 17.5 2 12S6.5 2 12 2s10 4.5 10 10-4.5 10-10 10z" />
+              <path d="M11 7h2v2h-2zm0 4h2v6h-2z" />
             </svg>
             DuckDuckGo
           </a>
         </div>
-        
+
         <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
           {answer}
         </p>
