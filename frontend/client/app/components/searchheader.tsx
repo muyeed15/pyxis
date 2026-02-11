@@ -165,7 +165,7 @@ function SearchHeaderContent() {
 
 
   return (
-    <header className="sticky top-0 bg-white dark:bg-black z-50 pt-6 border-b border-gray-200 dark:border-gray-800 transition-colors">
+    <header className="sticky top-0 bg-white z-50 pt-6 border-b border-gray-200 transition-colors">
       
       {/* 1.Logo & Search Input */}
       <div className="max-w-[1200px] mx-auto flex items-center gap-4 px-4 md:px-8 pb-4">
@@ -182,7 +182,7 @@ function SearchHeaderContent() {
         </Link>
 
         <div ref={containerRef} className="flex-1 max-w-2xl relative">
-          <form onSubmit={handleSearch} className="relative w-full text-gray-500 focus-within:text-black dark:focus-within:text-white">
+          <form onSubmit={handleSearch} className="relative w-full text-gray-500 focus-within:text-black">
             
             {/* Ghost Text */}
             <input
@@ -203,7 +203,7 @@ function SearchHeaderContent() {
               }}
               onFocus={() => setShowSuggestions(true)}
               onKeyDown={handleKeyDown}
-              className="relative z-10 w-full h-11 pl-5 pr-12 rounded-full border border-gray-300 focus:outline-none focus:border-black transition-all text-base bg-transparent text-black placeholder-gray-500 dark:border-gray-700 dark:text-white dark:placeholder-gray-600"
+              className="relative z-10 w-full h-11 pl-5 pr-12 rounded-full border border-gray-300 focus:outline-none focus:border-black transition-all text-base bg-transparent text-black placeholder-gray-500"
               placeholder="Search..."
               autoComplete="off"
             />
@@ -226,7 +226,7 @@ function SearchHeaderContent() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.1 }}
-                className="absolute top-12 left-0 w-full bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 overflow-hidden z-30 py-2"
+                className="absolute top-12 left-0 w-full bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden z-30 py-2"
               >
                 {richSuggestions.map((item, index) => (
                   <div 
@@ -235,9 +235,9 @@ function SearchHeaderContent() {
                       setQuery(item.title);
                       handleSearch(undefined, item.title);
                     }}
-                    className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer flex items-center gap-4 transition-colors"
+                    className="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer flex items-center gap-4 transition-colors"
                   >
-                    <div className="shrink-0 w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                    <div className="shrink-0 w-12 h-12 rounded-lg bg-gray-200 overflow-hidden">
                       {item.thumbnail ? (
                         <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
                       ) : (
@@ -247,8 +247,8 @@ function SearchHeaderContent() {
                       )}
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-black dark:text-white font-semibold text-sm">{item.title}</span>
-                      <span className="text-gray-500 dark:text-gray-400 text-xs line-clamp-1">{item.description}</span>
+                      <span className="text-black font-semibold text-sm">{item.title}</span>
+                      <span className="text-gray-500 text-xs line-clamp-1">{item.description}</span>
                     </div>
                   </div>
                 ))}
@@ -259,12 +259,12 @@ function SearchHeaderContent() {
                       setQuery(suggestion);
                       handleSearch(undefined, suggestion);
                     }}
-                    className="px-5 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer flex items-center gap-3"
+                    className="px-5 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-3"
                   >
                     <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
-                    <span className="text-black dark:text-gray-200">
+                    <span className="text-black">
                       <span className="font-semibold">{suggestion.substring(0, query.length)}</span>
                       {suggestion.substring(query.length)}
                     </span>
@@ -292,14 +292,14 @@ function SearchHeaderContent() {
                 className={`
                   relative py-3 text-sm font-medium transition-colors duration-200 ease-out select-none whitespace-nowrap
                   ${isActive 
-                    ? 'text-black dark:text-white' 
-                    : 'text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'
+                    ? 'text-black' 
+                    : 'text-gray-500 hover:text-black'
                   }
                 `}
               >
                 <span className={`
                   flex items-center gap-2 pb-[1px] border-b-2
-                  ${isActive ? 'border-black dark:border-white' : 'border-transparent'}
+                  ${isActive ? 'border-black' : 'border-transparent'}
                 `}>
                   <span className={isActive ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}>
                     {tab.icon}
@@ -314,9 +314,9 @@ function SearchHeaderContent() {
 
       {/* Loading Bar */}
       {isLoading && (
-        <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gray-100 dark:bg-gray-800 overflow-hidden z-50">
+        <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gray-100 overflow-hidden z-50">
           <motion.div
-            className="h-full bg-black dark:bg-white"
+            className="h-full bg-black"
             initial={{ x: '-100%', width: '50%' }}
             animate={{ x: '200%', width: '50%' }}
             transition={{ 
@@ -334,7 +334,7 @@ function SearchHeaderContent() {
 
 export default function SearchHeader() {
   return (
-    <Suspense fallback={<div className="h-24 w-full bg-white dark:bg-black" />}>
+    <Suspense fallback={<div className="h-24 w-full bg-white" />}>
       <SearchHeaderContent />
     </Suspense>
   );
