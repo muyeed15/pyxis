@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { APIResponse } from './types';
 import TextResultsList from './text';
-import SearchTabs from '../../components/searchtabs';
 import SearchHeader from '../../components/searchheader';
 import Pagination from '../../components/pagination';
 import InstantAnswer from '../../components/instantanswer';
@@ -34,13 +33,8 @@ export default function PageWrapper({
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0a0a0a]">
+      {/* SearchHeader now includes the Tabs and the Sticky behavior */}
       <SearchHeader />
-
-      <div className="border-b border-gray-200 dark:border-gray-800">
-        <div className="max-w-[1200px] mx-auto px-4 md:px-8 pt-2">
-          <SearchTabs customPadding="px-0" />
-        </div>
-      </div>
 
       <AnimatePresence mode="wait">
         {isLoading ? (
@@ -50,7 +44,7 @@ export default function PageWrapper({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="max-w-[1200px] mx-auto px-4 md:px-8 py-6 flex gap-10"
+            className="max-w-[1200px] mx-auto px-4 md:px-8 py-6 flex flex-col lg:flex-row gap-10"
           >
             <div className="flex-1 max-w-[650px] space-y-6">
               {[...Array(5)].map((_, i) => (
@@ -79,7 +73,7 @@ export default function PageWrapper({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
-            className="max-w-[1200px] mx-auto px-4 md:px-8 py-6 flex gap-10"
+            className="max-w-[1200px] mx-auto px-4 md:px-8 py-6 flex flex-col lg:flex-row gap-10"
           >
             <div className="flex-1 max-w-[650px]">
               {errorMessage ? (
@@ -89,7 +83,7 @@ export default function PageWrapper({
                   <TextResultsList results={data?.results || []} />
 
                   {data?.results && data.results.length > 0 && (
-                    <div className="mt-4 border-t border-gray-100 dark:border-gray-800">
+                    <div className="mt-4 border-t border-gray-100 dark:border-gray-800 pt-4">
                       <Pagination />
                     </div>
                   )}
