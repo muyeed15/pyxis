@@ -22,7 +22,6 @@ export default function HomeSearchBar() {
   
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Handle click outside to close suggestions
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -44,29 +43,23 @@ export default function HomeSearchBar() {
     const fetchSuggestions = async () => {
       if (query.trim().length < 2) {
         setSuggestions([]);
-        setRichSuggestions([]); // Clear rich suggestions too
+        setRichSuggestions([]); 
         return;
       }
 
-      // 1. Text Suggestions (Your existing backend)
-      // Note: I kept your localhost URL, but added the error handling from searchheader
       const textPromise = fetch(`http://127.0.0.1:5000/autocomplete?q=${encodeURIComponent(query)}&max_results=8`)
         .then(res => res.ok ? res.json() : { suggestions: [] })
         .catch(() => ({ suggestions: [] }));
 
-      // 2. Rich Suggestions (Wikipedia API from searchheader)
       const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&generator=prefixsearch&gpssearch=${encodeURIComponent(query)}&gpslimit=3&prop=pageimages|description|info&pithumbsize=200&inprop=url&format=json&formatversion=2&origin=*`;
       const wikiPromise = fetch(wikiUrl)
         .then(res => res.json())
         .catch(() => ({}));
 
-      // Wait for both
       const [textData, entityData] = await Promise.all([textPromise, wikiPromise]);
 
-      // Set Text Data
       setSuggestions(textData.suggestions || []);
 
-      // Set Rich Data
       const pages = entityData.query?.pages || [];
       if (Array.isArray(pages) && pages.length > 0) {
         const validPages = pages
@@ -83,11 +76,10 @@ export default function HomeSearchBar() {
       }
     };
 
-    const timeoutId = setTimeout(fetchSuggestions, 300); // Increased slightly to 300ms to match searchheader
+    const timeoutId = setTimeout(fetchSuggestions, 300); 
     return () => clearTimeout(timeoutId);
   }, [query]);
 
-  // Handle search submission
   const handleSearch = (e?: React.FormEvent, overrideQuery?: string) => {
     if (e) e.preventDefault();
     const finalQuery = overrideQuery || query;
@@ -98,12 +90,10 @@ export default function HomeSearchBar() {
       setSuggestions([]);
       setRichSuggestions([])
       
-      // Navigate to text search page with the query
       router.push(`/search/text?q=${encodeURIComponent(finalQuery)}`);
     }
   };
 
-  // Handle Enter key and Tab for autocomplete
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleSearch();
@@ -118,14 +108,12 @@ export default function HomeSearchBar() {
     }
   };
 
-  // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
     setHasTyped(true);
     setShowSuggestions(true);
   };
 
-  // Ghost text for autocomplete preview
   const ghostText = showSuggestions && suggestions.length > 0 && query.trim() && suggestions[0].toLowerCase().startsWith(query.toLowerCase())
     ? suggestions[0]
     : '';
@@ -247,7 +235,7 @@ export default function HomeSearchBar() {
                     setQuery(suggestion);
                     handleSearch(undefined, suggestion);
                   }}
-                  onMouseDown={(e) => e.preventDefault()} // Prevent blur before click
+                  onMouseDown={(e) => e.preventDefault()} 
                   className="px-5 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer flex items-center gap-3"
                 >
                   <svg 
