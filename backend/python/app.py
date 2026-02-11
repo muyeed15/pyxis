@@ -20,6 +20,18 @@ except Exception as e:
     print(f"Autocomplete failed: {e}")
     AUTOCOMPLETE_AVAILABLE = False
 
+# Import Instant Answer functionality
+try:
+    import sys
+
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+    from instantsearch.instantsearch import InstantAnswerClient
+
+    INSTANT_ANSWER_AVAILABLE = True
+except Exception as e:
+    print(f"Instant answer client import failed: {e}")
+    INSTANT_ANSWER_AVAILABLE = False
+
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 app.json.ensure_ascii = False
@@ -166,6 +178,44 @@ def search():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/instant", methods=["GET"])
+def instant_answer():
+    """
+    Get instant answer and image for a query.
+
+    Required:
+    - q: search query
+
+    Returns instant answer from DuckDuckGo and relevant image from Wikipedia.
+
+    Example: /instant?q=what%20is%20python
+    """
+    if not INSTANT_ANSWER_AVAILABLE:
+        return jsonify({"error": "Instant answer system is not available"}), 503
+
+    raw_query = request.args.get("q", "").strip()
+
+    if not raw_query:
+        return jsonify({"error": "Missing required parameter: q"}), 400
+
+    try:
+        query = urllib.parse.unquote(raw_query)
+        client = InstantAnswerClient()
+        answer, image_url = client.fetch_answer_and_image(query)
+
+        return jsonify(
+            {
+                "query": query,
+                "answer": answer,
+                "image_url": image_url,
+                "timestamp": "2024-01-01 00:00:00",  # You can add datetime.now() if needed
+            }
+        )
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/help", methods=["GET"])
 def help():
     """
@@ -205,6 +255,13 @@ def help():
             "basic": f"{base_url}/search?q=science%20fiction&type=books",
             "author_search": f"{base_url}/search?q=stephen%20king&type=books",
         },
+        "instant_answer": {
+            "description": "Get instant answer with image",
+            "basic": f"{base_url}/instant?q=what%20is%20python",
+            "definition": f"{base_url}/instant?q=define%20algorithm",
+            "facts": f"{base_url}/instant?q=capital%20of%20france",
+            "technical": f"{base_url}/instant?q=neural%20network",
+        },
         "autocomplete": {
             "description": "Get search suggestions",
             "basic": f"{base_url}/autocomplete?q=how%20to",
@@ -223,10 +280,12 @@ def help():
     tutorials = {
         "getting_started": [
             "1. Start with autocomplete to get query ideas: GET /autocomplete?q=your_topic",
-            "2. Use the suggestions or your own query with search: GET /search?q=query&type=text",
-            "3. Adjust parameters like max_results, region, safesearch as needed",
+            "2. Get quick answers with instant search: GET /instant?q=your_question",
+            "3. For detailed results, use the search endpoint: GET /search?q=query&type=text",
+            "4. Adjust parameters like max_results, region, safesearch as needed",
         ],
         "common_use_cases": [
+            "Quick facts: Use instant search for definitions and facts",
             "Research: Use text search with multiple pages and backend options",
             "Media collection: Use images/videos with size/duration filters",
             "News monitoring: Use news search with timelimit parameter",
@@ -238,6 +297,7 @@ def help():
             "Use exact phrases by wrapping in quotes: %22phrase%22",
             "Specify file types: filetype:pdf, filetype:docx",
             "Exclude terms with - (minus sign)",
+            "Instant search works best for factual queries and definitions",
         ],
     }
 
@@ -250,6 +310,7 @@ def help():
                 "/help": "This documentation",
                 "/search": "Search endpoint",
                 "/autocomplete": "Autocomplete suggestions",
+                "/instant": "Instant answer with image",
             },
             "quick_start": tutorials["getting_started"],
             "examples": examples,
@@ -274,12 +335,18 @@ def help():
                     "resolution": "high|standard",
                     "duration": "short|medium|long",
                 },
+                "instant_only": {
+                    "q": "Question or query (required)",
+                },
             },
             "notes": [
                 "Autocomplete status: "
                 + ("available" if AUTOCOMPLETE_AVAILABLE else "unavailable"),
+                "Instant answer status: "
+                + ("available" if INSTANT_ANSWER_AVAILABLE else "unavailable"),
                 "All endpoints return JSON",
                 "Use proper URL encoding for special characters",
+                "Instant search combines DuckDuckGo answers with Wikipedia images",
                 "For support, check API response structure",
             ],
         }
@@ -294,19 +361,28 @@ def index():
     return jsonify(
         {
             "api": "Pyxis Search API",
-            "description": "Multi-type search with autocomplete suggestions",
+            "description": "Multi-type search with autocomplete and instant answers",
             "endpoints": {
                 "/": "This info",
                 "/help": "Full documentation with examples",
                 "/search": "Search endpoint",
                 "/autocomplete": "Query suggestions",
+                "/instant": "Instant answers with images",
             },
             "quick_examples": {
                 "search_text": "/search?q=python&type=text",
                 "search_images": "/search?q=cats&type=images",
                 "autocomplete": "/autocomplete?q=how%20to",
+                "instant_answer": "/instant?q=elon%20musk",
             },
             "documentation": "Visit /help for complete API reference, tutorials, and examples",
+            "features": [
+                "Multi-type search (text, images, videos, news, books)",
+                "Autocomplete suggestions",
+                "Instant answers with images",
+                "Advanced filtering options",
+                "Cross-origin support",
+            ],
         }
     )
 

@@ -18,9 +18,9 @@ const itemVariants: Variants = {
     y: 0,
     transition: { 
       type: 'spring', 
-      stiffness: 50, 
-      damping: 20,
-      delay: index < 10 ? index * 0.05 : 0 
+      stiffness: 100, 
+      damping: 25,
+      delay: index < 10 ? index * 0.04 : 0 
     }
   })
 };
@@ -53,16 +53,9 @@ export default function TextResultsList({ results }: TextResultsListProps) {
             key={uniqueKey} 
             className="group"
             variants={itemVariants}
-            
             custom={index}
-            
             initial="hidden"
-            whileInView="visible"
-            viewport={{ 
-              once: true, 
-              amount: 0.2,
-              margin: "0px 0px -50px 0px"
-            }}
+            animate="visible"
           >
             <div className="flex items-center gap-3 mb-2">
                 <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
@@ -70,16 +63,19 @@ export default function TextResultsList({ results }: TextResultsListProps) {
                         src={faviconUrl} 
                         alt="" 
                         className="w-[18px] h-[18px] object-contain opacity-80"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
                     />
                 </div>
-                <div className="flex flex-col">
+                <div className="flex flex-col min-w-0">
                     <span className="text-sm text-gray-900 font-medium dark:text-gray-200 truncate">{hostname}</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[300px]">{item.href}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 truncate">{item.href}</span>
                 </div>
             </div>
             
             <a href={item.href} target="_blank" rel="noopener noreferrer" className="block mb-1 group-hover:underline decoration-black dark:decoration-white decoration-1">
-             <h3 className="text-xl text-black font-medium dark:text-white leading-tight">
+             <h3 className="text-xl text-black font-medium dark:text-white leading-tight line-clamp-2">
                 {item.title}
              </h3>
             </a>
