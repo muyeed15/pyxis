@@ -25,7 +25,7 @@ export default function RelatedSearches({ keywords, currentQuery }: RelatedSearc
         </svg>
         Related Searches
       </h3>
-      
+
       <div className="space-y-2">
         {keywords.slice(0, 8).map((keyword, index) => (
           <Link
