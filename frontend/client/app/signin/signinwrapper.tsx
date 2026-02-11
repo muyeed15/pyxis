@@ -5,9 +5,9 @@ import { motion, Variants } from 'framer-motion';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
-  visible: { 
+  visible: {
     opacity: 1,
-    transition: { 
+    transition: {
       staggerChildren: 0.1,
       delayChildren: 0.2
     }
@@ -16,8 +16,8 @@ const containerVariants: Variants = {
 
 const itemVariants: Variants = {
   hidden: { y: 20, opacity: 0 },
-  visible: { 
-    y: 0, 
+  visible: {
+    y: 0,
     opacity: 1,
     transition: { type: "spring", stiffness: 100 }
   }
@@ -26,7 +26,7 @@ const itemVariants: Variants = {
 export default function SignInWrapper() {
   return (
     <main className="min-h-screen w-full flex items-center justify-center p-4 bg-white overflow-hidden relative">
-      <motion.div 
+      <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -37,7 +37,7 @@ export default function SignInWrapper() {
             Sign In
           </motion.h1>
           <motion.form variants={containerVariants} className="space-y-4">
-             <motion.div variants={itemVariants}>
+            <motion.div variants={itemVariants}>
               <input
                 type="email"
                 placeholder="Email Address"
@@ -57,7 +57,7 @@ export default function SignInWrapper() {
 
         <div className="flex-1 flex flex-col justify-center space-y-6 md:border-l md:border-gray-100 md:pl-12">
           <motion.div variants={containerVariants} className="space-y-4 flex flex-col">
-            <motion.button 
+            <motion.button
               variants={itemVariants}
               className="w-full px-6 py-4 rounded-full bg-black text-white font-medium text-lg hover:opacity-80 transition-opacity"
             >
@@ -68,8 +68,8 @@ export default function SignInWrapper() {
               <span className="flex-shrink mx-4 text-gray-400 text-sm">Or</span>
               <div className="flex-grow border-t border-gray-200"></div>
             </div>
-            
-            <motion.button 
+
+            <motion.button
               variants={itemVariants}
               className="w-full px-6 py-3.5 rounded-full bg-transparent border border-gray-200 text-black font-medium flex items-center justify-center gap-3 hover:bg-gray-50 transition-colors"
             >
