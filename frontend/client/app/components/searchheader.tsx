@@ -17,7 +17,6 @@ function SearchHeaderContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
-  
 
   const [query, setQuery] = useState(initialQuery);
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -33,7 +32,6 @@ function SearchHeaderContent() {
     setSuggestions([]);
   }, [searchParams]);
 
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -48,7 +46,6 @@ function SearchHeaderContent() {
     };
   }, []);
 
-
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (query.trim().length < 2) {
@@ -60,7 +57,6 @@ function SearchHeaderContent() {
       const textPromise = fetch(`${process.env.NEXT_PUBLIC_URL_BACKEND_API}//autocomplete?q=${encodeURIComponent(query)}`)
         .then(res => res.ok ? res.json() : { suggestions: [] })
         .catch(() => ({ suggestions: [] })); 
-
 
       const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&generator=prefixsearch&gpssearch=${encodeURIComponent(query)}&gpslimit=3&prop=pageimages|description|info&pithumbsize=200&inprop=url&format=json&formatversion=2&origin=*`;
       const wikiPromise = fetch(wikiUrl)
@@ -163,11 +159,10 @@ function SearchHeaderContent() {
   };
   const activeTab = getCurrentTab();
 
-
   return (
-    <header className="sticky top-0 bg-white z-50 pt-6 border-b border-gray-200 transition-colors">
+    <header className="sticky top-0 bg-white z-50 pt-6 border-b border-gray-200 transition-colors relative">
       
-      {/* 1.Logo & Search Input */}
+      {/* 1.Logo & Search Input Container */}
       <div className="max-w-[1200px] mx-auto flex items-center gap-4 px-4 md:px-8 pb-4">
         
         <Link href="/" className="shrink-0">
@@ -276,6 +271,14 @@ function SearchHeaderContent() {
         </div>
       </div>
 
+      {/* Sign In Button */}
+      <Link 
+        href="/signin"
+        className="absolute right-4 md:right-8 top-6 px-5 py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-full text-sm font-medium hover:opacity-90 transition-opacity z-20"
+      >
+        Sign In
+      </Link>
+
       {/* 2. Tabs Row */}
       <div className="w-full max-w-[1200px] mx-auto px-4 md:px-8">
         <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
@@ -330,7 +333,6 @@ function SearchHeaderContent() {
     </header>
   );
 }
-
 
 export default function SearchHeader() {
   return (
