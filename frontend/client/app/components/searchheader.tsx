@@ -6,7 +6,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
-
 interface RichSuggestion {
   title: string;
   description: string;
@@ -21,20 +20,21 @@ export default function SearchHeader() {
   
   const [query, setQuery] = useState(initialQuery);
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [richSuggestion, setRichSuggestion] = useState<RichSuggestion | null>(null);
+  const [richSuggestions, setRichSuggestions] = useState<RichSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   
   const [showSuggestions, setShowSuggestions] = useState(false);
   
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Reset state when URL parameters change
   useEffect(() => {
     setIsLoading(false);
     setShowSuggestions(false);
     setSuggestions([]);
   }, [searchParams]);
 
-
+  // Handle clicking outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -49,52 +49,52 @@ export default function SearchHeader() {
     };
   }, []);
 
+  // Fetch Logic
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (query.trim().length < 2) {
         setSuggestions([]);
-        setRichSuggestion(null);
+        setRichSuggestions([]);
         return;
       }
 
-      
+      // 1. Fetch Text Suggestions
       const textPromise = fetch(`${process.env.NEXT_PUBLIC_URL_BACKEND_API}//autocomplete?q=${encodeURIComponent(query)}`)
         .then(res => res.ok ? res.json() : { suggestions: [] })
         .catch(() => ({ suggestions: [] })); 
 
-      const wikiPromise = fetch(`https://en.wikipedia.org/w/api.php?action=query&generator=prefixsearch&gpssearch=${encodeURIComponent(query)}&gpslimit=1&prop=pageimages|description|info&pithumbsize=200&inprop=url&format=json&origin=*`)
+      // 2. Fetch Rich Entity (Wikipedia)
+      const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&generator=prefixsearch&gpssearch=${encodeURIComponent(query)}&gpslimit=3&prop=pageimages|description|info&pithumbsize=200&inprop=url&format=json&formatversion=2&origin=*`;
+      const wikiPromise = fetch(wikiUrl)
         .then(res => res.json())
         .catch(() => ({})); 
 
-      
+      // Wait for both in parallel
       const [textData, entityData] = await Promise.all([textPromise, wikiPromise]);
 
-     
+      // Set Text Data
       setSuggestions(textData.suggestions || []);
 
-      const pages = entityData.query?.pages;
-      if (pages) {
-        const pageId = Object.keys(pages)[0];
-        const page = pages[pageId];
-        if (page && (page.thumbnail || page.description)) {
-          setRichSuggestion({
+      // Set Rich Data
+      const pages = entityData.query?.pages || [];
+      if (Array.isArray(pages) && pages.length > 0) {
+        const validPages = pages
+          .filter((page: any) => page.thumbnail || page.description) // Filter out results with no info
+          .map((page: any) => ({
             title: page.title,
-            description: page.description,
+            description: page.description || "Encyclopedia entry",
             thumbnail: page.thumbnail?.source,
             url: page.fullurl
-          });
-        } else {
-          setRichSuggestion(null);
-        }
+          }));
+        setRichSuggestions(validPages);
       } else {
-        setRichSuggestion(null);
+        setRichSuggestions([]);
       }
     };
 
     const timeoutId = setTimeout(fetchSuggestions, 300);
     return () => clearTimeout(timeoutId);
   }, [query]);
-
 
   const handleSearch = (e?: React.FormEvent, overrideQuery?: string) => {
     if (e) e.preventDefault();
@@ -104,6 +104,7 @@ export default function SearchHeader() {
       setIsLoading(true); 
       setShowSuggestions(false);
       setSuggestions([]);
+      setRichSuggestions([]); // Clear rich suggestions too
       
       router.push(`/search/text?q=${encodeURIComponent(finalQuery)}`);
 
@@ -122,7 +123,6 @@ export default function SearchHeader() {
       }
     }
   };
-
 
   const ghostText = showSuggestions && suggestions.length > 0 && query.trim() && suggestions[0].toLowerCase().startsWith(query.toLowerCase())
     ? query + suggestions[0].slice(query.length)
@@ -181,7 +181,8 @@ export default function SearchHeader() {
           </form>
 
           <AnimatePresence>
-            {showSuggestions && suggestions.length > 0 && (
+            {/* FIXED: Check for both array lengths */}
+            {showSuggestions && (suggestions.length > 0 || richSuggestions.length > 0) && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -189,41 +190,45 @@ export default function SearchHeader() {
                 transition={{ duration: 0.1 }}
                 className="absolute top-12 left-0 w-full bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 overflow-hidden z-30 py-2"
               >
-                {richSuggestion && (
-              <div 
-                onClick={() => {
-                  setQuery(richSuggestion.title);
-                  handleSearch(undefined, richSuggestion.title);
-                }}
-                className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer flex items-center gap-4 transition-colors"
-              >
-                {/* Image */}
-                <div className="shrink-0 w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 overflow-hidden">
-                  {richSuggestion.thumbnail ? (
-                    <img 
-                      src={richSuggestion.thumbnail} 
-                      alt={richSuggestion.title} 
-                      className="w-full h-full object-cover" 
-                    />
-                  ) : (
-                    // Fallback icon if no image
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                    </div>
-                  )}
-                </div>
                 
-                {/* Text Info */}
-                <div className="flex flex-col">
-                  <span className="text-black dark:text-white font-semibold text-sm">
-                    {richSuggestion.title}
-                  </span>
-                  <span className="text-gray-500 dark:text-gray-400 text-xs line-clamp-1">
-                    {richSuggestion.description}
-                  </span>
-                </div>
-              </div>
-            )}
+                {/* Loop 1: Rich Suggestions - Renamed variable to 'item' to avoid conflict */}
+                {richSuggestions.map((item, index) => (
+                  <div 
+                    key={`rich-${index}`}
+                    onClick={() => {
+                      setQuery(item.title);
+                      handleSearch(undefined, item.title);
+                    }}
+                    className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer flex items-center gap-4 transition-colors"
+                  >
+                    {/* Image */}
+                    <div className="shrink-0 w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                      {item.thumbnail ? (
+                        <img 
+                          src={item.thumbnail} 
+                          alt={item.title} 
+                          className="w-full h-full object-cover" 
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Text Info */}
+                    <div className="flex flex-col">
+                      <span className="text-black dark:text-white font-semibold text-sm">
+                        {item.title}
+                      </span>
+                      <span className="text-gray-500 dark:text-gray-400 text-xs line-clamp-1">
+                        {item.description}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Loop 2: Regular Suggestions - Variable is 'suggestion' (string) */}
                 {suggestions.map((suggestion, index) => (
                   <div
                     key={index}
