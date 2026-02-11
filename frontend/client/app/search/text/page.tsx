@@ -32,7 +32,7 @@ export default async function TextSearchPage(props: PageProps) {
   let errorMessage = null;
 
   if (query && typeof query === 'string') {
-      // Fetch main search results
+      
       const apiUrl = `${flaskEndpoint}/search?q=${encodeURIComponent(query)}&type=text&max_results=30`;
       try {
         const res = await fetch(apiUrl, { cache: 'no-store' });
@@ -42,7 +42,7 @@ export default async function TextSearchPage(props: PageProps) {
         errorMessage = error.message;
       }
 
-      // Fetch instant answer (always try, but only show if available)
+      
       try {
         const instantRes = await fetch(
           `${flaskEndpoint}/instant?q=${encodeURIComponent(query)}`,
@@ -58,11 +58,11 @@ export default async function TextSearchPage(props: PageProps) {
           }
         }
       } catch (error) {
-        // Silently fail - instant answer is optional
+        
         console.log('Instant answer not available');
       }
 
-      // Fetch autocomplete keywords (always show)
+      
       try {
         const autocompleteRes = await fetch(
           `${flaskEndpoint}/autocomplete?q=${encodeURIComponent(query)}&max_results=8`,
@@ -73,7 +73,7 @@ export default async function TextSearchPage(props: PageProps) {
           relatedKeywords = autocompleteData.suggestions || [];
         }
       } catch (error) {
-        // Silently fail - will show empty state
+        
         console.log('Autocomplete not available');
       }
   }
