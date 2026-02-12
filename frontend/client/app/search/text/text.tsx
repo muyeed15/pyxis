@@ -1,4 +1,4 @@
-'use client'; 
+'use client';
 
 import { motion, Variants } from 'framer-motion';
 import type { TextSearchResultItem } from './types';
@@ -8,19 +8,19 @@ interface TextResultsListProps {
 }
 
 const itemVariants: Variants = {
-  hidden: { 
-    opacity: 0, 
+  hidden: {
+    opacity: 0,
     y: 20,
     transition: { duration: 0.2 }
   },
   visible: (index: number) => ({
-    opacity: 1, 
+    opacity: 1,
     y: 0,
-    transition: { 
-      type: 'spring', 
-      stiffness: 100, 
+    transition: {
+      type: 'spring',
+      stiffness: 100,
       damping: 25,
-      delay: index < 10 ? index * 0.04 : 0 
+      delay: index < 10 ? index * 0.04 : 0
     }
   })
 };
@@ -38,19 +38,19 @@ export default function TextResultsList({ results }: TextResultsListProps) {
     <div className="space-y-8 max-w-[650px]">
       {results.map((item, index) => {
         const uniqueKey = `${item.href}-${index}`;
-        
+
         let hostname = "";
         try {
-            hostname = new URL(item.href).hostname;
-        } catch(e) { 
-            hostname = "web"; 
+          hostname = new URL(item.href).hostname;
+        } catch (e) {
+          hostname = "web";
         }
 
         const faviconUrl = `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
 
         return (
-          <motion.div 
-            key={uniqueKey} 
+          <motion.div
+            key={uniqueKey}
             className="group"
             variants={itemVariants}
             custom={index}
@@ -58,30 +58,30 @@ export default function TextResultsList({ results }: TextResultsListProps) {
             animate="visible"
           >
             <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden border border-gray-100">
-                    <img 
-                        src={faviconUrl} 
-                        alt="" 
-                        className="w-[18px] h-[18px] object-contain opacity-80"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                    />
-                </div>
-                <div className="flex flex-col min-w-0">
-                    <span className="text-sm text-gray-900 font-medium truncate">{hostname}</span>
-                    <span className="text-xs text-gray-500 truncate">{item.href}</span>
-                </div>
+              <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden border border-gray-100">
+                <img
+                  src={faviconUrl}
+                  alt=""
+                  className="w-[18px] h-[18px] object-contain opacity-80"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm text-gray-900 font-medium truncate">{hostname}</span>
+                <span className="text-xs text-gray-500 truncate">{item.href}</span>
+              </div>
             </div>
-            
+
             <a href={item.href} target="_blank" rel="noopener noreferrer" className="block mb-1 group-hover:underline decoration-black decoration-1">
-             <h3 className="text-xl text-black font-medium leading-tight line-clamp-2">
+              <h3 className="text-xl text-black font-medium leading-tight line-clamp-2">
                 {item.title}
-             </h3>
+              </h3>
             </a>
 
-            <div 
-              className="text-sm text-gray-600 leading-relaxed line-clamp-2" 
+            <div
+              className="text-sm text-gray-600 leading-relaxed line-clamp-2"
               dangerouslySetInnerHTML={{ __html: item.body }}
             />
           </motion.div>

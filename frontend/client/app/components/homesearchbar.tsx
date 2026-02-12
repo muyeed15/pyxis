@@ -19,7 +19,7 @@ export default function HomeSearchBar() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [hasTyped, setHasTyped] = useState(false);
-  
+
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -28,26 +28,26 @@ export default function HomeSearchBar() {
         setShowSuggestions(false);
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('touchstart', handleClickOutside);
-    
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
     };
   }, []);
 
-  
+
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (query.trim().length < 2) {
         setSuggestions([]);
-        setRichSuggestions([]); 
+        setRichSuggestions([]);
         return;
       }
 
-      const textPromise = fetch(`http://127.0.0.1:5000/autocomplete?q=${encodeURIComponent(query)}&max_results=8`)
+      const textPromise = fetch(`${process.env.NEXT_PUBLIC_URL_BACKEND_API}/autocomplete?q=${encodeURIComponent(query)}&max_results=8`)
         .then(res => res.ok ? res.json() : { suggestions: [] })
         .catch(() => ({ suggestions: [] }));
 
@@ -76,20 +76,20 @@ export default function HomeSearchBar() {
       }
     };
 
-    const timeoutId = setTimeout(fetchSuggestions, 300); 
+    const timeoutId = setTimeout(fetchSuggestions, 300);
     return () => clearTimeout(timeoutId);
   }, [query]);
 
   const handleSearch = (e?: React.FormEvent, overrideQuery?: string) => {
     if (e) e.preventDefault();
     const finalQuery = overrideQuery || query;
-    
+
     if (finalQuery.trim()) {
       setIsLoading(true);
       setShowSuggestions(false);
       setSuggestions([]);
       setRichSuggestions([])
-      
+
       router.push(`/search/text?q=${encodeURIComponent(finalQuery)}`);
     }
   };
@@ -173,18 +173,18 @@ export default function HomeSearchBar() {
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
               />
             ) : (
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                strokeWidth={2.5} 
-                stroke="currentColor" 
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2.5}
+                stroke="currentColor"
                 className="w-6 h-6 sm:w-7 sm:h-7"
               >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" 
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
                 />
               </svg>
             )}
@@ -202,28 +202,28 @@ export default function HomeSearchBar() {
               className="absolute top-full left-0 w-full mt-2 bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 overflow-hidden z-30 py-2"
             >
               {richSuggestions.map((item, index) => (
-              <div 
-                key={`rich-${index}`}
-                onClick={() => {
-                  setQuery(item.title);
-                  handleSearch(undefined, item.title);
-                }}
-                className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer flex items-center gap-4 transition-colors"
-              >
-                <div className="shrink-0 w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 overflow-hidden">
-                  {item.thumbnail ? (
-                    <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                    </div>
-                  )}
+                <div
+                  key={`rich-${index}`}
+                  onClick={() => {
+                    setQuery(item.title);
+                    handleSearch(undefined, item.title);
+                  }}
+                  className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer flex items-center gap-4 transition-colors"
+                >
+                  <div className="shrink-0 w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                    {item.thumbnail ? (
+                      <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-black dark:text-white font-semibold text-sm text-left">{item.title}</span>
+                    <span className="text-gray-500 dark:text-gray-400 text-xs line-clamp-1 text-left">{item.description}</span>
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-black dark:text-white font-semibold text-sm text-left">{item.title}</span>
-                  <span className="text-gray-500 dark:text-gray-400 text-xs line-clamp-1 text-left">{item.description}</span>
-                </div>
-              </div>
               ))}
               {suggestions.map((suggestion, index) => (
                 <motion.div
@@ -235,20 +235,20 @@ export default function HomeSearchBar() {
                     setQuery(suggestion);
                     handleSearch(undefined, suggestion);
                   }}
-                  onMouseDown={(e) => e.preventDefault()} 
+                  onMouseDown={(e) => e.preventDefault()}
                   className="px-5 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer flex items-center gap-3"
                 >
-                  <svg 
-                    className="w-4 h-4 text-gray-400 dark:text-gray-500" 
-                    fill="none" 
-                    stroke="currentColor" 
+                  <svg
+                    className="w-4 h-4 text-gray-400 dark:text-gray-500"
+                    fill="none"
+                    stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth={2} 
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                     />
                   </svg>
                   <span className="text-black dark:text-gray-200">
@@ -275,10 +275,10 @@ export default function HomeSearchBar() {
             className="h-full bg-black dark:bg-white"
             initial={{ x: '-100%', width: '50%' }}
             animate={{ x: '200%', width: '50%' }}
-            transition={{ 
-              repeat: Infinity, 
-              duration: 1.5, 
-              ease: "linear" 
+            transition={{
+              repeat: Infinity,
+              duration: 1.5,
+              ease: "linear"
             }}
           />
         </div>

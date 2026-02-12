@@ -54,12 +54,12 @@ function SearchHeaderContent() {
 
       const textPromise = fetch(`${process.env.NEXT_PUBLIC_URL_BACKEND_API}/autocomplete?q=${encodeURIComponent(query)}`)
         .then(res => res.ok ? res.json() : { suggestions: [] })
-        .catch(() => ({ suggestions: [] })); 
+        .catch(() => ({ suggestions: [] }));
 
       const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&generator=prefixsearch&gpssearch=${encodeURIComponent(query)}&gpslimit=3&prop=pageimages|description|info&pithumbsize=200&inprop=url&format=json&formatversion=2&origin=*`;
       const wikiPromise = fetch(wikiUrl)
         .then(res => res.json())
-        .catch(() => ({})); 
+        .catch(() => ({}));
 
       const [textData, entityData] = await Promise.all([textPromise, wikiPromise]);
 
@@ -88,13 +88,13 @@ function SearchHeaderContent() {
   const handleSearch = (e?: React.FormEvent, overrideQuery?: string) => {
     if (e) e.preventDefault();
     const finalQuery = overrideQuery || query;
-    
+
     if (finalQuery.trim()) {
-      setIsLoading(true); 
+      setIsLoading(true);
       setShowSuggestions(false);
       setSuggestions([]);
       setRichSuggestions([]);
-      
+
       router.push(`/search/text?q=${encodeURIComponent(finalQuery)}`);
 
       if (finalQuery === initialQuery) {
@@ -118,20 +118,20 @@ function SearchHeaderContent() {
     : '';
 
   const tabs = [
-    { name: 'All', path: 'text', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> },
-    { name: 'Images', path: 'image', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg> },
-    { name: 'Videos', path: 'video', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></svg> },
-    { name: 'News', path: 'news', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg> },
-    { name: 'Books', path: 'book', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> },
+    { name: 'All', path: 'text', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg> },
+    { name: 'Images', path: 'image', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg> },
+    { name: 'Videos', path: 'video', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m22 8-6 4 6 4V8Z" /><rect width="14" height="12" x="2" y="6" rx="2" ry="2" /></svg> },
+    { name: 'News', path: 'news', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" /><path d="M18 14h-8" /><path d="M15 18h-5" /><path d="M10 6h8v4h-8V6Z" /></svg> },
+    { name: 'Books', path: 'book', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg> },
   ];
 
   const getCurrentTab = () => {
     if (typeof window !== 'undefined') {
-       const path = window.location.pathname;
-       if (path.includes('/image')) return 'image';
-       if (path.includes('/video')) return 'video';
-       if (path.includes('/news')) return 'news';
-       if (path.includes('/book')) return 'book';
+      const path = window.location.pathname;
+      if (path.includes('/image')) return 'image';
+      if (path.includes('/video')) return 'video';
+      if (path.includes('/news')) return 'news';
+      if (path.includes('/book')) return 'book';
     }
     return 'text';
   };
@@ -139,23 +139,23 @@ function SearchHeaderContent() {
 
   return (
     <header className="sticky top-0 bg-white z-50 pt-4 md:pt-6 border-b border-gray-200 transition-colors">
-      
+
       <div className="max-w-[1200px] mx-auto px-4 md:px-8">
-        
+
         {/*  Sign In Button */}
         <div className="flex items-center justify-between mb-4 md:mb-0 md:absolute md:inset-x-0 md:top-6 md:px-8 pointer-events-none">
           <Link href="/" className="shrink-0 pointer-events-auto">
-            <Image 
-              src="/images/pyxis.svg" 
-              alt="Pyxis" 
-              width={90} 
-              height={30} 
+            <Image
+              src="/images/pyxis.svg"
+              alt="Pyxis"
+              width={90}
+              height={30}
               className="w-[80px] h-auto md:w-[110px]"
               priority
             />
           </Link>
 
-          <Link 
+          <Link
             href="/signin"
             className="px-4 py-1.5 md:px-5 md:py-2.5 bg-black text-white rounded-full text-sm font-medium hover:opacity-90 transition-opacity pointer-events-auto"
           >
@@ -187,7 +187,7 @@ function SearchHeaderContent() {
                 placeholder="Search..."
                 autoComplete="off"
               />
-              <button 
+              <button
                 type="submit"
                 className="absolute right-0 top-0 h-full w-12 flex items-center justify-center text-black hover:opacity-70 transition-opacity z-20"
               >
@@ -208,7 +208,7 @@ function SearchHeaderContent() {
                   className="absolute top-12 left-0 w-full bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-30 py-2"
                 >
                   {richSuggestions.map((item, index) => (
-                    <div 
+                    <div
                       key={`rich-${index}`}
                       onClick={() => {
                         setQuery(item.title);
