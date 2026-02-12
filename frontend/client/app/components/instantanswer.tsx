@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 
 interface InstantAnswerProps {
   answer: string;
@@ -8,7 +8,11 @@ interface InstantAnswerProps {
   query: string;
 }
 
-export default function InstantAnswer({ answer, imageUrl, query }: InstantAnswerProps) {
+export default function InstantAnswer({
+  answer,
+  imageUrl,
+  query,
+}: InstantAnswerProps) {
   if (!answer) return null;
 
   return (
@@ -26,7 +30,7 @@ export default function InstantAnswer({ answer, imageUrl, query }: InstantAnswer
             alt={query}
             className="w-full h-auto object-contain"
             onError={(e) => {
-              e.currentTarget.style.display = 'none';
+              e.currentTarget.style.display = "none";
             }}
           />
           <div className="absolute bottom-0 right-0 bg-black/60 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-tl-lg opacity-0 group-hover:opacity-100 transition-opacity">
@@ -49,8 +53,18 @@ export default function InstantAnswer({ answer, imageUrl, query }: InstantAnswer
       <div className="p-5">
         <div className="flex items-start justify-between gap-2 mb-3">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-4 h-4 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             Instant Answer
           </h3>
