@@ -4,13 +4,13 @@ import HomeSearchBar from './components/homesearchbar';
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col font-sans bg-white dark:bg-black">
+    <div className="flex min-h-screen flex-col font-sans bg-white">
       {/* Header - Mobile responsive padding */}
       <header className="flex items-center justify-end p-4 sm:p-6">
-        {/*  signin route */}
+        {/* signin route */}
         <Link
           href="/signin"
-          className="bg-black dark:bg-white text-white dark:text-black px-4 py-2 sm:px-6 sm:py-2.5 rounded-full text-sm font-medium hover:opacity-80 transition-opacity"
+          className="bg-black text-white px-4 py-2 sm:px-6 sm:py-2.5 rounded-full text-sm font-medium hover:opacity-80 transition-opacity"
         >
           Sign in
         </Link>
@@ -26,7 +26,7 @@ export default function Home() {
             width={280}
             height={95}
             priority
-            className="w-[240px] h-auto sm:w-[280px] dark:invert"
+            className="w-[240px] h-auto sm:w-[280px]"
           />
         </div>
 
