@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, KeyboardEvent, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -78,6 +78,8 @@ export function useAutocomplete(initialQuery = "") {
 function SearchHeaderContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+  
   const initialQuery = searchParams.get("q") || "";
   const [isLoading, setIsLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -235,17 +237,15 @@ function SearchHeaderContent() {
     },
   ];
 
-  const getCurrentTab = () => {
-    if (typeof window !== "undefined") {
-      const path = window.location.pathname;
-      if (path.includes("/image")) return "image";
-      if (path.includes("/video")) return "video";
-      if (path.includes("/news")) return "news";
-      if (path.includes("/book")) return "book";
-    }
+  const getActiveTab = () => {
+    if (pathname.includes("/image")) return "image";
+    if (pathname.includes("/video")) return "video";
+    if (pathname.includes("/news")) return "news";
+    if (pathname.includes("/book")) return "book";
     return "text";
   };
-  const activeTab = getCurrentTab();
+  
+  const activeTab = getActiveTab();
 
   return (
     <header className="sticky top-0 bg-white z-50 pt-4 md:pt-6 border-b border-gray-200 transition-colors">
@@ -271,8 +271,9 @@ function SearchHeaderContent() {
         </div>
 
         {/* Search Bar Row */}
-        <div className="flex justify-center pb-4">
-          <div ref={containerRef} className="w-full md:max-w-2xl relative">
+        <div className="flex pb-4">
+          {/* Changed: Replaced top-[2px] with md:mt-1 (4px) to force it down more visibly on desktop */}
+          <div ref={containerRef} className="w-full md:max-w-2xl relative md:mt-1">
             <form
               onSubmit={handleSearch}
               className="relative w-full text-gray-500 focus-within:text-black"
