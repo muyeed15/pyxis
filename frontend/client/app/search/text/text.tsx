@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, Variants } from 'framer-motion';
-import type { TextSearchResultItem } from './types';
+import type { TextSearchResultItem } from '../../types';
 
 interface TextResultsListProps {
   results: TextSearchResultItem[];
