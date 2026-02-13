@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { APIResponse, TextSearchResultItem } from './types';
+import type { APIResponse, TextSearchResultItem } from '../../types';
 import TextResultsList from './text';
 import SearchHeader from '../../components/searchheader';
 import InstantAnswer from '../../components/instantanswer';
@@ -24,22 +24,18 @@ export default function PageWrapper({
   query,
 }: PageWrapperProps) {
   
-  const fullResults = data?.results || [];
+  const fullResults = (data?.results as TextSearchResultItem[]) || [];
   const [visibleCount, setVisibleCount] = useState(10);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    
     setVisibleCount(10);
-    setIsLoading(false);
   }, [query]);
 
-  
   const handleLoadMore = () => {
     setVisibleCount((prev) => Math.min(prev + 10, fullResults.length));
   };
 
-  
   const currentVisibleResults = fullResults.slice(0, visibleCount);
 
   return (
@@ -48,7 +44,6 @@ export default function PageWrapper({
 
       <AnimatePresence mode="wait">
         {isLoading ? (
-           
            <motion.div
             key="loading"
             initial={{ opacity: 0 }}
@@ -57,11 +52,11 @@ export default function PageWrapper({
             transition={{ duration: 0.2 }}
             className="max-w-[1200px] mx-auto px-4 md:px-8 py-6 flex flex-col lg:flex-row gap-10"
           >
-             {/* skeleton content*/}
+             <div className="w-full h-40 bg-gray-100 animate-pulse rounded-md"></div>
           </motion.div>
         ) : (
           <motion.main
-            key="content"
+            key={query} 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
@@ -74,7 +69,6 @@ export default function PageWrapper({
                 <>
                   <TextResultsList results={currentVisibleResults} />
 
-                  
                   {visibleCount < fullResults.length && (
                     <div className="mt-8 mb-12">
                       <button
