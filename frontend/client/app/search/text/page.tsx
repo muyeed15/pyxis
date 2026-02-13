@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import type { APIResponse } from "./types";
+import type { APIResponse } from "../../types";
 import PageWrapper from "./pagewrapper";
 
 interface PageProps {
@@ -34,7 +34,7 @@ export default async function TextSearchPage(props: PageProps) {
 
     const apiUrl = `${process.env.NEXT_PUBLIC_URL_BACKEND_API}/search?q=${encodeURIComponent(query)}&type=text&max_results=30`;
     try {
-      const res = await fetch(apiUrl, { cache: 'no-store' });
+      const res = await fetch(apiUrl, { next: { revalidate: 300 } });
       if (!res.ok) throw new Error(`Status: ${res.status}`);
       data = await res.json();
     } catch (error: any) {
@@ -45,7 +45,7 @@ export default async function TextSearchPage(props: PageProps) {
     try {
       const instantRes = await fetch(
         `${process.env.NEXT_PUBLIC_URL_BACKEND_API}/instant?q=${encodeURIComponent(query)}`,
-        { cache: 'no-store' }
+        { next: { revalidate: 300 } }
       );
       if (instantRes.ok) {
         const instantData = await instantRes.json();
@@ -65,7 +65,7 @@ export default async function TextSearchPage(props: PageProps) {
     try {
       const autocompleteRes = await fetch(
         `${process.env.NEXT_PUBLIC_URL_BACKEND_API}/autocomplete?q=${encodeURIComponent(query)}&max_results=8`,
-        { cache: 'no-store' }
+        { next: { revalidate: 3600 } }
       );
       if (autocompleteRes.ok) {
         const autocompleteData: AutocompleteData = await autocompleteRes.json();

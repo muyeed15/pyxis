@@ -91,12 +91,12 @@ export default function HomeSearchBar() {
                   type="text"
                   readOnly
                   value={ghostText}
-                  className="w-full h-full px-4 py-3 sm:px-6 sm:py-3.5 border border-transparent rounded-full bg-transparent text-base text-gray-400 dark:text-gray-500"
+                  className="w-full h-full px-4 py-3 sm:px-6 sm:py-3.5 border border-transparent rounded-full bg-transparent text-base text-gray-400"
                   aria-hidden="true"
                 />
                 <div className="absolute inset-0 flex items-center px-4 py-3 sm:px-6 sm:py-3.5 pointer-events-none">
                   <span className="text-transparent">{query}</span>
-                  <span className="text-gray-400 dark:text-gray-500">
+                  <span className="text-gray-400">
                     {ghostText.slice(query.length)}
                   </span>
                 </div>
@@ -112,7 +112,7 @@ export default function HomeSearchBar() {
               }}
               onKeyDown={handleKeyDown}
               onBlur={() => setTimeout(() => setHasTyped(false), 200)}
-              className="relative z-10 w-full px-4 py-3 sm:px-6 sm:py-3.5 border border-gray-300 dark:border-gray-700 rounded-full focus:outline-none focus:border-black dark:focus:border-white text-base bg-white dark:bg-[#1a1a1a] text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+              className="relative z-10 w-full px-4 py-3 sm:px-6 sm:py-3.5 border border-gray-300 rounded-full focus:outline-none focus:border-black text-base bg-white text-black placeholder-gray-500"
               placeholder="Search Pyxis"
               autoComplete="off"
             />
@@ -122,11 +122,11 @@ export default function HomeSearchBar() {
           <button
             type="submit"
             disabled={isLoading}
-            className="flex items-center justify-center bg-black dark:bg-white text-white dark:text-black rounded-full hover:opacity-90 transition-opacity disabled:opacity-70 w-12 h-12 sm:w-14 sm:h-14 z-10 shrink-0"
+            className="flex items-center justify-center bg-black text-white rounded-full hover:opacity-90 transition-opacity disabled:opacity-70 w-12 h-12 sm:w-14 sm:h-14 z-10 shrink-0"
           >
             {isLoading ? (
               <motion.div
-                className="w-6 h-6 border-2 border-white dark:border-black border-t-transparent rounded-full"
+                className="w-6 h-6 border-2 border-white border-t-transparent rounded-full"
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
               />
@@ -158,7 +158,7 @@ export default function HomeSearchBar() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="absolute top-full left-0 w-full mt-2 bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 overflow-hidden z-30 py-2"
+                className="absolute top-full left-0 w-full mt-2 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden z-30 py-2"
               >
                 {richSuggestions.map((item, index) => (
                   <div
@@ -167,9 +167,9 @@ export default function HomeSearchBar() {
                       setQuery(item.title);
                       handleSearch(undefined, item.title);
                     }}
-                    className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer flex items-center gap-4 transition-colors"
+                    className="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer flex items-center gap-4 transition-colors"
                   >
-                    <div className="shrink-0 w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                    <div className="shrink-0 w-12 h-12 rounded-lg bg-gray-200 overflow-hidden">
                       {item.thumbnail ? (
                         <img
                           src={item.thumbnail}
@@ -195,10 +195,10 @@ export default function HomeSearchBar() {
                       )}
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-black dark:text-white font-semibold text-sm text-left">
+                      <span className="text-black font-semibold text-sm text-left">
                         {item.title}
                       </span>
-                      <span className="text-gray-500 dark:text-gray-400 text-xs line-clamp-1 text-left">
+                      <span className="text-gray-500 text-xs line-clamp-1 text-left">
                         {item.description}
                       </span>
                     </div>
@@ -215,10 +215,10 @@ export default function HomeSearchBar() {
                       handleSearch(undefined, suggestion);
                     }}
                     onMouseDown={(e) => e.preventDefault()}
-                    className="px-5 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer flex items-center gap-3"
+                    className="px-5 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-3"
                   >
                     <svg
-                      className="w-4 h-4 text-gray-400 dark:text-gray-500"
+                      className="w-4 h-4 text-gray-400"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -230,7 +230,7 @@ export default function HomeSearchBar() {
                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                       />
                     </svg>
-                    <span className="text-black dark:text-gray-200">
+                    <span className="text-black">
                       {query &&
                       suggestion
                         .toLowerCase()
@@ -254,9 +254,9 @@ export default function HomeSearchBar() {
 
       {/* Loading bar */}
       {isLoading && (
-        <div className="absolute bottom-[-8px] left-0 w-full h-[2px] bg-gray-100 dark:bg-gray-800 overflow-hidden rounded-full">
+        <div className="absolute bottom-[-8px] left-0 w-full h-[2px] bg-gray-100 overflow-hidden rounded-full">
           <motion.div
-            className="h-full bg-black dark:bg-white"
+            className="h-full bg-black"
             initial={{ x: "-100%", width: "50%" }}
             animate={{ x: "200%", width: "50%" }}
             transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
