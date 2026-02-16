@@ -5,6 +5,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { mutate } from "swr";
 
 export interface RichSuggestion {
   title: string;
@@ -80,6 +81,16 @@ function SearchHeaderContent() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   
+  const getActiveTab = () => {
+    if (pathname.includes("/search/image")) return "image";
+    if (pathname.includes("/search/video")) return "video";
+    if (pathname.includes("/search/news")) return "news";
+    if (pathname.includes("/search/book")) return "book";
+    return "text"; // Default to text (All)
+  };
+  
+  const activeTab = getActiveTab();
+
   const initialQuery = searchParams.get("q") || "";
   const [isLoading, setIsLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -115,13 +126,73 @@ function SearchHeaderContent() {
     };
   }, []);
 
+  // Prefetch API data for instant tab switching - runs immediately on mount and when query changes
+  useEffect(() => {
+    if (query.trim()) {
+      const encodedQuery = encodeURIComponent(query);
+      const backendUrl = process.env.NEXT_PUBLIC_URL_BACKEND_API;
+      
+      // Prefetch all tab data types + instant answer + autocomplete
+      const prefetchUrls = [
+        `${backendUrl}/search?q=${encodedQuery}&type=text&max_results=30`,
+        `${backendUrl}/search?q=${encodedQuery}&type=images&max_results=100`,
+        `${backendUrl}/search?q=${encodedQuery}&type=video&max_results=20`,
+        `${backendUrl}/search?q=${encodedQuery}&type=news&max_results=20`,
+        `${backendUrl}/search?q=${encodedQuery}&type=book&max_results=20`,
+        `${backendUrl}/instant?q=${encodedQuery}`,
+        `${backendUrl}/autocomplete?q=${encodedQuery}`,
+        `${backendUrl}/autocomplete?q=${encodedQuery}&max_results=8`
+      ];
+
+      // Prefetch immediately and aggressively
+      prefetchUrls.forEach(url => {
+        fetch(url, { priority: 'high' } as any)
+          .then(res => res.ok ? res.json() : null)
+          .then(data => {
+            if (data) {
+              // Store in SWR cache with 5 min TTL
+              mutate(url, data, { revalidate: false });
+            }
+          })
+          .catch(() => {}); // Silently fail prefetch
+      });
+    }
+  }, [query]);
+  
+  // Also prefetch on initial mount if query exists
+  useEffect(() => {
+    if (initialQuery.trim()) {
+      const encodedQuery = encodeURIComponent(initialQuery);
+      const backendUrl = process.env.NEXT_PUBLIC_URL_BACKEND_API;
+      
+      const urls = [
+        `${backendUrl}/search?q=${encodedQuery}&type=text&max_results=30`,
+        `${backendUrl}/search?q=${encodedQuery}&type=images&max_results=100`,
+        `${backendUrl}/instant?q=${encodedQuery}`,
+        `${backendUrl}/autocomplete?q=${encodedQuery}&max_results=8`
+      ];
+      
+      urls.forEach(url => {
+        fetch(url, { priority: 'high' } as any)
+          .then(res => res.ok ? res.json() : null)
+          .then(data => {
+            if (data) mutate(url, data, { revalidate: false });
+          })
+          .catch(() => {});
+      });
+    }
+  }, []); // Run once on mount
+
   const handleSearch = (e?: React.FormEvent, overrideQuery?: string) => {
     if (e) e.preventDefault();
     const finalQuery = overrideQuery || query;
     if (finalQuery.trim()) {
       setIsLoading(true);
       setShowSuggestions(false);
-      router.push(`/search/text?q=${encodeURIComponent(finalQuery)}`);
+      
+      // Navigate to the current active tab with the new query
+      router.push(`/search/${activeTab}?q=${encodeURIComponent(finalQuery)}`);
+      
       if (finalQuery === initialQuery) {
         setTimeout(() => setIsLoading(false), 800);
       }
@@ -237,16 +308,6 @@ function SearchHeaderContent() {
     },
   ];
 
-  const getActiveTab = () => {
-    if (pathname.includes("/image")) return "image";
-    if (pathname.includes("/video")) return "video";
-    if (pathname.includes("/news")) return "news";
-    if (pathname.includes("/book")) return "book";
-    return "text";
-  };
-  
-  const activeTab = getActiveTab();
-
   return (
     <header className="sticky top-0 bg-white z-50 pt-4 md:pt-6 border-b border-gray-200 transition-colors">
       <div className="max-w-[1200px] mx-auto px-4 md:px-8">
@@ -272,7 +333,6 @@ function SearchHeaderContent() {
 
         {/* Search Bar Row */}
         <div className="flex pb-4">
-          {/* Changed: Replaced top-[2px] with md:mt-1 (4px) to force it down more visibly on desktop */}
           <div ref={containerRef} className="w-full md:max-w-2xl relative md:mt-1">
             <form
               onSubmit={handleSearch}
