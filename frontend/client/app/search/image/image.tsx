@@ -6,10 +6,13 @@ import type { ImageSearchResultItem } from '../../types';
 
 interface ImageResultsListProps {
   results: ImageSearchResultItem[];
+  isLoading?: boolean;
 }
 
-export default function ImageResultsList({ results }: ImageResultsListProps) {
+export default function ImageResultsList({ results, isLoading = false }: ImageResultsListProps) {
   const resultChunks = useMemo(() => {
+    if (!results) return [];
+    
     const chunkSize = 20;
     const chunks = [];
     for (let i = 0; i < results.length; i += chunkSize) {
@@ -18,6 +21,12 @@ export default function ImageResultsList({ results }: ImageResultsListProps) {
     return chunks;
   }, [results]);
 
+  // 1. PRIORITY: If loading, show Skeleton IMMEDIATELY
+  if (isLoading) {
+    return <ImageSkeletonGrid />;
+  }
+
+  // 2. Only if NOT loading, check for empty results
   if (!results || results.length === 0) {
     return (
       <div className="p-10 text-center text-gray-500">
@@ -34,9 +43,7 @@ export default function ImageResultsList({ results }: ImageResultsListProps) {
           className="w-full columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-4 space-y-4 mb-4"
         >
           {chunk.map((item, itemIndex) => {
-            
             const globalIndex = (chunkIndex * 20) + itemIndex;
-            
             return (
               <div key={`${item.image}-${globalIndex}`} className="break-inside-avoid mb-4">
                 <ImageCard item={item} index={globalIndex} />
@@ -67,7 +74,6 @@ function ImageCard({ item, index }: { item: ImageSearchResultItem; index: number
         />
       </a>
 
-      {/* Hover Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3 pointer-events-none">
         <a 
             href={item.url} 
@@ -87,5 +93,24 @@ function ImageCard({ item, index }: { item: ImageSearchResultItem; index: number
         </a>
       </div>
     </motion.div>
+  );
+}
+
+function ImageSkeletonGrid() {
+  const heights = [240, 180, 180, 280, 200, 300, 220, 260, 340, 190, 270, 230, 310, 210, 250];
+
+  return (
+    <div className="flex flex-col pb-10">
+      <div className="w-full columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-4 space-y-4 mb-4">
+        {heights.map((height, i) => (
+          <div key={`skeleton-${i}`} className="break-inside-avoid mb-4">
+            <div 
+              className="w-full bg-gray-200 rounded-xl animate-pulse"
+              style={{ height: `${height}px` }}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
