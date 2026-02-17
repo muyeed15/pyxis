@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useSWR from 'swr';
 import type { APIResponse, ImageSearchResultItem, AutocompleteData } from '../../types';
@@ -16,6 +16,12 @@ interface PageWrapperProps {
   tags: string[]; 
 }
 
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`API Error: ${res.status}`);
+  return res.json();
+};
+
 export default function PageWrapper({ 
   data: initialData, 
   relatedKeywords: initialKeywords, 
@@ -23,22 +29,28 @@ export default function PageWrapper({
   query,
   tags 
 }: PageWrapperProps) {
+
+  const rawUrl = process.env.NEXT_PUBLIC_URL_BACKEND_API || "http://127.0.0.1:5000";
+  const backendUrl = rawUrl.replace("localhost", "127.0.0.1");
+
   const combinedSearchQuery = [query, ...tags].join(" ").trim();
-  
+
   const imagesKey = combinedSearchQuery 
-    ? `${process.env.NEXT_PUBLIC_URL_BACKEND_API}/search?q=${encodeURIComponent(combinedSearchQuery)}&type=images&max_results=100`
+    ? `${backendUrl}/search?q=${encodeURIComponent(combinedSearchQuery)}&type=images&max_results=100`
     : null;
   
   const autocompleteKey = combinedSearchQuery
-    ? `${process.env.NEXT_PUBLIC_URL_BACKEND_API}/autocomplete?q=${encodeURIComponent(combinedSearchQuery)}`
+    ? `${backendUrl}/autocomplete?q=${encodeURIComponent(combinedSearchQuery)}`
     : null;
 
   const { data: imagesData, error: imagesError, isLoading } = useSWR<APIResponse>(
     imagesKey,
+    fetcher,
     { 
       fallbackData: initialData || undefined,
-      revalidateOnMount: false,
-      revalidateOnFocus: false,
+      revalidateOnMount: true, 
+      revalidateIfStale: false,  
+      revalidateOnFocus: false,  
       revalidateOnReconnect: false,
       dedupingInterval: 300000, 
       focusThrottleInterval: 300000,
@@ -47,11 +59,10 @@ export default function PageWrapper({
 
   const { data: autocompleteData } = useSWR<AutocompleteData>(
     autocompleteKey,
+    fetcher,
     { 
       fallbackData: initialKeywords.length > 0 ? { suggestions: initialKeywords } : undefined,
-      revalidateOnMount: false,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
+      revalidateOnMount: true,
       dedupingInterval: 300000,
     }
   );
@@ -60,14 +71,11 @@ export default function PageWrapper({
   const data = imagesData || initialData;
   const errorMessage = imagesError?.message || initialError;
 
-  // Correctly determine if we are in the initial loading state
-  const isActuallyLoading = isLoading || (!data && !errorMessage);
+  const isActuallyLoading = isLoading && !data && !errorMessage;
 
   const fullResults = (data?.results as ImageSearchResultItem[]) || [];
   const [visibleCount, setVisibleCount] = useState(20);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  
-  // FIX: Use state callback for the ref to ensure observer attaches when element renders
   const [observerTarget, setObserverTarget] = useState<HTMLDivElement | null>(null);
 
   const displayCategories = useMemo(() => {
@@ -104,41 +112,29 @@ export default function PageWrapper({
 
   const hasCategories = displayCategories.length > 0;
 
-  // Reset logic when query changes
   useEffect(() => {
     setVisibleCount(20);
     setIsLoadingMore(false);
   }, [query, tags]);
 
-  // FIX: Robust Intersection Observer using state-ref
   useEffect(() => {
     if (!observerTarget) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         const target = entries[0];
-        // Check conditions strictly inside the callback
         if (target.isIntersecting && !isLoadingMore && visibleCount < fullResults.length) {
           setIsLoadingMore(true);
-          
-          // Small delay for UX
           setTimeout(() => {
             setVisibleCount((prev) => Math.min(prev + 20, fullResults.length));
             setIsLoadingMore(false);
           }, 600);
         }
       },
-      { 
-        threshold: 0.1,
-        rootMargin: '200px', // Increased margin to trigger slightly earlier
-      }
+      { threshold: 0.1, rootMargin: '200px' }
     );
-
     observer.observe(observerTarget);
-
-    return () => {
-      observer.disconnect();
-    };
+    return () => observer.disconnect();
   }, [observerTarget, isLoadingMore, visibleCount, fullResults.length]);
 
 
@@ -168,15 +164,16 @@ export default function PageWrapper({
           )}
   
           {errorMessage ? (
-            <div className="text-red-500 mt-10 text-center">Error: {errorMessage}</div>
+            <div className="p-6 bg-red-50 border border-red-100 rounded-lg text-red-600 text-center">
+               <p>Error loading images: {errorMessage}</p>
+            </div>
           ) : (
             <div className="flex flex-col gap-8">
                <ImageResultsList 
                  results={currentVisibleResults} 
                  isLoading={isActuallyLoading}
                />
-  
-               {/* FIX: Use ref callback (setObserverTarget) here */}
+
                {visibleCount < fullResults.length && (
                   <div 
                     ref={setObserverTarget} 
