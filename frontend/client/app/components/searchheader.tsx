@@ -5,7 +5,6 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { mutate } from "swr";
 
 export interface RichSuggestion {
   title: string;
@@ -86,7 +85,7 @@ function SearchHeaderContent() {
     if (pathname.includes("/search/video")) return "video";
     if (pathname.includes("/search/news")) return "news";
     if (pathname.includes("/search/book")) return "book";
-    return "text"; // Default to text (All)
+    return "text"; 
   };
   
   const activeTab = getActiveTab();
@@ -126,71 +125,16 @@ function SearchHeaderContent() {
     };
   }, []);
 
-  // Prefetch API data for instant tab switching - runs immediately on mount and when query changes
-  useEffect(() => {
-    if (query.trim()) {
-      const encodedQuery = encodeURIComponent(query);
-      const backendUrl = process.env.NEXT_PUBLIC_URL_BACKEND_API;
-      
-      // Prefetch all tab data types + instant answer + autocomplete
-      const prefetchUrls = [
-        `${backendUrl}/search?q=${encodedQuery}&type=text&max_results=30`,
-        `${backendUrl}/search?q=${encodedQuery}&type=images&max_results=100`,
-        `${backendUrl}/search?q=${encodedQuery}&type=video&max_results=20`,
-        `${backendUrl}/search?q=${encodedQuery}&type=news&max_results=20`,
-        `${backendUrl}/search?q=${encodedQuery}&type=book&max_results=20`,
-        `${backendUrl}/instant?q=${encodedQuery}`,
-        `${backendUrl}/autocomplete?q=${encodedQuery}`,
-        `${backendUrl}/autocomplete?q=${encodedQuery}&max_results=8`
-      ];
-
-      // Prefetch immediately and aggressively
-      prefetchUrls.forEach(url => {
-        fetch(url, { priority: 'high' } as any)
-          .then(res => res.ok ? res.json() : null)
-          .then(data => {
-            if (data) {
-              // Store in SWR cache with 5 min TTL
-              mutate(url, data, { revalidate: false });
-            }
-          })
-          .catch(() => {}); // Silently fail prefetch
-      });
-    }
-  }, [query]);
-  
-  // Also prefetch on initial mount if query exists
-  useEffect(() => {
-    if (initialQuery.trim()) {
-      const encodedQuery = encodeURIComponent(initialQuery);
-      const backendUrl = process.env.NEXT_PUBLIC_URL_BACKEND_API;
-      
-      const urls = [
-        `${backendUrl}/search?q=${encodedQuery}&type=text&max_results=30`,
-        `${backendUrl}/search?q=${encodedQuery}&type=images&max_results=100`,
-        `${backendUrl}/instant?q=${encodedQuery}`,
-        `${backendUrl}/autocomplete?q=${encodedQuery}&max_results=8`
-      ];
-      
-      urls.forEach(url => {
-        fetch(url, { priority: 'high' } as any)
-          .then(res => res.ok ? res.json() : null)
-          .then(data => {
-            if (data) mutate(url, data, { revalidate: false });
-          })
-          .catch(() => {});
-      });
-    }
-  }, []); // Run once on mount
-
   const handleSearch = (e?: React.FormEvent, overrideQuery?: string) => {
     if (e) e.preventDefault();
     const finalQuery = overrideQuery || query;
     if (finalQuery.trim()) {
       setIsLoading(true);
       setShowSuggestions(false);
-      
+
       // Navigate to the current active tab with the new query
+      // If we are on /search/image, we stay on /search/image
+      // If we are on /search/text (or just /search), we stay there
       router.push(`/search/${activeTab}?q=${encodeURIComponent(finalQuery)}`);
       
       if (finalQuery === initialQuery) {
