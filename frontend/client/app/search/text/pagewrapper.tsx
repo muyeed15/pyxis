@@ -1,166 +1,189 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
 import useSWR from 'swr';
-import type { APIResponse, TextSearchResultItem } from '../../types';
-import TextResultsList from './text';
+import type { APIResponse, TextSearchResultItem, AutocompleteData } from '../../types';
 import SearchHeader from '../../components/searchheader';
-import InstantAnswer from '../../components/instantanswer';
+import TextResultsList from './text';
+import InstantAnswer from '../../components/instantanswer'; 
 import RelatedSearches from '../../components/relatedsearches';
+
+function SidebarSkeleton() {
+  return (
+    <div className="space-y-6">
+      {/* Instant Answer Skeleton */}
+      <div className="mb-6 border border-gray-200 rounded-xl overflow-hidden bg-white flex flex-col">
+        <div className="w-full h-32 bg-gray-100 animate-pulse"></div>
+        <div className="p-5 space-y-3">
+          <div className="h-3 bg-gray-100 rounded w-1/3 animate-pulse"></div>
+          <div className="h-3 bg-gray-100 rounded w-full animate-pulse"></div>
+          <div className="h-3 bg-gray-100 rounded w-5/6 animate-pulse"></div>
+        </div>
+      </div>
+      {/* Related Searches Skeleton */}
+      <div className="p-4 border border-gray-100 rounded-lg bg-gray-50 space-y-3">
+        <div className="h-3 bg-gray-200 rounded w-1/3 animate-pulse"></div>
+        <div className="space-y-2">
+            <div className="h-3 bg-gray-200 rounded w-3/4 animate-pulse"></div>
+            <div className="h-3 bg-gray-200 rounded w-1/2 animate-pulse"></div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface PageWrapperProps {
   data: APIResponse | null;
-  instantAnswer: { answer: string; image_url: string | null } | null;
   relatedKeywords: string[];
   errorMessage: string | null;
   query: string;
+  instantAnswer: any;
 }
 
-interface InstantAnswerData {
-  answer: string;
-  image_url: string | null;
-}
-
-interface AutocompleteData {
-  suggestions: string[];
-}
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`API Error: ${res.status}`);
+  return res.json();
+};
 
 export default function PageWrapper({
   data: initialData,
-  instantAnswer: initialInstantAnswer,
   relatedKeywords: initialKeywords,
   errorMessage: initialError,
   query,
+  instantAnswer: initialInstantAnswer
 }: PageWrapperProps) {
-  
-  // SWR keys for caching
-  const textSearchKey = query 
-    ? `${process.env.NEXT_PUBLIC_URL_BACKEND_API}/search?q=${encodeURIComponent(query)}&type=text&max_results=30`
+
+  const rawUrl = process.env.NEXT_PUBLIC_URL_BACKEND_API || "http://127.0.0.1:5000";
+  const backendUrl = rawUrl.replace("localhost", "127.0.0.1");
+
+  const textKey = query
+    ? `${backendUrl}/search?q=${encodeURIComponent(query)}&type=text&max_results=50`
     : null;
-  
-  const instantAnswerKey = query
-    ? `${process.env.NEXT_PUBLIC_URL_BACKEND_API}/instant?q=${encodeURIComponent(query)}`
+
+  const instantKey = query
+    ? `${backendUrl}/instant?q=${encodeURIComponent(query)}`
     : null;
 
   const autocompleteKey = query
-    ? `${process.env.NEXT_PUBLIC_URL_BACKEND_API}/autocomplete?q=${encodeURIComponent(query)}&max_results=8`
+    ? `${backendUrl}/autocomplete?q=${encodeURIComponent(query)}`
     : null;
 
-  // Aggressive SWR caching with optimistic updates
-  const { data: textData, error: textError } = useSWR<APIResponse>(
-    textSearchKey,
-    { 
+  const { data: textData, error: textError, isLoading: textLoading } = useSWR<APIResponse>(
+    textKey,
+    fetcher,
+    {
       fallbackData: initialData || undefined,
-      revalidateOnMount: false,
+      revalidateOnMount: true,
+      revalidateIfStale: false,
       revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      dedupingInterval: 300000, // 5 minutes
-      focusThrottleInterval: 300000,
+      dedupingInterval: 600000,
     }
   );
 
-  const { data: instantData } = useSWR<InstantAnswerData>(
-    instantAnswerKey,
-    { 
+  const { data: instantData, isLoading: instantLoading } = useSWR(
+    instantKey,
+    fetcher,
+    {
       fallbackData: initialInstantAnswer || undefined,
-      revalidateOnMount: false,
+      revalidateOnMount: true,
+      revalidateIfStale: false,
       revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      dedupingInterval: 300000,
+      dedupingInterval: 600000,
     }
   );
 
   const { data: autocompleteData } = useSWR<AutocompleteData>(
     autocompleteKey,
-    { 
+    fetcher,
+    {
       fallbackData: initialKeywords.length > 0 ? { suggestions: initialKeywords } : undefined,
-      revalidateOnMount: false,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      dedupingInterval: 300000,
+      revalidateOnMount: true,
+      dedupingInterval: 600000,
     }
   );
 
   const data = textData || initialData;
-  const instantAnswer = instantData || initialInstantAnswer;
-  const relatedKeywords = autocompleteData?.suggestions || initialKeywords;
   const errorMessage = textError?.message || initialError;
+  const results = (data?.results as TextSearchResultItem[]) || [];
+  
+  const related = autocompleteData?.suggestions || initialKeywords;
+  const activeInstantAnswer = instantData || initialInstantAnswer;
+  const isMainLoading = textLoading && !data && !errorMessage;
+  
+  const showSidebarSkeleton = isMainLoading || (instantLoading && !activeInstantAnswer);
 
-  const fullResults = (data?.results as TextSearchResultItem[]) || [];
   const [visibleCount, setVisibleCount] = useState(10);
-
-  useEffect(() => {
-    setVisibleCount(10);
-  }, [query]);
-
   const handleLoadMore = () => {
-    setVisibleCount((prev) => Math.min(prev + 10, fullResults.length));
+    setVisibleCount((prev) => Math.min(prev + 10, results.length));
   };
-
-  const currentVisibleResults = fullResults.slice(0, visibleCount);
-
-  // Show loading only if we have no data at all
-  const showLoading = !data && !textError;
+  const currentVisibleResults = results.slice(0, visibleCount);
 
   return (
     <div className="min-h-screen bg-white">
       <SearchHeader />
+      
+      <main className="max-w-[1200px] mx-auto px-4 md:px-8 py-6">
+        <div className="flex flex-col lg:flex-row gap-10">
+          
+          {/* LEFT COLUMN: Main Results */}
+          <div className="flex-1 min-w-0">
+            {errorMessage ? (
+               <div className="p-6 bg-red-50 border border-red-100 rounded-lg text-red-600">
+                 <p className="font-semibold">Error loading results</p>
+                 <p className="text-sm opacity-80">{errorMessage}</p>
+               </div>
+            ) : isMainLoading ? (
+               <div className="space-y-8 max-w-[650px] animate-pulse mt-2">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="space-y-3">
+                      <div className="h-4 bg-gray-100 rounded w-1/3"></div>
+                      <div className="h-6 bg-gray-100 rounded w-3/4"></div>
+                      <div className="h-16 bg-gray-100 rounded w-full"></div>
+                    </div>
+                  ))}
+               </div>
+            ) : (
+               <>
+                 <TextResultsList results={currentVisibleResults} />
 
-      <AnimatePresence mode="wait">
-        {showLoading ? (
-           <motion.div
-            key="loading"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="max-w-[1200px] mx-auto px-4 md:px-8 py-6 flex flex-col lg:flex-row gap-10"
-          >
-             <div className="w-full h-40 bg-gray-100 animate-pulse rounded-md"></div>
-          </motion.div>
-        ) : (
-          <motion.main
-            key={query} 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.15 }}
-            className="max-w-[1200px] mx-auto px-4 md:px-8 py-6 flex flex-col lg:flex-row gap-10"
-          >
-            <div className="flex-1 max-w-[650px]">
-              {errorMessage ? (
-                <div className="text-red-500">Error: {errorMessage}</div>
-              ) : (
-                <>
-                  <TextResultsList results={currentVisibleResults} />
-
-                  {visibleCount < fullResults.length && (
-                    <div className="mt-8 mb-12">
+                 {visibleCount < results.length && (
+                    <div className="mt-8 mb-12 max-w-[650px]">
                       <button
                         onClick={handleLoadMore}
-                        className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors"
+                        className="w-full py-3 bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium rounded-lg transition-colors border border-gray-200"
                       >
                         Show More Results
                       </button>
                     </div>
                   )}
-                </>
-              )}
-            </div>
+               </>
+            )}
+          </div>
 
-            <div className="hidden lg:block w-[350px] shrink-0 space-y-4">
-              {instantAnswer && (
-                <InstantAnswer
-                  answer={instantAnswer.answer}
-                  imageUrl={instantAnswer.image_url}
-                  query={query}
-                />
-              )}
-              <RelatedSearches keywords={relatedKeywords} currentQuery={query} />
-            </div>
-          </motion.main>
-        )}
-      </AnimatePresence>
+          {/* RIGHT COLUMN: Sidebar (Synchronized) */}
+          <div className="hidden lg:block w-[350px] shrink-0 space-y-6">
+             {showSidebarSkeleton ? (
+               <SidebarSkeleton />
+             ) : (
+               <>
+                 {activeInstantAnswer && !activeInstantAnswer.error && (
+                   <InstantAnswer 
+                      answer={activeInstantAnswer.answer}
+                      imageUrl={activeInstantAnswer.image_url}
+                      query={query}
+                   />
+                 )}
+
+                 {related && related.length > 0 && (
+                   <RelatedSearches keywords={related} currentQuery={query} />
+                 )}
+               </>
+             )}
+          </div>
+
+        </div>
+      </main>
     </div>
   );
 }
