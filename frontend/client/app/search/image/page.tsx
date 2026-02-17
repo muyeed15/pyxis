@@ -19,7 +19,6 @@ export default async function ImageSearchPage(props: PageProps) {
   const tagsParam = (searchParams.tags as string) || "";
   const tags = tagsParam ? tagsParam.split(',').filter(Boolean) : [];
 
-  // Don't fetch on server - let client handle everything via SWR cache
   return (
     <PageWrapper 
       data={null} 
