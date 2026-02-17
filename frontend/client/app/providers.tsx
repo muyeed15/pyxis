@@ -3,7 +3,7 @@
 import { SWRConfig } from "swr";
 import { useState } from "react";
 
-// Global fetcher that caches API responses
+
 const fetcher = async (url: string) => {
   const res = await fetch(url);
   if (!res.ok) {
@@ -19,12 +19,12 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     <SWRConfig
       value={{
         provider: () => provider,
-        fetcher, // Global fetcher
+        fetcher, 
         revalidateOnFocus: false, 
         revalidateOnReconnect: false,
         shouldRetryOnError: false,
-        dedupingInterval: 300000, // 5 minutes - aggressive caching
-        revalidateOnMount: false, // Never revalidate on mount
+        dedupingInterval: 300000, 
+        revalidateOnMount: false, 
         keepPreviousData: true,
         focusThrottleInterval: 300000,
       }}
