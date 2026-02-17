@@ -132,9 +132,6 @@ function SearchHeaderContent() {
       setIsLoading(true);
       setShowSuggestions(false);
 
-      // Navigate to the current active tab with the new query
-      // If we are on /search/image, we stay on /search/image
-      // If we are on /search/text (or just /search), we stay there
       router.push(`/search/${activeTab}?q=${encodeURIComponent(finalQuery)}`);
       
       if (finalQuery === initialQuery) {
