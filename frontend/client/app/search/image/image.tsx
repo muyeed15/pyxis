@@ -21,12 +21,10 @@ export default function ImageResultsList({ results, isLoading = false }: ImageRe
     return chunks;
   }, [results]);
 
-  // 1. PRIORITY: If loading, show Skeleton IMMEDIATELY
   if (isLoading) {
     return <ImageSkeletonGrid />;
   }
 
-  // 2. Only if NOT loading, check for empty results
   if (!results || results.length === 0) {
     return (
       <div className="p-10 text-center text-gray-500">
