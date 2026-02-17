@@ -15,7 +15,6 @@ export default async function TextSearchPage(props: PageProps) {
   const searchParams = await props.searchParams;
   const query = searchParams.q;
 
-  // Don't fetch on server - let client handle everything via SWR cache
   return (
     <PageWrapper
       data={null}
