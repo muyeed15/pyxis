@@ -80,6 +80,16 @@ function SearchHeaderContent() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   
+  const getActiveTab = () => {
+    if (pathname.includes("/search/image")) return "image";
+    if (pathname.includes("/search/video")) return "video";
+    if (pathname.includes("/search/news")) return "news";
+    if (pathname.includes("/search/book")) return "book";
+    return "text"; 
+  };
+  
+  const activeTab = getActiveTab();
+
   const initialQuery = searchParams.get("q") || "";
   const [isLoading, setIsLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -121,7 +131,9 @@ function SearchHeaderContent() {
     if (finalQuery.trim()) {
       setIsLoading(true);
       setShowSuggestions(false);
-      router.push(`/search/text?q=${encodeURIComponent(finalQuery)}`);
+
+      router.push(`/search/${activeTab}?q=${encodeURIComponent(finalQuery)}`);
+      
       if (finalQuery === initialQuery) {
         setTimeout(() => setIsLoading(false), 800);
       }
@@ -237,16 +249,6 @@ function SearchHeaderContent() {
     },
   ];
 
-  const getActiveTab = () => {
-    if (pathname.includes("/image")) return "image";
-    if (pathname.includes("/video")) return "video";
-    if (pathname.includes("/news")) return "news";
-    if (pathname.includes("/book")) return "book";
-    return "text";
-  };
-  
-  const activeTab = getActiveTab();
-
   return (
     <header className="sticky top-0 bg-white z-50 pt-4 md:pt-6 border-b border-gray-200 transition-colors">
       <div className="max-w-[1200px] mx-auto px-4 md:px-8">
@@ -272,7 +274,6 @@ function SearchHeaderContent() {
 
         {/* Search Bar Row */}
         <div className="flex pb-4">
-          {/* Changed: Replaced top-[2px] with md:mt-1 (4px) to force it down more visibly on desktop */}
           <div ref={containerRef} className="w-full md:max-w-2xl relative md:mt-1">
             <form
               onSubmit={handleSearch}

@@ -37,7 +37,8 @@ export default function TextResultsList({ results }: TextResultsListProps) {
   return (
     <div className="space-y-8 max-w-[650px]">
       {results.map((item, index) => {
-        const uniqueKey = `${item.href}-${index}`;
+    
+        const uniqueKey = item.href || `${index}`;
 
         let hostname = "";
         try {

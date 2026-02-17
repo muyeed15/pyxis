@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { APIResponse, ImageSearchResultItem } from '../../types';
+import useSWR from 'swr';
+import type { APIResponse, ImageSearchResultItem, AutocompleteData } from '../../types';
 import SearchHeader from '../../components/searchheader';
 import ImageResultsList from './image';
 import ImageCategoryBar from './image-category-bar'; 
@@ -15,17 +16,67 @@ interface PageWrapperProps {
   tags: string[]; 
 }
 
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`API Error: ${res.status}`);
+  return res.json();
+};
+
 export default function PageWrapper({ 
-  data, 
-  relatedKeywords, 
-  errorMessage, 
+  data: initialData, 
+  relatedKeywords: initialKeywords, 
+  errorMessage: initialError, 
   query,
   tags 
 }: PageWrapperProps) {
+
+  const rawUrl = process.env.NEXT_PUBLIC_URL_BACKEND_API || "http://127.0.0.1:5000";
+  const backendUrl = rawUrl.replace("localhost", "127.0.0.1");
+
+  const combinedSearchQuery = [query, ...tags].join(" ").trim();
+
+  const imagesKey = combinedSearchQuery 
+    ? `${backendUrl}/search?q=${encodeURIComponent(combinedSearchQuery)}&type=images&max_results=100`
+    : null;
+  
+  const autocompleteKey = combinedSearchQuery
+    ? `${backendUrl}/autocomplete?q=${encodeURIComponent(combinedSearchQuery)}`
+    : null;
+
+  const { data: imagesData, error: imagesError, isLoading } = useSWR<APIResponse>(
+    imagesKey,
+    fetcher,
+    { 
+      fallbackData: initialData || undefined,
+      revalidateOnMount: true, 
+      revalidateIfStale: false,  
+      revalidateOnFocus: false,  
+      revalidateOnReconnect: false,
+      dedupingInterval: 300000, 
+      focusThrottleInterval: 300000,
+    }
+  );
+
+  const { data: autocompleteData } = useSWR<AutocompleteData>(
+    autocompleteKey,
+    fetcher,
+    { 
+      fallbackData: initialKeywords.length > 0 ? { suggestions: initialKeywords } : undefined,
+      revalidateOnMount: true,
+      dedupingInterval: 300000,
+    }
+  );
+
+  const relatedKeywords = autocompleteData?.suggestions || initialKeywords;
+  const data = imagesData || initialData;
+  const errorMessage = imagesError?.message || initialError;
+
+  const isActuallyLoading = isLoading && !data && !errorMessage;
+
   const fullResults = (data?.results as ImageSearchResultItem[]) || [];
   const [visibleCount, setVisibleCount] = useState(20);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const observerTarget = useRef<HTMLDivElement>(null);
+  const [observerTarget, setObserverTarget] = useState<HTMLDivElement | null>(null);
 
   const displayCategories = useMemo(() => {
     if (fullResults.length === 0) return relatedKeywords;
@@ -67,31 +118,23 @@ export default function PageWrapper({
   }, [query, tags]);
 
   useEffect(() => {
+    if (!observerTarget) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         const target = entries[0];
         if (target.isIntersecting && !isLoadingMore && visibleCount < fullResults.length) {
           setIsLoadingMore(true);
-          
           setTimeout(() => {
             setVisibleCount((prev) => Math.min(prev + 20, fullResults.length));
             setIsLoadingMore(false);
           }, 600);
         }
       },
-      { 
-        threshold: 0.1,
-        rootMargin: '100px',
-      }
+      { threshold: 0.1, rootMargin: '200px' }
     );
-
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
-
-    return () => {
-      if (observerTarget.current) observer.unobserve(observerTarget.current);
-    };
+    observer.observe(observerTarget);
+    return () => observer.disconnect();
   }, [observerTarget, isLoadingMore, visibleCount, fullResults.length]);
 
 
@@ -106,11 +149,10 @@ export default function PageWrapper({
           key={query + tags.join(',')}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.15 }}
           className="max-w-[1600px] mx-auto px-4 md:px-6 py-4"
         >
           
-          {/* Category Bar */}
           {(hasCategories || tags.length > 0) && (
             <div className="mb-6 -mx-4 px-4 md:mx-0 md:px-0">
                <ImageCategoryBar 
@@ -122,14 +164,21 @@ export default function PageWrapper({
           )}
   
           {errorMessage ? (
-            <div className="text-red-500 mt-10 text-center">Error: {errorMessage}</div>
+            <div className="p-6 bg-red-50 border border-red-100 rounded-lg text-red-600 text-center">
+               <p>Error loading images: {errorMessage}</p>
+            </div>
           ) : (
             <div className="flex flex-col gap-8">
-               <ImageResultsList results={currentVisibleResults} />
-  
-               {/* --- INFINITE SCROLL TRIGGER / LOADER --- */}
+               <ImageResultsList 
+                 results={currentVisibleResults} 
+                 isLoading={isActuallyLoading}
+               />
+
                {visibleCount < fullResults.length && (
-                  <div ref={observerTarget} className="flex justify-center pb-12 pt-4 h-20 w-full">
+                  <div 
+                    ref={setObserverTarget} 
+                    className="flex justify-center pb-12 pt-4 h-20 w-full"
+                  >
                     {isLoadingMore && (
                        <div className="flex items-center gap-2">
                           <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
