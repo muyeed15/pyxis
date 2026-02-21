@@ -13,14 +13,32 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
   };
 }
 
+const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:5000';
+
 export default async function VideoSearchPage(props: PageProps) {
   const searchParams = await props.searchParams;
   const query = (searchParams.q as string) || "";
 
+  let data = null;
+  let errorMessage = null;
+
+  if (query) {
+    const res = await fetch(
+      `${API_BASE_URL}/search?q=${encodeURIComponent(query)}&type=videos&max_results=50`,
+      { next: { revalidate: 600 } }
+    );
+
+    if (res.ok) {
+      data = await res.json();
+    } else {
+      errorMessage = 'Failed to load video results.';
+    }
+  }
+
   return (
     <PageWrapper 
-      data={null} 
-      errorMessage={null} 
+      data={data}
+      errorMessage={errorMessage}
       query={query}
     />
   );
