@@ -21,10 +21,10 @@ export default function InstantAnswer({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.1 }}
-      className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm"
+      className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm"
     >
       {imageUrl && (
-        <div className="w-full bg-gray-50 dark:bg-gray-900 relative group">
+        <div className="w-full bg-gray-50 relative group">
           <img
             src={imageUrl}
             alt={query}
@@ -52,7 +52,7 @@ export default function InstantAnswer({
 
       <div className="p-5">
         <div className="flex items-start justify-between gap-2 mb-3">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
             <svg
               className="w-4 h-4 flex-shrink-0"
               fill="none"
@@ -72,7 +72,7 @@ export default function InstantAnswer({
             href="https://duckduckgo.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[10px] text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-1 transition-colors flex-shrink-0"
+            className="text-[10px] text-gray-500 hover:text-gray-700 flex items-center gap-1 transition-colors flex-shrink-0"
           >
             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm0 22C6.5 22 2 17.5 2 12S6.5 2 12 2s10 4.5 10 10-4.5 10-10 10z" />
@@ -82,7 +82,7 @@ export default function InstantAnswer({
           </a>
         </div>
 
-        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+        <p className="text-sm text-gray-700 leading-relaxed">
           {answer}
         </p>
       </div>
