@@ -1,13 +1,15 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from 'next';
+
+const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:5000/:path*', // poxy to backend server
+        destination: 'http://localhost:5000/:path*',
       },
     ];
   },
+  allowedDevOrigins: ['search.pyx-lab.org'],
 };
 
-module.exports = nextConfig;
+export default nextConfig;
