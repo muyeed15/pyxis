@@ -16,6 +16,25 @@ export interface ImageSearchResultItem {
   source: string;
 }
 
+// video
+export interface VideoSearchResultItem {
+  title: string;
+  content: string;   
+  description?: string;
+  images?: {         
+    large?: string;
+    medium?: string;
+    small?: string;
+    motion?: string;
+  } | string;        
+  duration?: string;
+  publisher?: string;
+  published?: string;
+  statistics?: {
+    viewCount?: number;
+  };
+}
+
 export interface AutocompleteData {
   suggestions: string[];
 }
@@ -24,5 +43,5 @@ export interface APIResponse {
   search_type: string;
   query: string;
   count: number;
-  results: TextSearchResultItem[] | ImageSearchResultItem[];
+  results: TextSearchResultItem[] | ImageSearchResultItem[] | VideoSearchResultItem[];
 }
