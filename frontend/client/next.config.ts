@@ -10,6 +10,14 @@ const nextConfig: NextConfig = {
     ];
   },
   allowedDevOrigins: ['search.pyx-lab.org'],
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

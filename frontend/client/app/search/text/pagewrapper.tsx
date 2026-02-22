@@ -1,12 +1,18 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect } from 'react';
-import useSWR from 'swr';
-import type { APIResponse, TextSearchResultItem, AutocompleteData } from '../../types';
-import SearchHeader from '../../components/searchheader';
-import TextResultsList from './text';
-import InstantAnswer from '../../components/instantanswer';
-import RelatedSearches from '../../components/relatedsearches';
+import { useState, useRef, useEffect, useCallback } from "react";
+import useSWR from "swr";
+import type {
+  APIResponse,
+  TextSearchResultItem,
+  AutocompleteData,
+} from "../../types";
+import SearchHeader from "../../components/searchheader";
+import TextResultsList from "./text";
+import InstantAnswer from "../../components/instantanswer";
+import RelatedSearches from "../../components/relatedsearches";
+
+const TEXT_MAX_PAGES = 10;
 
 function SidebarSkeleton() {
   return (
@@ -53,11 +59,15 @@ export default function PageWrapper({
   query,
   instantAnswer: initialInstantAnswer,
 }: PageWrapperProps) {
-  const textKey = query
-    ? `/api/search?q=${encodeURIComponent(query)}&type=text&max_results=50&safesearch=on`
+  const instantKey = query
+    ? `/api/instant?q=${encodeURIComponent(query)}`
     : null;
-  const instantKey = query ? `/api/instant?q=${encodeURIComponent(query)}` : null;
-  const autocompleteKey = query ? `/api/autocomplete?q=${encodeURIComponent(query)}` : null;
+  const autocompleteKey = query
+    ? `/api/autocomplete?q=${encodeURIComponent(query)}`
+    : null;
+  const textKey = query
+    ? `/api/search?q=${encodeURIComponent(query)}&type=text&page=1`
+    : null;
 
   const retryCountRef = useRef(0);
   const [exhausted, setExhausted] = useState(false);
@@ -65,66 +75,102 @@ export default function PageWrapper({
   useEffect(() => {
     retryCountRef.current = 0;
     setExhausted(false);
-  }, [textKey]);
+    setAllResults((initialData?.results as TextSearchResultItem[]) || []);
+    setCurrentPage(1);
+    setHasMore(initialData?.has_more ?? false);
+    setLoadingMore(false);
+    setLoadMoreError(false);
+  }, [query]);
 
-  const { data: textData } = useSWR<APIResponse>(
-    textKey,
-    fetcher,
-    {
-      fallbackData: initialData || undefined,
-      revalidateOnMount: !initialData,
-      revalidateIfStale: false,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      dedupingInterval: 300000,
-      shouldRetryOnError: true,
-      onErrorRetry: (_, _key, _config, revalidate, { retryCount }) => {
-        retryCountRef.current = retryCount;
-        if (retryCount >= MAX_RETRIES) { setExhausted(true); return; }
-        setTimeout(() => revalidate({ retryCount }), 2000);
-      },
-    }
-  );
+  const { data: textData } = useSWR<APIResponse>(textKey, fetcher, {
+    fallbackData: initialData || undefined,
+    revalidateOnMount: !initialData,
+    revalidateIfStale: false,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 300000,
+    shouldRetryOnError: true,
+    onErrorRetry: (_, _key, _config, revalidate, { retryCount }) => {
+      retryCountRef.current = retryCount;
+      if (retryCount >= MAX_RETRIES) {
+        setExhausted(true);
+        return;
+      }
+      setTimeout(() => revalidate({ retryCount }), 2000);
+    },
+  });
 
-  const { data: instantData } = useSWR(
-    instantKey,
-    fetcher,
-    {
-      fallbackData: initialInstantAnswer || undefined,
-      revalidateOnMount: !initialInstantAnswer,
-      revalidateIfStale: false,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      dedupingInterval: 300000,
-      shouldRetryOnError: false,
-    }
-  );
+  const { data: instantData } = useSWR(instantKey, fetcher, {
+    fallbackData: initialInstantAnswer || undefined,
+    revalidateOnMount: !initialInstantAnswer,
+    revalidateIfStale: false,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 300000,
+    shouldRetryOnError: false,
+  });
 
   const { data: autocompleteData } = useSWR<AutocompleteData>(
     autocompleteKey,
     fetcher,
     {
-      fallbackData: initialKeywords.length > 0 ? { suggestions: initialKeywords } : undefined,
+      fallbackData:
+        initialKeywords.length > 0
+          ? { suggestions: initialKeywords }
+          : undefined,
       revalidateOnMount: !initialKeywords.length,
       revalidateIfStale: false,
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
       dedupingInterval: 300000,
       shouldRetryOnError: false,
-    }
+    },
   );
 
-  const data = textData || initialData;
+  const [allResults, setAllResults] = useState<TextSearchResultItem[]>(
+    (initialData?.results as TextSearchResultItem[]) || [],
+  );
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(initialData?.has_more ?? false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState(false);
+
+  useEffect(() => {
+    if (textData && currentPage === 1) {
+      setAllResults((textData.results as TextSearchResultItem[]) || []);
+      setHasMore(textData.has_more ?? false);
+    }
+  }, [textData]);
+
+  const loadMore = useCallback(async () => {
+    const nextPage = currentPage + 1;
+    if (nextPage > TEXT_MAX_PAGES || loadingMore || !hasMore) return;
+
+    setLoadingMore(true);
+    setLoadMoreError(false);
+
+    try {
+      const res = await fetch(
+        `/api/search?q=${encodeURIComponent(query)}&type=text&page=${nextPage}`,
+      );
+      if (!res.ok) throw new Error(`${res.status}`);
+      const data: APIResponse = await res.json();
+      const newResults = (data.results as TextSearchResultItem[]) || [];
+      setAllResults((prev) => [...prev, ...newResults]);
+      setCurrentPage(nextPage);
+      setHasMore((data.has_more ?? false) && nextPage < TEXT_MAX_PAGES);
+    } catch {
+      setLoadMoreError(true);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [currentPage, hasMore, loadingMore, query]);
+
   const related = autocompleteData?.suggestions || initialKeywords;
   const activeInstantAnswer = instantData || initialInstantAnswer;
 
-  const showLoadingState = !data && !exhausted;
-  const showFatalError = exhausted && !data;
-
-  const results = (data?.results as TextSearchResultItem[]) || [];
-  const [visibleCount, setVisibleCount] = useState(10);
-  const currentVisibleResults = results.slice(0, visibleCount);
-
+  const showLoadingState = !textData && !initialData && !exhausted;
+  const showFatalError = exhausted && !textData && !initialData;
   const showSidebarContent = !!(activeInstantAnswer || related.length);
 
   return (
@@ -133,7 +179,6 @@ export default function PageWrapper({
 
       <main className="max-w-[1200px] mx-auto px-4 md:px-8 py-6">
         <div className="flex flex-col lg:flex-row gap-10">
-
           <div className="flex-1 min-w-0">
             {showFatalError ? (
               <div className="p-6 bg-red-50 border border-red-100 rounded-lg text-red-600">
@@ -150,14 +195,30 @@ export default function PageWrapper({
               </div>
             ) : (
               <>
-                <TextResultsList results={currentVisibleResults} />
-                {visibleCount < results.length && (
-                  <div className="mt-8 mb-12 max-w-[650px]">
+                <TextResultsList results={allResults} />
+
+                {loadMoreError && (
+                  <p className="mt-6 text-sm text-gray-500 text-center italic">
+                    Nothing new right now
+                  </p>
+                )}
+
+                {hasMore && (
+                  <div className="mt-8 mb-12 max-w-[680px]">
                     <button
-                      onClick={() => setVisibleCount((p) => Math.min(p + 10, results.length))}
-                      className="w-full py-3 bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium rounded-lg transition-colors border border-gray-200"
+                      onClick={loadMore}
+                      disabled={loadingMore}
+                      className="w-full py-3 bg-gray-50 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 font-medium rounded-lg transition-colors border border-gray-200"
                     >
-                      Show More Results
+                      {loadingMore ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                        </span>
+                      ) : (
+                        "Show More Results"
+                      )}
                     </button>
                   </div>
                 )}
@@ -183,7 +244,6 @@ export default function PageWrapper({
               <SidebarSkeleton />
             ) : null}
           </div>
-
         </div>
       </main>
     </div>
