@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { ImageSearchResultItem } from "../../types";
 
 const PANEL_WIDTH = 380;
+const EAGER_LOAD_COUNT = 5;
 
 interface ImageResultsListProps {
   results: ImageSearchResultItem[];
@@ -50,10 +51,9 @@ export default function ImageResultsList({
         display: "grid",
         gridTemplateColumns: isOpen
           ? "repeat(auto-fill, minmax(140px, 1fr))"
-          : "repeat(5, minmax(0, 1fr))", // 5 columns when panel closed
+          : "repeat(5, minmax(0, 1fr))",
         columnGap: "0.625rem",
         rowGap: "0.875rem",
-        transition: "grid-template-columns 0.3s ease",
       }}
     >
       {results.map((item, i) => (
@@ -69,21 +69,26 @@ export default function ImageResultsList({
   );
 }
 
-function ImageCard({
-  item,
-  index,
-  isSelected,
-  onClick,
-}: {
+// ---------------------------------------------------------------------------
+// ImageCard
+// ---------------------------------------------------------------------------
+
+interface ImageCardProps {
   item: ImageSearchResultItem;
   index: number;
   isSelected: boolean;
   onClick: () => void;
-}) {
-  const [status, setStatus] = useState<"loading" | "loaded" | "error">(
-    "loading",
-  );
-  const [src, setSrc] = useState(item.thumbnail || item.image);
+}
+
+function ImageCard({ item, index, isSelected, onClick }: ImageCardProps) {
+  const thumb = item.thumbnail?.trim();
+  const [hidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    setHidden(false);
+  }, [item.thumbnail]);
+
+  if (!thumb || hidden) return null;
 
   const hostname = (() => {
     try {
@@ -94,63 +99,31 @@ function ImageCard({
   })();
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true, margin: "120px" }}
-      transition={{ duration: 0.25, delay: Math.min(index * 0.015, 0.25) }}
-      className={`group cursor-pointer flex flex-col rounded-xl transition-all duration-150 ${isSelected ? "ring-2 ring-black ring-offset-1" : ""}`}
+    <div
+      className={`cursor-pointer flex flex-col rounded-xl ${isSelected ? "ring-2 ring-black ring-offset-1" : ""}`}
       onClick={onClick}
     >
       <div
-        className="relative w-full rounded-xl overflow-hidden bg-gray-100"
+        className="relative w-full rounded-xl overflow-hidden bg-gray-200"
         style={{ aspectRatio: "4/3" }}
       >
-        {status === "loading" && (
-          <div className="absolute inset-0 bg-gray-200 animate-pulse" />
-        )}
-        {status === "error" && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-            <svg
-              className="w-7 h-7 text-gray-300"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-          </div>
-        )}
         <img
-          src={src}
+          src={thumb}
           alt={item.title}
-          loading="lazy"
-          onLoad={() => setStatus("loaded")}
-          onError={() => {
-            if (
-              src === item.thumbnail &&
-              item.image &&
-              item.image !== item.thumbnail
-            ) {
-              setSrc(item.image);
-            } else {
-              setStatus("error");
-            }
-          }}
-          className={`absolute inset-0 w-full h-full object-cover transition-all duration-300 group-hover:scale-105 ${status === "loaded" ? "opacity-100" : "opacity-0"}`}
+          loading={index < EAGER_LOAD_COUNT ? "eager" : "lazy"}
+          fetchPriority={index < EAGER_LOAD_COUNT ? "high" : "auto"}
+          decoding="async"
+          onError={() => setHidden(true)}
+          className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200" />
       </div>
       <div className="flex items-center gap-1.5 mt-1.5 px-0.5">
         <img
-          src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=32`}
+          src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=16`}
           alt=""
-          className="w-3.5 h-3.5 rounded-sm flex-shrink-0"
+          width={14}
+          height={14}
+          className="rounded-sm flex-shrink-0"
           onError={(e) => {
             e.currentTarget.style.display = "none";
           }}
@@ -162,8 +135,20 @@ function ImageCard({
       <p className="text-[12px] font-medium text-gray-700 line-clamp-2 leading-snug px-0.5 mt-0.5">
         {item.title}
       </p>
-    </motion.div>
+    </div>
   );
+}
+
+// ---------------------------------------------------------------------------
+// SidePanel
+// ---------------------------------------------------------------------------
+
+interface SidePanelProps {
+  results: ImageSearchResultItem[];
+  index: number;
+  onClose: () => void;
+  onPrev: () => void;
+  onNext: () => void;
 }
 
 export function SidePanel({
@@ -172,22 +157,25 @@ export function SidePanel({
   onClose,
   onPrev,
   onNext,
-}: {
-  results: ImageSearchResultItem[];
-  index: number;
-  onClose: () => void;
-  onPrev: () => void;
-  onNext: () => void;
-}) {
+}: SidePanelProps) {
   const item = results[index];
-  const [imgStatus, setImgStatus] = useState<"loading" | "loaded" | "error">(
-    "loading",
-  );
+  const thumb = item.thumbnail?.trim();
+  const [fullReady, setFullReady] = useState(false);
   const [headerH, setHeaderH] = useState(0);
 
+  // Preload full image silently in the background while thumbnail is visible.
   useEffect(() => {
-    setImgStatus("loading");
-  }, [index]);
+    setFullReady(false);
+    if (!item.image) return;
+    const img = new window.Image();
+    img.src = item.image;
+    img.onload = () => setFullReady(true);
+    img.onerror = () => setFullReady(false);
+    return () => {
+      img.onload = null;
+      img.onerror = null;
+    };
+  }, [index, item.image]);
 
   useEffect(() => {
     const measure = () => {
@@ -207,8 +195,6 @@ export function SidePanel({
       return "";
     }
   })();
-  const hasPrev = index > 0;
-  const hasNext = index < results.length - 1;
 
   return (
     <motion.div
@@ -228,7 +214,7 @@ export function SidePanel({
         <div className="flex items-center gap-1">
           <button
             onClick={onPrev}
-            disabled={!hasPrev}
+            disabled={index === 0}
             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
           >
             <svg
@@ -247,7 +233,7 @@ export function SidePanel({
           </button>
           <button
             onClick={onNext}
-            disabled={!hasNext}
+            disabled={index === results.length - 1}
             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
           >
             <svg
@@ -288,49 +274,40 @@ export function SidePanel({
         </button>
       </div>
 
-      {/* Image */}
+      {/* Image area — thumbnail underneath, full image fades in on top */}
       <div
-        className="relative bg-gray-50 flex items-center justify-center shrink-0"
+        className="relative bg-gray-100 flex items-center justify-center shrink-0"
         style={{ minHeight: 240 }}
       >
-        {imgStatus === "loading" && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-7 h-7 border-2 border-gray-200 border-t-gray-500 rounded-full animate-spin" />
-          </div>
+        <style>{`@keyframes sidePanelFade { from { opacity: 0 } to { opacity: 1 } }`}</style>
+
+        {/* Thumbnail — always visible immediately */}
+        {thumb && (
+          <img
+            src={thumb}
+            alt={item.title}
+            decoding="async"
+            className="w-full h-auto max-h-[52vh] object-contain"
+          />
         )}
-        {imgStatus === "error" && (
-          <div className="flex flex-col items-center gap-2 text-gray-300 py-14">
-            <svg
-              className="w-10 h-10"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            <span className="text-sm">Image unavailable</span>
-          </div>
+
+        {/* Full image — mounts only after preload completes, fades in over thumbnail */}
+        {fullReady && (
+          <img
+            src={item.image}
+            alt={item.title}
+            decoding="async"
+            className="absolute inset-0 w-full h-full object-contain"
+            style={{ animation: "sidePanelFade 0.4s ease forwards" }}
+          />
         )}
-        <img
-          src={item.image}
-          alt={item.title}
-          className={`w-full h-auto max-h-[52vh] object-contain transition-opacity duration-200 ${imgStatus === "loaded" ? "opacity-100" : "opacity-0"}`}
-          onLoad={() => setImgStatus("loaded")}
-          onError={() => setImgStatus("error")}
-        />
       </div>
 
-      {/* Info */}
+      {/* Metadata */}
       <div className="flex flex-col gap-4 p-4 flex-1">
         <p className="text-sm font-semibold text-gray-900 leading-snug">
           {item.title}
         </p>
-
         <div className="flex flex-wrap gap-3">
           {item.width && item.height && (
             <span className="inline-flex items-center gap-1 text-xs text-gray-400 bg-gray-50 px-2.5 py-1 rounded-full">
@@ -352,9 +329,11 @@ export function SidePanel({
           )}
           <span className="inline-flex items-center gap-1.5 text-xs text-gray-400 bg-gray-50 px-2.5 py-1 rounded-full max-w-full overflow-hidden">
             <img
-              src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=32`}
+              src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=16`}
               alt=""
-              className="w-3.5 h-3.5 rounded flex-shrink-0"
+              width={14}
+              height={14}
+              className="rounded flex-shrink-0"
               onError={(e) => {
                 e.currentTarget.style.display = "none";
               }}
@@ -362,7 +341,6 @@ export function SidePanel({
             <span className="truncate">{item.source || hostname}</span>
           </span>
         </div>
-
         <div className="flex flex-col gap-2 pt-1">
           <a
             href={item.image}
@@ -385,6 +363,10 @@ export function SidePanel({
     </motion.div>
   );
 }
+
+// ---------------------------------------------------------------------------
+// ImageSkeletonGrid
+// ---------------------------------------------------------------------------
 
 function ImageSkeletonGrid() {
   return (
