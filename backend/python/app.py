@@ -9,6 +9,8 @@ It exposes endpoints for:
     - Instant answers with optional image (using DuckDuckGo Instant Answer API + image fallback)
 
 All endpoints support caching (Redis) to reduce latency and external API calls.
+Cache keys are built from sorted query parameters to ensure parameter-order-independent
+cache hits (e.g. ``?q=car&type=images`` and ``?type=images&q=car`` resolve to the same key).
 """
 
 from flask import Flask, jsonify, request
@@ -92,12 +94,12 @@ BOOKS_MAX_RESULTS_PER_PAGE = 10
 BOOKS_MAX_PAGES = 10
 
 CACHE_TIMEOUT_TEXT = 604800       # 1 week
-CACHE_TIMEOUT_IMAGE = 259200       # 3 days
-CACHE_TIMEOUT_VIDEO = 86400        # 1 day
-CACHE_TIMEOUT_NEWS = 3600          # 1 hour
-CACHE_TIMEOUT_BOOKS = 1296000      # 15 days
-CACHE_TIMEOUT_AUTOCOMPLETE = 2592000  # 30 days (approx 1 month)
-CACHE_TIMEOUT_INSTANT = 2592000    # 30 days
+CACHE_TIMEOUT_IMAGE = 259200      # 3 days
+CACHE_TIMEOUT_VIDEO = 86400       # 1 day
+CACHE_TIMEOUT_NEWS = 3600         # 1 hour
+CACHE_TIMEOUT_BOOKS = 1296000     # 15 days
+CACHE_TIMEOUT_AUTOCOMPLETE = 2592000  # 30 days
+CACHE_TIMEOUT_INSTANT = 2592000   # 30 days
 
 
 def ddgs_with_retry(fn):
@@ -111,7 +113,7 @@ def ddgs_with_retry(fn):
         The result of the search function.
 
     Raises:
-        The last exception encountered if all retries fail.
+        The last exception encountered if all retries are exhausted.
     """
     last_exc = None
     for attempt in range(MAX_RETRIES):
@@ -127,14 +129,19 @@ def ddgs_with_retry(fn):
 
 def make_cache_key(*args, **kwargs):
     """
-    Generate a cache key based on the full request path (including query string).
+    Generate a normalised, order-independent cache key for the current request.
 
-    This function is used as the `key_prefix` for caching route responses.
+    Query parameters are sorted alphabetically before being joined, ensuring
+    that requests with identical parameters in different orders (e.g.
+    ``?q=car&type=images`` vs ``?type=images&q=car``) resolve to the same
+    Redis key and therefore the same cached response.
 
     Returns:
-        str: The full path of the current request.
+        str: A stable cache key in the form ``<path>?<sorted-query-string>``.
     """
-    return request.full_path
+    params = sorted(request.args.items())  # sort for order-independence
+    sorted_qs = urllib.parse.urlencode(params)
+    return f"{request.path}?{sorted_qs}"
 
 
 # ----------------------------------------------------------------------
@@ -185,23 +192,27 @@ def search():
 
     Query parameters (common):
         q (str): Search keywords (URL‑encoded).
-        type (str): One of "text", "images", "videos", "news", "books". Default "text".
-        region (str): Region code (e.g., "us-en", "de-de"). Default "us-en".
-        timelimit (str, optional): Time restriction (e.g., "d", "w", "m", "y").
-        page (int, optional): Page number (1‑based). Default 1.
-        max_results (int, optional): Results per page (default depends on type).
+        type (str): One of ``text``, ``images``, ``videos``, ``news``, ``books``.
+            Defaults to ``text``.
+        region (str): Region code (e.g. ``us-en``, ``de-de``). Default ``us-en``.
+        timelimit (str, optional): Time restriction – ``d`` (day), ``w`` (week),
+            ``m`` (month), or ``y`` (year).
+        page (int, optional): 1‑based page number. Default ``1``.
+        max_results (int, optional): Results per page. Default varies by type.
 
-    Additional filters are available for images, videos, etc.
-    See the ddgs library documentation for details.
+    Additional filter parameters are accepted for images and videos
+    (``size``, ``color``, ``type_image``, ``layout``, ``license_image``,
+    ``resolution``, ``duration``, ``license_videos``).
+    Refer to the ddgs library documentation for full details.
 
     Returns:
         JSON object containing:
             - search_type: the type of search performed
             - query: the decoded keywords
             - page: current page number
-            - has_more: boolean indicating whether more pages are available
-            - count: number of results in this page
-            - results: list of result items (structure depends on search type)
+            - has_more: ``true`` if additional pages are available
+            - count: number of results in this response
+            - results: list of result items (structure varies by search type)
     """
     cache_key = make_cache_key()
     cached = cache.get(cache_key)
@@ -229,7 +240,7 @@ def search():
             results = ddgs_with_retry(lambda d: d.text(
                 keywords,
                 region=region,
-                safesearch="on",                      # strict safe search
+                safesearch="on",
                 timelimit=timelimit,
                 max_results=TEXT_MAX_RESULTS_PER_PAGE,
                 page=page,
@@ -250,7 +261,7 @@ def search():
             print(f"[SEARCH] all retries exhausted — '{keywords}' (text, page {page}): {type(e).__name__}: {e}")
             return jsonify({"error": str(e)}), 500
 
-    # ----- For non‑text searches, common parameters -----
+    # ----- Non-text searches – shared parameters -----
     safesearch = "on"
     max_results = request.args.get("max_results", 10, type=int)
     page = request.args.get("page", 1, type=int)
@@ -351,8 +362,8 @@ def instant_answer():
     Returns:
         JSON object with:
             - query: the decoded query
-            - answer: the textual instant answer (or null if none)
-            - image_url: URL of a safe image related to the query (or null)
+            - answer: the textual instant answer, or ``null`` if unavailable
+            - image_url: URL of a related safe image, or ``null`` if unavailable
     """
     cache_key = make_cache_key()
     cached = cache.get(cache_key)
@@ -383,7 +394,8 @@ def help():
     Return API documentation and status information.
 
     Returns:
-        JSON object with endpoint descriptions, example URLs, and availability flags.
+        JSON object with endpoint descriptions, example URLs, and service
+        availability flags for optional modules (autocomplete, instant answer).
     """
     base_url = request.host_url.rstrip("/")
     return jsonify({

@@ -80,7 +80,7 @@ export default function PageWrapper({
     setHasMore(initialData?.has_more ?? false);
     setLoadingMore(false);
     setLoadMoreError(false);
-  }, [query]);
+  }, [query, initialData]);
 
   const { data: textData } = useSWR<APIResponse>(textKey, fetcher, {
     fallbackData: initialData || undefined,
@@ -140,8 +140,11 @@ export default function PageWrapper({
       setAllResults((textData.results as TextSearchResultItem[]) || []);
       setHasMore(textData.has_more ?? false);
     }
-  }, [textData]);
+  }, [textData, currentPage]);
 
+  // --------------------------------------------------------------------------
+  // loadMore with automatic retries (exponential backoff)
+  // --------------------------------------------------------------------------
   const loadMore = useCallback(async () => {
     const nextPage = currentPage + 1;
     if (nextPage > TEXT_MAX_PAGES || loadingMore || !hasMore) return;
@@ -149,21 +152,37 @@ export default function PageWrapper({
     setLoadingMore(true);
     setLoadMoreError(false);
 
-    try {
-      const res = await fetch(
-        `/api/search?q=${encodeURIComponent(query)}&type=text&page=${nextPage}`,
-      );
-      if (!res.ok) throw new Error(`${res.status}`);
-      const data: APIResponse = await res.json();
-      const newResults = (data.results as TextSearchResultItem[]) || [];
-      setAllResults((prev) => [...prev, ...newResults]);
-      setCurrentPage(nextPage);
-      setHasMore((data.has_more ?? false) && nextPage < TEXT_MAX_PAGES);
-    } catch {
-      setLoadMoreError(true);
-    } finally {
-      setLoadingMore(false);
+    const maxRetries = 3;
+    let attempt = 0;
+    let success = false;
+
+    while (attempt < maxRetries && !success) {
+      try {
+        const res = await fetch(
+          `/api/search?q=${encodeURIComponent(query)}&type=text&page=${nextPage}`,
+        );
+        if (!res.ok) throw new Error(`${res.status}`);
+        const data: APIResponse = await res.json();
+        const newResults = (data.results as TextSearchResultItem[]) || [];
+
+        setAllResults((prev) => [...prev, ...newResults]);
+        setCurrentPage(nextPage);
+        setHasMore((data.has_more ?? false) && nextPage < TEXT_MAX_PAGES);
+        success = true; // exit loop
+      } catch (error) {
+        attempt++;
+        if (attempt === maxRetries) {
+          setLoadMoreError(true);
+        } else {
+          // wait before retrying (1s, 2s, 4s)
+          await new Promise((resolve) =>
+            setTimeout(resolve, 1000 * Math.pow(2, attempt)),
+          );
+        }
+      }
     }
+
+    setLoadingMore(false);
   }, [currentPage, hasMore, loadingMore, query]);
 
   const related = autocompleteData?.suggestions || initialKeywords;

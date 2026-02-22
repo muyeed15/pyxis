@@ -8,6 +8,22 @@ interface RelatedSearchesProps {
   currentQuery: string;
 }
 
+function stringToColor(str: string): string {
+  const palette = [
+    "#EF4444",
+    "#F59E0B",
+    "#10B981",
+    "#3B82F6",
+    "#6366F1",
+    "#8B5CF6",
+    "#EC4899",
+  ];
+  let hash = 0;
+  for (let i = 0; i < str.length; i++)
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  return palette[Math.abs(hash) % palette.length];
+}
+
 export default function RelatedSearches({
   keywords,
   currentQuery,
@@ -39,31 +55,30 @@ export default function RelatedSearches({
         Related Searches
       </h3>
 
-      <div className="space-y-2">
+      <div className="flex flex-wrap gap-2">
         {keywords.slice(0, 8).map((keyword, index) => (
           <Link
             key={index}
-            href={`/search/text?q=${encodeURIComponent(keyword)}&safesearch=on`}
-            className="block group"
+            href={`/search/text?q=${encodeURIComponent(keyword)}`}
+            prefetch={false} // reduce unnecessary prefetches for suggestions
+            className="group"
           >
-            <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors">
-              <svg
-                className="w-3.5 h-3.5 text-gray-400 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.03 }}
+              className="flex items-center gap-2 pl-1 pr-3 py-1 bg-white border border-gray-200 rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all"
+            >
+              <div
+                className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-bold uppercase"
+                style={{ backgroundColor: stringToColor(keyword) }}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-              <span className="text-sm text-gray-700 group-hover:text-black transition-colors line-clamp-1">
+                {keyword[0]}
+              </div>
+              <span className="text-sm text-gray-700 whitespace-nowrap">
                 {keyword}
               </span>
-            </div>
+            </motion.div>
           </Link>
         ))}
       </div>
