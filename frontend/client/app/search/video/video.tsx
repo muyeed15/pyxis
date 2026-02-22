@@ -64,7 +64,7 @@ export default function VideoResultsList({
 
     return (
       <div className="flex flex-col gap-8 pb-12 w-full max-w-[1600px] mx-auto">
-        {/* --- BENTO BOX --- */}
+        {/* BENTO BOX */}
         <div
           style={{
             display: "grid",
@@ -75,10 +75,10 @@ export default function VideoResultsList({
         >
           {/* 1. Hero Video */}
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <HeroCard item={heroVideo} />
+            <HeroCard item={heroVideo} index={0} />
           </div>
 
-          {/* 2. Top Results List  */}
+          {/* 2. Top Results List */}
           <div
             style={{
               backgroundColor: "#f3f6f8",
@@ -110,7 +110,7 @@ export default function VideoResultsList({
               }}
             >
               {listVideos.map((item, idx) => (
-                <ListCard key={idx} item={item} />
+                <ListCard key={idx} item={item} index={idx + 1} />
               ))}
             </div>
           </div>
@@ -150,13 +150,13 @@ export default function VideoResultsList({
               }}
             >
               {shortsVideos.map((item, idx) => (
-                <ShortCard key={idx} item={item} />
+                <ShortCard key={idx} item={item} index={idx + 4} />
               ))}
             </div>
           </div>
         </div>
 
-        {/* --- BOTTOM GRID SECTION (5 columns) --- */}
+        {/* BOTTOM GRID SECTION (5 columns) */}
         <div
           style={{
             display: "grid",
@@ -167,7 +167,7 @@ export default function VideoResultsList({
           }}
         >
           {remainingVideos.map((item, idx) => (
-            <StandardCard key={idx} item={item} />
+            <StandardCard key={idx} item={item} index={idx + 6} />
           ))}
         </div>
       </div>
@@ -188,13 +188,23 @@ export default function VideoResultsList({
       }}
     >
       {results.map((item, idx) => (
-        <StandardCard key={idx} item={item} />
+        <StandardCard key={idx} item={item} index={idx} />
       ))}
     </div>
   );
 }
 
-function HeroCard({ item }: { item: VideoSearchResultItem }) {
+// ----------------------------------------------------------------------
+// Card components with index for loading priority
+// ----------------------------------------------------------------------
+
+function HeroCard({
+  item,
+  index,
+}: {
+  item: VideoSearchResultItem;
+  index: number;
+}) {
   return (
     <a
       href={item.content}
@@ -212,7 +222,6 @@ function HeroCard({ item }: { item: VideoSearchResultItem }) {
         boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
       }}
     >
-      {/* 16:9 Aspect Ratio Container */}
       <div
         style={{
           position: "relative",
@@ -233,6 +242,8 @@ function HeroCard({ item }: { item: VideoSearchResultItem }) {
             height: "100%",
             objectFit: "cover",
           }}
+          loading="eager"
+          fetchPriority="high"
           onError={(e) =>
             (e.currentTarget.src =
               "https://picsum.photos/seed/fallback/640/360")
@@ -302,7 +313,13 @@ function HeroCard({ item }: { item: VideoSearchResultItem }) {
   );
 }
 
-function ListCard({ item }: { item: VideoSearchResultItem }) {
+function ListCard({
+  item,
+  index,
+}: {
+  item: VideoSearchResultItem;
+  index: number;
+}) {
   return (
     <a
       href={item.content}
@@ -320,7 +337,6 @@ function ListCard({ item }: { item: VideoSearchResultItem }) {
         padding: "0.5rem",
       }}
     >
-      {/* Thumbnail */}
       <div
         style={{
           position: "relative",
@@ -343,6 +359,8 @@ function ListCard({ item }: { item: VideoSearchResultItem }) {
             height: "100%",
             objectFit: "cover",
           }}
+          loading="lazy"
+          fetchPriority={index < 3 ? "high" : "auto"}
         />
         <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <PlayIcon className="w-5 h-5 text-white ml-0.5 opacity-90" />
@@ -353,7 +371,6 @@ function ListCard({ item }: { item: VideoSearchResultItem }) {
           </div>
         )}
       </div>
-      {/* Text */}
       <div
         style={{
           display: "flex",
@@ -397,7 +414,13 @@ function ListCard({ item }: { item: VideoSearchResultItem }) {
   );
 }
 
-function ShortCard({ item }: { item: VideoSearchResultItem }) {
+function ShortCard({
+  item,
+  index,
+}: {
+  item: VideoSearchResultItem;
+  index: number;
+}) {
   return (
     <a
       href={item.content}
@@ -426,6 +449,8 @@ function ShortCard({ item }: { item: VideoSearchResultItem }) {
           height: "100%",
           objectFit: "cover",
         }}
+        loading="lazy"
+        fetchPriority={index < 6 ? "high" : "auto"}
       />
       <div
         className="bg-gradient-to-t from-black/90 via-black/20 to-transparent p-3"
@@ -467,7 +492,13 @@ function ShortCard({ item }: { item: VideoSearchResultItem }) {
   );
 }
 
-function StandardCard({ item }: { item: VideoSearchResultItem }) {
+function StandardCard({
+  item,
+  index,
+}: {
+  item: VideoSearchResultItem;
+  index: number;
+}) {
   return (
     <a
       href={item.content}
@@ -496,7 +527,6 @@ function StandardCard({ item }: { item: VideoSearchResultItem }) {
           src={getThumbnail(item)}
           alt={item.title}
           className="transition-transform duration-300 group-hover:scale-105"
-          loading="lazy"
           style={{
             position: "absolute",
             top: 0,
@@ -505,6 +535,8 @@ function StandardCard({ item }: { item: VideoSearchResultItem }) {
             height: "100%",
             objectFit: "cover",
           }}
+          loading="lazy"
+          fetchPriority={index < 8 ? "high" : "auto"}
         />
         <div className="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <div className="w-10 h-10 bg-black/60 rounded-full flex items-center justify-center backdrop-blur-sm">
