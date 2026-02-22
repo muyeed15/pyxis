@@ -8,12 +8,12 @@ interface PageProps {
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const searchParams = await props.searchParams;
   const query = (searchParams.q as string) || "";
-  return { 
-    title: query ? `${query} - Pyxis Videos` : 'Pyxis Videos' 
+  return {
+    title: query ? `${query} - Pyxis Videos` : "Pyxis Videos",
   };
 }
 
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:5000";
 
 export default async function VideoSearchPage(props: PageProps) {
   const searchParams = await props.searchParams;
@@ -24,22 +24,16 @@ export default async function VideoSearchPage(props: PageProps) {
 
   if (query) {
     const res = await fetch(
-      `${API_BASE_URL}/search?q=${encodeURIComponent(query)}&type=videos&max_results=50`,
-      { next: { revalidate: 600 } }
+      `${API_BASE_URL}/search?q=${encodeURIComponent(query)}&type=videos&max_results=20&page=1`,
+      { next: { revalidate: 600 } },
     );
 
     if (res.ok) {
       data = await res.json();
     } else {
-      errorMessage = 'Failed to load video results.';
+      errorMessage = "Failed to load video results.";
     }
   }
 
-  return (
-    <PageWrapper 
-      data={data}
-      errorMessage={errorMessage}
-      query={query}
-    />
-  );
+  return <PageWrapper data={data} errorMessage={errorMessage} query={query} />;
 }
