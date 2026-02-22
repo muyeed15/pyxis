@@ -1,12 +1,16 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import useSWR from 'swr';
-import type { APIResponse, ImageSearchResultItem, AutocompleteData } from '../../types';
-import SearchHeader from '../../components/searchheader';
-import ImageResultsList, { SidePanel } from './image';
-import ImageCategoryBar from './image-category-bar';
+import { useState, useEffect, useRef, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import useSWR from "swr";
+import type {
+  APIResponse,
+  ImageSearchResultItem,
+  AutocompleteData,
+} from "../../types";
+import SearchHeader from "../../components/searchheader";
+import ImageResultsList, { SidePanel } from "./image";
+import ImageCategoryBar from "./image-category-bar";
 
 interface PageWrapperProps {
   data: APIResponse | null;
@@ -24,6 +28,8 @@ const fetcher = async (url: string) => {
 
 const MAX_RETRIES = 20;
 const PANEL_WIDTH = 380;
+const IMAGE_RESULTS_PER_PAGE = 20;
+const IMAGE_MAX_PAGES = 10;
 
 export default function PageWrapper({
   data: initialData,
@@ -32,10 +38,10 @@ export default function PageWrapper({
   query,
   tags,
 }: PageWrapperProps) {
-  const combinedSearchQuery = [query, ...tags].join(' ').trim();
+  const combinedSearchQuery = [query, ...tags].join(" ").trim();
 
   const imagesKey = combinedSearchQuery
-    ? `/api/search?q=${encodeURIComponent(combinedSearchQuery)}&type=images&max_results=30`
+    ? `/api/search?q=${encodeURIComponent(combinedSearchQuery)}&type=images&max_results=${IMAGE_RESULTS_PER_PAGE}&page=1`
     : null;
   const autocompleteKey = combinedSearchQuery
     ? `/api/autocomplete?q=${encodeURIComponent(combinedSearchQuery)}`
@@ -45,23 +51,24 @@ export default function PageWrapper({
   const [exhausted, setExhausted] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
+  const [allResults, setAllResults] = useState<ImageSearchResultItem[]>(
+    (initialData?.results as ImageSearchResultItem[]) || [],
+  );
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(initialData?.has_more ?? false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState(false);
+
   useEffect(() => {
     retryCountRef.current = 0;
     setExhausted(false);
     setSelectedIndex(null);
-  }, [imagesKey]);
-
-  // Keyboard nav
-  useEffect(() => {
-    if (selectedIndex === null) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setSelectedIndex(null);
-      if (e.key === 'ArrowLeft') setSelectedIndex(i => (i !== null && i > 0 ? i - 1 : i));
-      if (e.key === 'ArrowRight') setSelectedIndex(i => (i !== null ? i + 1 : i));
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [selectedIndex]);
+    setAllResults((initialData?.results as ImageSearchResultItem[]) || []);
+    setCurrentPage(1);
+    setHasMore(initialData?.has_more ?? false);
+    setLoadingMore(false);
+    setLoadMoreError(false);
+  }, [combinedSearchQuery, initialData]);
 
   const { data: imagesData } = useSWR<APIResponse>(imagesKey, fetcher, {
     fallbackData: initialData || undefined,
@@ -73,74 +80,150 @@ export default function PageWrapper({
     shouldRetryOnError: true,
     onErrorRetry: (_, _key, _cfg, revalidate, { retryCount }) => {
       retryCountRef.current = retryCount;
-      if (retryCount >= MAX_RETRIES) { setExhausted(true); return; }
+      if (retryCount >= MAX_RETRIES) {
+        setExhausted(true);
+        return;
+      }
       setTimeout(() => revalidate({ retryCount }), 2000);
     },
   });
 
-  const { data: autocompleteData } = useSWR<AutocompleteData>(autocompleteKey, fetcher, {
-    fallbackData: initialKeywords.length > 0 ? { suggestions: initialKeywords } : undefined,
-    revalidateOnMount: !initialKeywords.length,
-    revalidateIfStale: false,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    dedupingInterval: 300000,
-    shouldRetryOnError: false,
-  });
+  useEffect(() => {
+    if (imagesData && currentPage === 1) {
+      setAllResults((imagesData.results as ImageSearchResultItem[]) || []);
+      setHasMore(imagesData.has_more ?? false);
+    }
+  }, [imagesData, currentPage]);
+
+  const { data: autocompleteData } = useSWR<AutocompleteData>(
+    autocompleteKey,
+    fetcher,
+    {
+      fallbackData:
+        initialKeywords.length > 0
+          ? { suggestions: initialKeywords }
+          : undefined,
+      revalidateOnMount: !initialKeywords.length,
+      revalidateIfStale: false,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 300000,
+      shouldRetryOnError: false,
+    },
+  );
 
   const relatedKeywords = autocompleteData?.suggestions || initialKeywords;
   const data = imagesData;
   const showLoadingState = !data && !exhausted;
   const showFatalError = exhausted && !data;
 
-  const fullResults = (data?.results as ImageSearchResultItem[]) || [];
-  const [visibleCount, setVisibleCount] = useState(30);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [observerTarget, setObserverTarget] = useState<HTMLDivElement | null>(null);
+  const loadMore = async () => {
+    const nextPage = currentPage + 1;
+    if (nextPage > IMAGE_MAX_PAGES || loadingMore || !hasMore) return;
+
+    setLoadingMore(true);
+    setLoadMoreError(false);
+
+    try {
+      const res = await fetch(
+        `/api/search?q=${encodeURIComponent(combinedSearchQuery)}&type=images&max_results=${IMAGE_RESULTS_PER_PAGE}&page=${nextPage}`,
+      );
+      if (!res.ok) throw new Error(`${res.status}`);
+      const data: APIResponse = await res.json();
+      const newResults = (data.results as ImageSearchResultItem[]) || [];
+
+      setAllResults((prev) => [...prev, ...newResults]);
+      setCurrentPage(nextPage);
+      setHasMore(data.has_more ?? false);
+    } catch {
+      setLoadMoreError(true);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const displayCategories = useMemo(() => {
-    if (fullResults.length === 0) return relatedKeywords;
+    if (allResults.length === 0) return relatedKeywords;
     const wordCounts: Record<string, number> = {};
     const stopWords = new Set([
-      'the','and','a','an','of','in','for','on','with','by','at','to','from','is','it',
-      'that','this','your','best','choose','thrives','environment','climate','wallpapers',
-      'images','pictures','photos','hd','4k','background','download','free','stock','photo',
-      'image','picture','desktop','phone','mobile','screen','full','size','view','about',
-      'review','top','quality','high','resolution','get','make','how','what','when','where',
+      "the",
+      "and",
+      "a",
+      "an",
+      "of",
+      "in",
+      "for",
+      "on",
+      "with",
+      "by",
+      "at",
+      "to",
+      "from",
+      "is",
+      "it",
+      "that",
+      "this",
+      "your",
+      "best",
+      "choose",
+      "thrives",
+      "environment",
+      "climate",
+      "wallpapers",
+      "images",
+      "pictures",
+      "photos",
+      "hd",
+      "4k",
+      "background",
+      "download",
+      "free",
+      "stock",
+      "photo",
+      "image",
+      "picture",
+      "desktop",
+      "phone",
+      "mobile",
+      "screen",
+      "full",
+      "size",
+      "view",
+      "about",
+      "review",
+      "top",
+      "quality",
+      "high",
+      "resolution",
+      "get",
+      "make",
+      "how",
+      "what",
+      "when",
+      "where",
     ]);
-    query.toLowerCase().split(' ').forEach(w => stopWords.add(w));
-    tags.forEach(t => stopWords.add(t.toLowerCase()));
-    fullResults.forEach(item => {
-      item.title.toLowerCase().replace(/[^a-z0-9 ]/g, '').split(/\s+/).forEach(word => {
-        if (word.length > 3 && !stopWords.has(word)) wordCounts[word] = (wordCounts[word] || 0) + 1;
-      });
+    query
+      .toLowerCase()
+      .split(" ")
+      .forEach((w) => stopWords.add(w));
+    tags.forEach((t) => stopWords.add(t.toLowerCase()));
+    allResults.forEach((item) => {
+      item.title
+        .toLowerCase()
+        .replace(/[^a-z0-9 ]/g, "")
+        .split(/\s+/)
+        .forEach((word) => {
+          if (word.length > 3 && !stopWords.has(word))
+            wordCounts[word] = (wordCounts[word] || 0) + 1;
+        });
     });
-    const topWords = Object.entries(wordCounts).sort(([,a],[,b]) => b - a).slice(0, 15)
+    const topWords = Object.entries(wordCounts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 15)
       .map(([w]) => w.charAt(0).toUpperCase() + w.slice(1));
     return topWords.length > 0 ? topWords : relatedKeywords;
-  }, [fullResults, query, relatedKeywords, tags]);
+  }, [allResults, query, relatedKeywords, tags]);
 
-  useEffect(() => {
-    setVisibleCount(30);
-    setIsLoadingMore(false);
-  }, [query, tags]);
-
-  useEffect(() => {
-    if (!observerTarget) return;
-    const observer = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && !isLoadingMore && visibleCount < fullResults.length) {
-        setIsLoadingMore(true);
-        setTimeout(() => {
-          setVisibleCount(p => Math.min(p + 20, fullResults.length));
-          setIsLoadingMore(false);
-        }, 400);
-      }
-    }, { threshold: 0.1, rootMargin: '200px' });
-    observer.observe(observerTarget);
-    return () => observer.disconnect();
-  }, [observerTarget, isLoadingMore, visibleCount, fullResults.length]);
-
-  const currentVisibleResults = fullResults.slice(0, visibleCount);
   const isPanelOpen = selectedIndex !== null;
 
   return (
@@ -149,18 +232,26 @@ export default function PageWrapper({
 
       <AnimatePresence mode="wait">
         <motion.main
-          key={query + tags.join(',')}
+          key={combinedSearchQuery}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.15 }}
           className="max-w-[1600px] mx-auto px-4 md:px-6 py-4"
-          style={{ marginRight: isPanelOpen ? PANEL_WIDTH : 0, transition: 'margin-right 0.3s ease' }}
+          style={{
+            marginRight: isPanelOpen ? PANEL_WIDTH : 0,
+            transition: "margin-right 0.3s ease",
+          }}
         >
-          {!showLoadingState && (displayCategories.length > 0 || tags.length > 0) && (
-            <div className="mb-5 -mx-4 px-4 md:mx-0 md:px-0">
-              <ImageCategoryBar keywords={displayCategories} currentQuery={query} activeTags={tags} />
-            </div>
-          )}
+          {!showLoadingState &&
+            (displayCategories.length > 0 || tags.length > 0) && (
+              <div className="mb-5 -mx-4 px-4 md:mx-0 md:px-0">
+                <ImageCategoryBar
+                  keywords={displayCategories}
+                  currentQuery={query}
+                  activeTags={tags}
+                />
+              </div>
+            )}
 
           {showFatalError ? (
             <div className="p-6 bg-red-50 border border-red-100 rounded-xl text-red-600 text-center">
@@ -178,21 +269,35 @@ export default function PageWrapper({
           ) : (
             <div className="flex flex-col gap-6">
               <ImageResultsList
-                results={currentVisibleResults}
+                results={allResults}
                 isLoading={false}
                 selectedIndex={selectedIndex}
                 onSelect={setSelectedIndex}
               />
 
-              {visibleCount < fullResults.length && (
-                <div ref={setObserverTarget} className="flex justify-center pb-10 pt-2 h-16 w-full">
-                  {isLoadingMore && (
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                    </div>
-                  )}
+              {loadMoreError && (
+                <p className="text-sm text-gray-500 text-center italic">
+                  Nothing new right now
+                </p>
+              )}
+
+              {hasMore && (
+                <div className="mt-4 mb-8 flex justify-center">
+                  <button
+                    onClick={loadMore}
+                    disabled={loadingMore}
+                    className="px-6 py-3 bg-gray-50 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 font-medium rounded-lg transition-colors border border-gray-200"
+                  >
+                    {loadingMore ? (
+                      <span className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                      </span>
+                    ) : (
+                      "Show More Results"
+                    )}
+                  </button>
                 </div>
               )}
             </div>
@@ -203,11 +308,17 @@ export default function PageWrapper({
       <AnimatePresence>
         {isPanelOpen && selectedIndex !== null && (
           <SidePanel
-            results={currentVisibleResults}
+            results={allResults}
             index={selectedIndex}
             onClose={() => setSelectedIndex(null)}
-            onPrev={() => setSelectedIndex(i => (i !== null && i > 0 ? i - 1 : i))}
-            onNext={() => setSelectedIndex(i => (i !== null && i < currentVisibleResults.length - 1 ? i + 1 : i))}
+            onPrev={() =>
+              setSelectedIndex((i) => (i !== null && i > 0 ? i - 1 : i))
+            }
+            onNext={() =>
+              setSelectedIndex((i) =>
+                i !== null && i < allResults.length - 1 ? i + 1 : i,
+              )
+            }
           />
         )}
       </AnimatePresence>
