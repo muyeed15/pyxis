@@ -1,150 +1,172 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface ImageCategoryBarProps {
   keywords: string[];
   currentQuery: string;
-  activeTags: string[]; 
+  activeTags: string[];
 }
 
-export default function ImageCategoryBar({ keywords, currentQuery, activeTags }: ImageCategoryBarProps) {
+/**
+ * Derives a deterministic accent colour for a keyword chip when no thumbnail
+ * is available. The colour is stable across renders for the same string.
+ */
+function stringToColor(str: string): string {
+  const palette = [
+    "#EF4444",
+    "#F59E0B",
+    "#10B981",
+    "#3B82F6",
+    "#6366F1",
+    "#8B5CF6",
+    "#EC4899",
+  ];
+  let hash = 0;
+  for (let i = 0; i < str.length; i++)
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  return palette[Math.abs(hash) % palette.length];
+}
+
+/**
+ * Horizontal scrollable bar that displays:
+ *  1. The active search query pill (with a clear button).
+ *  2. Active tag pills (each removable via a URL update).
+ *  3. Suggestion chips derived from keyword extraction or autocomplete.
+ *
+ * Suggestion chips use a coloured initial avatar instead of remote thumbnails,
+ * which eliminates the 12+ Wikipedia API round-trips that previously blocked
+ * the bar from rendering.
+ *
+ * All navigation is handled through URL params so the parent Server Component
+ * re-runs and the Redis-cached API response is reused where possible.
+ */
+export default function ImageCategoryBar({
+  keywords,
+  currentQuery,
+  activeTags,
+}: ImageCategoryBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [categoriesWithImages, setCategoriesWithImages] = useState<{term: string, img: string | null}[]>([]);
 
-  const getTagUrl = (tag: string, action: 'add' | 'remove') => {
+  /**
+   * Builds a URL that adds or removes a tag from the ``tags`` query parameter
+   * while preserving all other search params.
+   */
+  const getTagUrl = (tag: string, action: "add" | "remove"): string => {
     const params = new URLSearchParams(searchParams.toString());
-    let newTags = [...activeTags];
+    let next = [...activeTags];
 
-    if (action === 'remove') {
-      newTags = newTags.filter(t => t !== tag);
-    } else {
-      if (!newTags.includes(tag)) newTags.push(tag);
+    if (action === "remove") {
+      next = next.filter((t) => t !== tag);
+    } else if (!next.includes(tag)) {
+      next.push(tag);
     }
 
-    if (newTags.length > 0) {
-      params.set('tags', newTags.join(','));
+    if (next.length > 0) {
+      params.set("tags", next.join(","));
     } else {
-      params.delete('tags');
+      params.delete("tags");
     }
 
-    if (currentQuery) params.set('q', currentQuery);
-    
+    if (currentQuery) params.set("q", currentQuery);
     return `/search/image?${params.toString()}`;
   };
 
-  useEffect(() => {
-    let isMounted = true;
+  // Filter out the current query and any already-active tags from suggestions,
+  // then cap at 12 chips to keep the bar compact.
+  const suggestions = keywords
+    .filter(
+      (k) =>
+        k.toLowerCase() !== currentQuery.toLowerCase() &&
+        !activeTags.includes(k),
+    )
+    .slice(0, 12);
 
-    const fetchImages = async () => {
-      const filtered = keywords
-        .filter(k => 
-          k.toLowerCase() !== currentQuery.toLowerCase() && 
-          !activeTags.includes(k)
-        )
-        .slice(0, 12);
-      
-      // 2. Fetch thumbnails
-      const results = await Promise.all(filtered.map(async (term) => {
-        try {
-          const res = await fetch(`https://en.wikipedia.org/w/api.php?action=query&generator=prefixsearch&gpssearch=${encodeURIComponent(term)}&gpslimit=1&prop=pageimages&pithumbsize=100&format=json&origin=*`);
-          const data = await res.json();
-          const page = Object.values(data.query?.pages || {})[0] as any;
-          return { term, img: page?.thumbnail?.source || null };
-        } catch {
-          return { term, img: null };
-        }
-      }));
-
-      if (isMounted) {
-        setCategoriesWithImages(results);
-      }
-    };
-
-    fetchImages();
-
-    return () => { isMounted = false; };
-  }, [keywords, currentQuery, activeTags]);
+  const hasPills = currentQuery || activeTags.length > 0;
 
   return (
     <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2">
-      
-      {/* 1. ORIGINAL QUERY PILL */}
+      {/* 1. Active query pill */}
       {currentQuery && (
         <div className="flex-shrink-0 flex items-center gap-2 bg-black text-white pl-4 pr-3 py-1 rounded-lg h-[40px] shadow-sm">
           <span className="text-sm font-medium capitalize">{currentQuery}</span>
-          <button 
-            onClick={() => router.push('/search/image')} 
+          <button
+            onClick={() => router.push("/search/image")}
             className="hover:bg-white/20 rounded-full p-1 transition-colors"
             title="Clear search"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
       )}
 
-      {/* 2. ACTIVE TAG PILLS */}
+      {/* 2. Active tag pills */}
       {activeTags.map((tag, i) => (
-        <div key={`tag-${i}`} className="flex-shrink-0 flex items-center gap-2 bg-black text-white pl-4 pr-3 py-1 rounded-lg h-[40px] shadow-sm animate-in fade-in slide-in-from-left-2">
+        <div
+          key={`tag-${i}`}
+          className="flex-shrink-0 flex items-center gap-2 bg-black text-white pl-4 pr-3 py-1 rounded-lg h-[40px] shadow-sm animate-in fade-in slide-in-from-left-2"
+        >
           <span className="text-sm font-medium capitalize">{tag}</span>
-          <Link 
-            href={getTagUrl(tag, 'remove')}
+          <Link
+            href={getTagUrl(tag, "remove")}
             className="hover:bg-white/20 rounded-full p-1 transition-colors"
             scroll={false}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </Link>
         </div>
       ))}
 
-      {/* Vertical Divider */}
-      {(currentQuery || activeTags.length > 0) && categoriesWithImages.length > 0 && (
-         <div className="h-6 w-[1px] bg-gray-200 mx-1 flex-shrink-0" />
+      {/* Divider between active pills and suggestions */}
+      {hasPills && suggestions.length > 0 && (
+        <div className="h-6 w-[1px] bg-gray-200 mx-1 flex-shrink-0" />
       )}
 
-      {/* 3. SUGGESTIONS (White Chips) */}
-      {categoriesWithImages.map((cat, i) => (
+      {/* 3. Suggestion chips – coloured initial avatar, no remote fetch */}
+      {suggestions.map((term, i) => (
         <Link
           key={i}
-          href={getTagUrl(cat.term, 'add')} 
+          href={getTagUrl(term, "add")}
           scroll={false}
-          className="
-            flex-shrink-0 flex items-center gap-3 pl-1 pr-4 py-1 
-            bg-white border border-gray-200 rounded-lg h-[40px] 
-            hover:bg-gray-50 hover:border-gray-300 transition-all group
-          "
+          className="flex-shrink-0 flex items-center gap-3 pl-1 pr-4 py-1 bg-white border border-gray-200 rounded-lg h-[40px] hover:bg-gray-50 hover:border-gray-300 transition-all group"
         >
-          <div className="w-8 h-8 rounded-md bg-gray-100 overflow-hidden flex-shrink-0 relative">
-            {cat.img ? (
-              <img src={cat.img} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
-            ) : (
-              <div 
-                className="w-full h-full flex items-center justify-center text-white text-[10px] font-bold uppercase"
-                style={{ backgroundColor: stringToColor(cat.term) }}
-              >
-                {cat.term[0]}
-              </div>
-            )}
+          <div
+            className="w-8 h-8 rounded-md flex-shrink-0 flex items-center justify-center text-white text-[11px] font-bold uppercase"
+            style={{ backgroundColor: stringToColor(term) }}
+          >
+            {term[0]}
           </div>
-          <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">{cat.term}</span>
+          <span className="text-sm font-semibold text-gray-700 whitespace-nowrap capitalize">
+            {term}
+          </span>
         </Link>
       ))}
     </div>
   );
-}
-
-function stringToColor(str: string) {
-  const colors = ['#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#6366F1', '#8B5CF6', '#EC4899'];
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  return colors[Math.abs(hash) % colors.length];
 }
