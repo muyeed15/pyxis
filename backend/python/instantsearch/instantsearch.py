@@ -5,6 +5,19 @@ from typing import Optional, Tuple
 import urllib.parse
 
 
+SAFE_IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".webp", ".gif")
+BLOCKED_KEYWORDS = ("explicit", "nude", "nsfw", "porn", "xxx", "sex", "adult")
+
+
+def is_safe_image_url(url: str) -> bool:
+    lower = url.lower()
+    if not any(lower.endswith(ext) for ext in SAFE_IMAGE_EXTENSIONS):
+        return False
+    if any(kw in lower for kw in BLOCKED_KEYWORDS):
+        return False
+    return True
+
+
 class MultiSourceImageFetcher:
     def __init__(self):
         self.session = requests.Session()
@@ -13,7 +26,6 @@ class MultiSourceImageFetcher:
         )
 
     def get_image(self, query: str) -> Optional[str]:
-        # Run Wikipedia and Wikimedia in parallel, return whichever wins
         sources = [self._get_wikipedia_image, self._get_wikimedia_commons_image]
         with ThreadPoolExecutor(max_workers=2) as ex:
             futures = {ex.submit(src, query): src for src in sources}
@@ -21,7 +33,7 @@ class MultiSourceImageFetcher:
                 for future in as_completed(futures, timeout=4):
                     try:
                         result = future.result()
-                        if result:
+                        if result and is_safe_image_url(result):
                             return result
                     except Exception:
                         continue
@@ -82,8 +94,7 @@ class InstantAnswerClient:
         self.session.headers.update({"User-Agent": "InstantAnswerCLI/1.0"})
         self.image_fetcher = MultiSourceImageFetcher()
 
-    def fetch_answer_and_image(self, query: str) -> Tuple[str, Optional[str]]:
-        # Fetch answer and image in parallel
+    def fetch_answer_and_image(self, query: str) -> Tuple[Optional[str], Optional[str]]:
         with ThreadPoolExecutor(max_workers=2) as ex:
             answer_future = ex.submit(self._fetch_answer, query)
             image_future = ex.submit(self.image_fetcher.get_image, query)
@@ -92,9 +103,13 @@ class InstantAnswerClient:
                 image_url = image_future.result(timeout=5)
             except Exception:
                 image_url = None
-        return answer, image_url
 
-    def _fetch_answer(self, query: str) -> str:
+        # Only return both if both are present
+        if answer and image_url:
+            return answer, image_url
+        return None, None
+
+    def _fetch_answer(self, query: str) -> Optional[str]:
         try:
             params = {
                 "q": query,
@@ -106,16 +121,15 @@ class InstantAnswerClient:
             r = self.session.get(self.base_url, params=params, timeout=6)
             r.raise_for_status()
             return self._extract_answer(r.json())
-        except requests.RequestException as e:
-            return f"Error: {e}"
+        except requests.RequestException:
+            return None
 
-    def _extract_answer(self, data: dict) -> str:
+    def _extract_answer(self, data: dict) -> Optional[str]:
         for field in ["Abstract", "Answer", "Definition", "AbstractText"]:
-            if data.get(field) and data[field].strip():
-                return data[field].strip()
-        if data.get("Redirect"):
-            return f"Redirects to: {data['Redirect']}"
-        return "No instant answer available."
+            val = data.get(field, "").strip()
+            if val:
+                return val
+        return None
 
 
 def main() -> None:
@@ -124,7 +138,7 @@ def main() -> None:
     if len(sys.argv) > 1:
         query = " ".join(sys.argv[1:])
         answer, image_url = client.fetch_answer_and_image(query)
-        print(f"Query: {query}\nAnswer: {answer}\nImage: {image_url or 'None'}")
+        print(f"Query: {query}\nAnswer: {answer or 'None'}\nImage: {image_url or 'None'}")
         sys.exit(0)
 
     print("Instant Answer Tool (Ctrl+C to exit)")
@@ -134,12 +148,10 @@ def main() -> None:
                 query = input("> ").strip()
             except EOFError:
                 break
-            if not query:
+            if not query or query.lower() in ("quit", "exit"):
                 continue
-            if query.lower() in ("quit", "exit"):
-                break
             answer, image_url = client.fetch_answer_and_image(query)
-            print(f"\nAnswer: {answer}")
+            print(f"\nAnswer: {answer or 'None'}")
             if image_url:
                 print(f"Image:  {image_url}")
             print()
