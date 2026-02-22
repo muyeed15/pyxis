@@ -44,6 +44,7 @@ export default function PageWrapper({
   const [loadingMore, setLoadingMore] = useState(false);
   const [loadMoreError, setLoadMoreError] = useState(false);
 
+  // Reset state when query changes
   useEffect(() => {
     retryCountRef.current = 0;
     setExhausted(false);
@@ -79,6 +80,9 @@ export default function PageWrapper({
     }
   }, [videoData, currentPage]);
 
+  // --------------------------------------------------------------------------
+  // loadMore with automatic retries (exponential backoff)
+  // --------------------------------------------------------------------------
   const loadMore = async () => {
     const nextPage = currentPage + 1;
     if (nextPage > VIDEO_MAX_PAGES || loadingMore || !hasMore) return;
@@ -86,22 +90,38 @@ export default function PageWrapper({
     setLoadingMore(true);
     setLoadMoreError(false);
 
-    try {
-      const res = await fetch(
-        `/api/search?q=${encodeURIComponent(query)}&type=videos&max_results=${VIDEO_RESULTS_PER_PAGE}&page=${nextPage}`,
-      );
-      if (!res.ok) throw new Error(`${res.status}`);
-      const data: APIResponse = await res.json();
-      const newResults = (data.results as VideoSearchResultItem[]) || [];
+    const maxRetries = 3;
+    let attempt = 0;
+    let success = false;
 
-      setAllResults((prev) => [...prev, ...newResults]);
-      setCurrentPage(nextPage);
-      setHasMore(data.has_more ?? false);
-    } catch {
-      setLoadMoreError(true);
-    } finally {
-      setLoadingMore(false);
+    while (attempt < maxRetries && !success) {
+      try {
+        const res = await fetch(
+          `/api/search?q=${encodeURIComponent(query)}&type=videos&max_results=${VIDEO_RESULTS_PER_PAGE}&page=${nextPage}`,
+          { cache: "no-store" }, // ensure fresh data
+        );
+        if (!res.ok) throw new Error(`${res.status}`);
+        const data: APIResponse = await res.json();
+        const newResults = (data.results as VideoSearchResultItem[]) || [];
+
+        setAllResults((prev) => [...prev, ...newResults]);
+        setCurrentPage(nextPage);
+        setHasMore(data.has_more ?? false);
+        success = true; // exit loop
+      } catch (error) {
+        attempt++;
+        if (attempt === maxRetries) {
+          setLoadMoreError(true);
+        } else {
+          // wait before retrying (1s, 2s, 4s)
+          await new Promise((resolve) =>
+            setTimeout(resolve, 1000 * Math.pow(2, attempt)),
+          );
+        }
+      }
     }
+
+    setLoadingMore(false);
   };
 
   const showLoadingState = !videoData && !initialData && !exhausted;
