@@ -1,26 +1,19 @@
 import csv
 from collections import defaultdict
-import re
+from functools import lru_cache
 
 
 class Autocomplete:
     def __init__(self, entities_csv, keywords_csv, patterns_csv):
-        """
-        Initialize Autocomplete with data from CSV files.
-
-        Args:
-            entities_csv: Path to entities CSV file
-            keywords_csv: Path to keywords CSV file
-            patterns_csv: Path to patterns CSV file
-        """
         self.entities = self._load_entities(entities_csv)
         self.keywords = self._load_keywords(keywords_csv)
         self.patterns = self._load_patterns(patterns_csv)
-
         self._build_index()
+        # Result cache: (query, max_results) -> list
+        self._cache: dict = {}
+        self._cache_max = 512
 
     def _build_index(self):
-        """Build search indexes from loaded data."""
         self.all_entities = []
         self.entity_to_categories = defaultdict(list)
 
@@ -36,51 +29,48 @@ class Autocomplete:
         self.action_patterns = self.patterns.get("actions", [])
         self.modifier_patterns = self.patterns.get("modifiers", [])
 
-        # Build prefix index for faster lookup
+        # Prefix indexes for O(1) first-word lookup
         self.entity_prefix_index = defaultdict(list)
         for entity in self.all_entities:
             words = entity.split()
             if words:
                 self.entity_prefix_index[words[0]].append(entity)
 
-        # Build keyword prefix index
         self.keyword_prefix_index = defaultdict(list)
         for keyword in self.keywords:
             words = keyword.split()
             if words:
                 self.keyword_prefix_index[words[0]].append(keyword)
 
-    def _load_entities(self, csv_file):
-        """Load categorized entities from CSV file."""
-        entities = defaultdict(list)
+        # Flat list of all patterns for pattern matching
+        self._all_patterns_flat = []
+        for pl in self.patterns.values():
+            self._all_patterns_flat.extend(pl)
 
+    def _load_entities(self, csv_file):
+        entities = defaultdict(list)
         try:
-            with open(csv_file, "r", encoding="utf-8") as file:
-                reader = csv.DictReader(file)
-                for row in reader:
-                    category = row.get("category", "").strip().lower()
-                    entity = row.get("entity", "").strip().lower()
-                    if category and entity:
-                        entities[category].append(entity)
+            with open(csv_file, "r", encoding="utf-8") as f:
+                for row in csv.DictReader(f):
+                    cat = row.get("category", "").strip().lower()
+                    ent = row.get("entity", "").strip().lower()
+                    if cat and ent:
+                        entities[cat].append(ent)
         except FileNotFoundError:
             print(f"Entities file not found: {csv_file}")
             return defaultdict(list)
         except Exception as e:
             print(f"Error loading entities: {e}")
             return defaultdict(list)
-
-        for category in entities:
-            entities[category] = list(set(entities[category]))
-
+        for cat in entities:
+            entities[cat] = list(set(entities[cat]))
         return dict(entities)
 
     def _load_keywords(self, csv_file):
-        """Load keywords from CSV file."""
         keywords = []
         try:
-            with open(csv_file, "r", encoding="utf-8") as file:
-                reader = csv.reader(file)
-                for row in reader:
+            with open(csv_file, "r", encoding="utf-8") as f:
+                for row in csv.reader(f):
                     if row and row[0].strip():
                         keywords.append(row[0].strip().lower())
         except FileNotFoundError:
@@ -89,61 +79,42 @@ class Autocomplete:
         except Exception as e:
             print(f"Error loading keywords: {e}")
             return []
-
         return list(set(keywords))
 
     def _load_patterns(self, csv_file):
-        """Load search patterns from CSV file."""
         patterns = defaultdict(list)
-
         try:
-            with open(csv_file, "r", encoding="utf-8") as file:
-                reader = csv.DictReader(file)
-                for row in reader:
-                    pattern_type = row.get("type", "").strip().lower()
-                    pattern = row.get("pattern", "").strip().lower()
-                    if pattern_type and pattern:
-                        patterns[pattern_type].append(pattern)
+            with open(csv_file, "r", encoding="utf-8") as f:
+                for row in csv.DictReader(f):
+                    pt = row.get("type", "").strip().lower()
+                    p = row.get("pattern", "").strip().lower()
+                    if pt and p:
+                        patterns[pt].append(p)
         except FileNotFoundError:
             print(f"Patterns file not found: {csv_file}")
             return defaultdict(list)
         except Exception as e:
             print(f"Error loading patterns: {e}")
             return defaultdict(list)
-
         return dict(patterns)
 
     def clean_query(self, query):
-        """Normalize query for searching."""
         if not query:
             return ""
-
-        # Lowercase and strip
-        query = query.lower().strip()
-
-        # Remove extra whitespace
-        query = " ".join(query.split())
-
-        return query
+        return " ".join(query.lower().strip().split())
 
     def generate_suggestions(self, query, max_results=10):
-        """Generate autocomplete suggestions for the given query.
-
-        Args:
-            query: Search query string
-            max_results: Maximum number of suggestions to return
-
-        Returns:
-            List of suggestion strings
-        """
         query = self.clean_query(query)
         if not query:
             return []
 
+        cache_key = (query, max_results)
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+
         seen = set()
         suggestions = []
 
-        # Try different matching strategies in order of relevance
         matchers = [
             self._multi_word_entity_matches,
             self._direct_matches,
@@ -156,66 +127,59 @@ class Autocomplete:
         for matcher in matchers:
             if len(suggestions) >= max_results:
                 break
-            new_suggestions = matcher(query, seen)
-            for suggestion in new_suggestions:
-                if suggestion not in seen and len(suggestion) > len(query):
-                    seen.add(suggestion)
-                    suggestions.append(suggestion)
+            for s in matcher(query, seen):
+                if s not in seen and len(s) > len(query):
+                    seen.add(s)
+                    suggestions.append(s)
                     if len(suggestions) >= max_results:
                         break
 
-        return suggestions[:max_results]
+        result = suggestions[:max_results]
+
+        if len(self._cache) >= self._cache_max:
+            # Evict oldest quarter
+            drop = list(self._cache.keys())[: self._cache_max // 4]
+            for k in drop:
+                del self._cache[k]
+        self._cache[cache_key] = result
+        return result
 
     def _direct_matches(self, query, seen):
-        """Exact matches in entities, keywords, or patterns."""
         matches = []
-
         if query in self.all_entities_set and query not in seen:
             matches.append(query)
-
         if query in self.keywords_set and query not in seen:
             matches.append(query)
-
-        for pattern_list in self.patterns.values():
-            if query in pattern_list and query not in seen:
+        for pl in self.patterns.values():
+            if query in pl and query not in seen:
                 matches.append(query)
                 break
-
         return matches
 
     def _multi_word_entity_matches(self, query, seen, limit=10):
-        """Handle multi-word entity matching."""
         matches = []
         query_words = query.split()
 
-        # If query is already a complete entity, suggest extensions
         if query in self.all_entities_set:
-            # Extend with patterns
             for action in self.action_patterns[:3]:
                 combo = f"{query} {action}"
                 if combo not in seen:
                     matches.append(combo)
             return matches
 
-        # Look for entities that start with the query
         for entity in self.all_entities:
             if entity.startswith(query) and entity not in seen:
                 matches.append(entity)
                 if len(matches) >= limit:
                     break
 
-        # If we have multiple words, try to match the last word as prefix
         if len(query_words) > 1:
             last_word = query_words[-1]
             prefix = " ".join(query_words[:-1])
-
-            # Look for entities that match the pattern: prefix + entity
             for entity in self.all_entities:
-                if entity.startswith(last_word) and f"{prefix} {entity}" not in seen:
+                if entity.startswith(last_word):
                     full_entity = f"{prefix} {entity}"
-                    if (
-                        full_entity not in self.all_entities_set
-                    ):  # Only if not already an entity
+                    if full_entity not in seen and full_entity not in self.all_entities_set:
                         matches.append(full_entity)
                         if len(matches) >= limit:
                             break
@@ -223,150 +187,111 @@ class Autocomplete:
         return matches
 
     def _pattern_based_suggestions(self, query, seen):
-        """Generate suggestions based on patterns."""
         matches = []
         query_words = query.split()
 
-        # Check if query matches the beginning of any pattern
-        all_patterns = []
-        for pattern_list in self.patterns.values():
-            all_patterns.extend(pattern_list)
-
-        for pattern in all_patterns:
+        for pattern in self._all_patterns_flat:
             if pattern.startswith(query) and pattern not in seen:
                 matches.append(pattern)
                 if len(matches) >= 5:
                     break
 
-        # Combine query with patterns if query looks like an entity
         if query_words:
-            # Try to match last word with action patterns
             last_word = query_words[-1]
             for action in self.action_patterns:
                 if action.startswith(last_word):
-                    if len(query_words) > 1:
-                        prefix = " ".join(query_words[:-1])
-                        combo = f"{prefix} {action}"
-                    else:
-                        combo = action
+                    combo = (
+                        f"{' '.join(query_words[:-1])} {action}"
+                        if len(query_words) > 1
+                        else action
+                    )
                     if combo not in seen:
                         matches.append(combo)
 
-            # Try question patterns
-            if query_words[0] in ["how", "what", "where", "when", "why", "who"]:
+            if query_words[0] in ("how", "what", "where", "when", "why", "who"):
                 for question in self.question_patterns:
                     if question.startswith(query_words[0]):
-                        if len(query_words) > 1:
-                            rest = " ".join(query_words[1:])
-                            combo = f"{question} {rest}"
-                        else:
-                            combo = question
+                        combo = (
+                            f"{question} {' '.join(query_words[1:])}"
+                            if len(query_words) > 1
+                            else question
+                        )
                         if combo not in seen:
                             matches.append(combo)
 
         return matches
 
     def _keyword_extension(self, query, seen, limit=5):
-        """Extend query with keywords."""
         matches = []
         query_words = query.split()
-
         if not query_words:
             return matches
 
-        # Try to extend with keywords that start with the last word
         last_word = query_words[-1]
+        prefix = " ".join(query_words[:-1])
+
         for keyword in self.keywords:
             if keyword.startswith(last_word) and keyword != last_word:
-                if len(query_words) > 1:
-                    prefix = " ".join(query_words[:-1])
-                    extension = f"{prefix} {keyword}"
-                else:
-                    extension = keyword
-                if extension not in seen:
-                    matches.append(extension)
+                ext = f"{prefix} {keyword}" if prefix else keyword
+                if ext not in seen:
+                    matches.append(ext)
                     if len(matches) >= limit:
                         break
 
         return matches
 
     def _entity_completion(self, query, seen, limit=5):
-        """Complete partial entity names."""
         matches = []
         query_words = query.split()
-
         if not query_words:
             return matches
 
-        # Use prefix index for faster lookup
         first_word = query_words[0]
-        if first_word in self.entity_prefix_index:
-            for entity in self.entity_prefix_index[first_word]:
-                if entity.startswith(query) and entity not in seen:
-                    matches.append(entity)
-                    if len(matches) >= limit:
-                        break
+        for entity in self.entity_prefix_index.get(first_word, []):
+            if entity.startswith(query) and entity not in seen:
+                matches.append(entity)
+                if len(matches) >= limit:
+                    break
 
         return matches
 
     def _cross_category_suggestions(self, query, seen):
-        """Suggest combinations across categories."""
         matches = []
-        query_words = query.split()
-
-        if not query_words:
-            return matches
-
-        # If query contains an entity, suggest related actions/modifiers
         for entity in self.all_entities:
             if entity in query:
-                # Already have this entity, suggest actions
                 for action in self.action_patterns[:2]:
                     if not query.endswith(action):
                         combo = f"{query} {action}"
                         if combo not in seen:
                             matches.append(combo)
-
-                # Suggest modifiers
                 for modifier in self.modifier_patterns[:2]:
                     if not query.startswith(modifier):
                         combo = f"{modifier} {query}"
                         if combo not in seen:
                             matches.append(combo)
                 break
-
         return matches
 
 
 def main():
-    autocomplete = Autocomplete(
+    ac = Autocomplete(
         entities_csv="dataset/entities.csv",
         keywords_csv="dataset/keywords.csv",
         patterns_csv="dataset/patterns.csv",
     )
-
-    print("Autocomplete System (Ctrl+C to exit)")
-    print("-" * 40)
-
+    print("Autocomplete (Ctrl+C to exit)")
     while True:
         try:
             query = input("\nSearch: ").strip()
             if not query:
                 continue
-
-            results = autocomplete.generate_suggestions(query)
-
+            results = ac.generate_suggestions(query)
             if results:
-                print(f"Suggestions ({len(results)}):")
-                for i, phrase in enumerate(results, 1):
-                    print(f"  {i:2d}. {phrase}")
+                for i, s in enumerate(results, 1):
+                    print(f"  {i:2d}. {s}")
             else:
                 print("No suggestions found")
-
-        except KeyboardInterrupt:
-            print("\nExiting...")
-            break
-        except EOFError:
+        except (KeyboardInterrupt, EOFError):
             print("\nExiting...")
             break
 

@@ -20,9 +20,9 @@ export default function RelatedSearches({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.2 }}
-      className="bg-white dark:bg-[#1a1a1a] rounded-2xl border border-gray-200 dark:border-gray-800 p-5 shadow-sm"
+      className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm"
     >
-      <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+      <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
         <svg
           className="w-4 h-4"
           fill="none"
@@ -43,10 +43,10 @@ export default function RelatedSearches({
         {keywords.slice(0, 8).map((keyword, index) => (
           <Link
             key={index}
-            href={`/search/text?q=${encodeURIComponent(keyword)}`}
+            href={`/search/text?q=${encodeURIComponent(keyword)}&safesearch=on`}
             className="block group"
           >
-            <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors">
               <svg
                 className="w-3.5 h-3.5 text-gray-400 flex-shrink-0"
                 fill="none"
@@ -60,7 +60,7 @@ export default function RelatedSearches({
                   d="M9 5l7 7-7 7"
                 />
               </svg>
-              <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-black dark:group-hover:text-white transition-colors line-clamp-1">
+              <span className="text-sm text-gray-700 group-hover:text-black transition-colors line-clamp-1">
                 {keyword}
               </span>
             </div>
