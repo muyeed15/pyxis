@@ -47,10 +47,9 @@ export default function PageWrapper({
     ? `/api/autocomplete?q=${encodeURIComponent(combinedSearchQuery)}`
     : null;
 
-  const retryCountRef = useRef(0);
-  const [exhausted, setExhausted] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-
+  // --------------------------------------------------------------------------
+  // Pagination state
+  // --------------------------------------------------------------------------
   const [allResults, setAllResults] = useState<ImageSearchResultItem[]>(
     (initialData?.results as ImageSearchResultItem[]) || [],
   );
@@ -59,6 +58,20 @@ export default function PageWrapper({
   const [loadingMore, setLoadingMore] = useState(false);
   const [loadMoreError, setLoadMoreError] = useState(false);
 
+  // --------------------------------------------------------------------------
+  // Panel state
+  // --------------------------------------------------------------------------
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
+  // --------------------------------------------------------------------------
+  // SWR retry tracking
+  // --------------------------------------------------------------------------
+  const retryCountRef = useRef(0);
+  const [exhausted, setExhausted] = useState(false);
+
+  // --------------------------------------------------------------------------
+  // Reset everything when the query changes.
+  // --------------------------------------------------------------------------
   useEffect(() => {
     retryCountRef.current = 0;
     setExhausted(false);
@@ -68,15 +81,19 @@ export default function PageWrapper({
     setHasMore(initialData?.has_more ?? false);
     setLoadingMore(false);
     setLoadMoreError(false);
-  }, [combinedSearchQuery, initialData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [combinedSearchQuery]);
 
+  // --------------------------------------------------------------------------
+  // Data fetching – images
+  // --------------------------------------------------------------------------
   const { data: imagesData } = useSWR<APIResponse>(imagesKey, fetcher, {
     fallbackData: initialData || undefined,
     revalidateOnMount: !initialData,
     revalidateIfStale: false,
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 300000,
+    dedupingInterval: 300_000,
     shouldRetryOnError: true,
     onErrorRetry: (_, _key, _cfg, revalidate, { retryCount }) => {
       retryCountRef.current = retryCount;
@@ -88,13 +105,17 @@ export default function PageWrapper({
     },
   });
 
+  // Sync SWR page-1 data into local state (page-2+ is handled by loadMore).
   useEffect(() => {
-    if (imagesData && currentPage === 1) {
-      setAllResults((imagesData.results as ImageSearchResultItem[]) || []);
-      setHasMore(imagesData.has_more ?? false);
-    }
-  }, [imagesData, currentPage]);
+    if (!imagesData) return;
+    setAllResults((imagesData.results as ImageSearchResultItem[]) || []);
+    setHasMore(imagesData.has_more ?? false);
+    setCurrentPage(1);
+  }, [imagesData]);
 
+  // --------------------------------------------------------------------------
+  // Data fetching – autocomplete
+  // --------------------------------------------------------------------------
   const { data: autocompleteData } = useSWR<AutocompleteData>(
     autocompleteKey,
     fetcher,
@@ -107,16 +128,22 @@ export default function PageWrapper({
       revalidateIfStale: false,
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
-      dedupingInterval: 300000,
+      dedupingInterval: 300_000,
       shouldRetryOnError: false,
     },
   );
 
   const relatedKeywords = autocompleteData?.suggestions || initialKeywords;
-  const data = imagesData;
-  const showLoadingState = !data && !exhausted;
-  const showFatalError = exhausted && !data;
 
+  // --------------------------------------------------------------------------
+  // Derived UI flags
+  // --------------------------------------------------------------------------
+  const showLoadingState = !imagesData && !exhausted;
+  const showFatalError = exhausted && !imagesData;
+
+  // --------------------------------------------------------------------------
+  // Pagination – load next page with automatic retries (exponential backoff)
+  // --------------------------------------------------------------------------
   const loadMore = async () => {
     const nextPage = currentPage + 1;
     if (nextPage > IMAGE_MAX_PAGES || loadingMore || !hasMore) return;
@@ -124,27 +151,44 @@ export default function PageWrapper({
     setLoadingMore(true);
     setLoadMoreError(false);
 
-    try {
-      const res = await fetch(
-        `/api/search?q=${encodeURIComponent(combinedSearchQuery)}&type=images&max_results=${IMAGE_RESULTS_PER_PAGE}&page=${nextPage}`,
-      );
-      if (!res.ok) throw new Error(`${res.status}`);
-      const data: APIResponse = await res.json();
-      const newResults = (data.results as ImageSearchResultItem[]) || [];
+    const maxRetries = 3;
+    let attempt = 0;
+    let success = false;
 
-      setAllResults((prev) => [...prev, ...newResults]);
-      setCurrentPage(nextPage);
-      setHasMore(data.has_more ?? false);
-    } catch {
-      setLoadMoreError(true);
-    } finally {
-      setLoadingMore(false);
+    while (attempt < maxRetries && !success) {
+      try {
+        const res = await fetch(
+          `/api/search?q=${encodeURIComponent(combinedSearchQuery)}&type=images&max_results=${IMAGE_RESULTS_PER_PAGE}&page=${nextPage}`,
+        );
+        if (!res.ok) throw new Error(`${res.status}`);
+        const pageData: APIResponse = await res.json();
+        const newResults = (pageData.results as ImageSearchResultItem[]) || [];
+        setAllResults((prev) => [...prev, ...newResults]);
+        setCurrentPage(nextPage);
+        setHasMore(pageData.has_more ?? false);
+        success = true; // exit loop
+      } catch (error) {
+        attempt++;
+        if (attempt === maxRetries) {
+          setLoadMoreError(true);
+        } else {
+          // wait before retrying (exponential backoff: 1s, 2s, 4s)
+          await new Promise((resolve) =>
+            setTimeout(resolve, 1000 * Math.pow(2, attempt)),
+          );
+        }
+      }
     }
+
+    setLoadingMore(false);
   };
 
+  // --------------------------------------------------------------------------
+  // Category bar keywords
+  // --------------------------------------------------------------------------
   const displayCategories = useMemo(() => {
     if (allResults.length === 0) return relatedKeywords;
-    const wordCounts: Record<string, number> = {};
+
     const stopWords = new Set([
       "the",
       "and",
@@ -207,25 +251,33 @@ export default function PageWrapper({
       .split(" ")
       .forEach((w) => stopWords.add(w));
     tags.forEach((t) => stopWords.add(t.toLowerCase()));
+
+    const counts: Record<string, number> = {};
     allResults.forEach((item) => {
       item.title
         .toLowerCase()
         .replace(/[^a-z0-9 ]/g, "")
         .split(/\s+/)
         .forEach((word) => {
-          if (word.length > 3 && !stopWords.has(word))
-            wordCounts[word] = (wordCounts[word] || 0) + 1;
+          if (word.length > 3 && !stopWords.has(word)) {
+            counts[word] = (counts[word] || 0) + 1;
+          }
         });
     });
-    const topWords = Object.entries(wordCounts)
+
+    const top = Object.entries(counts)
       .sort(([, a], [, b]) => b - a)
       .slice(0, 15)
       .map(([w]) => w.charAt(0).toUpperCase() + w.slice(1));
-    return topWords.length > 0 ? topWords : relatedKeywords;
+
+    return top.length > 0 ? top : relatedKeywords;
   }, [allResults, query, relatedKeywords, tags]);
 
   const isPanelOpen = selectedIndex !== null;
 
+  // --------------------------------------------------------------------------
+  // Render
+  // --------------------------------------------------------------------------
   return (
     <div className="min-h-screen bg-white">
       <SearchHeader />
@@ -243,6 +295,7 @@ export default function PageWrapper({
           }}
         >
           {!showLoadingState &&
+            !showFatalError &&
             (displayCategories.length > 0 || tags.length > 0) && (
               <div className="mb-5 -mx-4 px-4 md:mx-0 md:px-0">
                 <ImageCategoryBar
@@ -258,19 +311,11 @@ export default function PageWrapper({
               <p className="font-medium">Something went wrong</p>
               <p className="text-sm opacity-70 mt-1">Please try again later.</p>
             </div>
-          ) : showLoadingState ? (
-            <div className="flex flex-col items-center justify-center py-24 gap-4">
-              <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                <div className="w-2.5 h-2.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                <div className="w-2.5 h-2.5 bg-gray-400 rounded-full animate-bounce" />
-              </div>
-            </div>
           ) : (
             <div className="flex flex-col gap-6">
               <ImageResultsList
                 results={allResults}
-                isLoading={false}
+                isLoading={showLoadingState}
                 selectedIndex={selectedIndex}
                 onSelect={setSelectedIndex}
               />
@@ -281,7 +326,7 @@ export default function PageWrapper({
                 </p>
               )}
 
-              {hasMore && (
+              {hasMore && !showLoadingState && (
                 <div className="mt-4 mb-8 flex justify-center">
                   <button
                     onClick={loadMore}

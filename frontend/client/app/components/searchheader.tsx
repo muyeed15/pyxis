@@ -13,12 +13,35 @@ export interface RichSuggestion {
   url: string;
 }
 
+/**
+ * Shared autocomplete hook used by both {@link SearchHeader} and the home
+ * search bar.
+ *
+ * Fires two parallel requests on each debounced keystroke:
+ *  - Internal ``/api/autocomplete`` for keyword suggestions.
+ *  - Wikipedia ``prefixsearch`` for rich entity cards (title + thumbnail).
+ *
+ * Requests are aborted when a newer keystroke arrives or the component
+ * unmounts, preventing stale responses from overwriting fresher ones.
+ *
+ * **Sync behaviour:** When ``initialQuery`` changes (e.g. because the shared
+ * header is kept mounted across tab navigation and ``searchParams`` updates),
+ * the local ``query`` state is synchronised so the input always reflects the
+ * current URL query.
+ */
 export function useAutocomplete(initialQuery = "") {
   const [query, setQuery] = useState(initialQuery);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [richSuggestions, setRichSuggestions] = useState<RichSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+
+  // Sync local query whenever the URL-derived initialQuery changes.
+  // This handles the case where SearchHeader stays mounted across tab switches
+  // and searchParams updates without a full remount.
+  useEffect(() => {
+    setQuery(initialQuery);
+  }, [initialQuery]);
 
   useEffect(() => {
     if (query.trim().length < 2) {
@@ -39,7 +62,7 @@ export function useAutocomplete(initialQuery = "") {
             .then((r) => (r.ok ? r.json() : { suggestions: [] }))
             .catch(() => ({ suggestions: [] })),
           fetch(
-            `https://en.wikipedia.org/w/api.php?action=query&generator=prefixsearch&gpssearch=${encodeURIComponent(query)}&gpslimit=3&prop=pageimages|description&pithumbsize=200&format=json&formatversion=2&origin=*`,
+            `https://en.wikipedia.org/w/api.php?action=query&generator=prefixsearch&gpssearch=${encodeURIComponent(query)}&gpslimit=3&prop=pageimages|description&pithumbsize=80&format=json&formatversion=2&origin=*`,
             { signal },
           )
             .then((r) => r.json())
@@ -89,6 +112,10 @@ export function useAutocomplete(initialQuery = "") {
   };
 }
 
+// ---------------------------------------------------------------------------
+// SearchHeaderContent
+// ---------------------------------------------------------------------------
+
 function SearchHeaderContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -103,7 +130,11 @@ function SearchHeaderContent() {
   };
 
   const activeTab = getActiveTab();
-  const initialQuery = searchParams.get("q") || "";
+
+  // Derive the current query from the URL so the input always reflects the
+  // active search even when the component stays mounted across navigations.
+  const urlQuery = searchParams.get("q") || "";
+
   const [isLoading, setIsLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -114,13 +145,15 @@ function SearchHeaderContent() {
     richSuggestions,
     showSuggestions,
     setShowSuggestions,
-  } = useAutocomplete(initialQuery);
+  } = useAutocomplete(urlQuery);
 
+  // Clear loading state and suggestions when navigation completes.
   useEffect(() => {
     setIsLoading(false);
     setShowSuggestions(false);
   }, [searchParams]);
 
+  // Dismiss suggestion dropdown on outside click / tap.
   useEffect(() => {
     const handle = (e: MouseEvent | TouchEvent) => {
       if (
@@ -145,7 +178,7 @@ function SearchHeaderContent() {
       setIsLoading(true);
       setShowSuggestions(false);
       router.push(`/search/${activeTab}?q=${encodeURIComponent(q)}`);
-      if (q === initialQuery) setTimeout(() => setIsLoading(false), 800);
+      if (q === urlQuery) setTimeout(() => setIsLoading(false), 800);
     }
   };
 
@@ -289,6 +322,7 @@ function SearchHeaderContent() {
               onSubmit={handleSearch}
               className="relative w-full text-gray-500 focus-within:text-black"
             >
+              {/* Ghost text for tab-completion hint */}
               <input
                 type="text"
                 readOnly
@@ -423,6 +457,7 @@ function SearchHeaderContent() {
         </div>
       </div>
 
+      {/* Tab bar */}
       <div className="w-full max-w-[1200px] mx-auto px-4 md:px-8">
         <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
           {tabs.map((tab) => {
@@ -458,6 +493,7 @@ function SearchHeaderContent() {
         </div>
       </div>
 
+      {/* Progress bar shown during navigation */}
       {isLoading && (
         <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gray-100 overflow-hidden z-50">
           <motion.div
@@ -472,9 +508,22 @@ function SearchHeaderContent() {
   );
 }
 
+// ---------------------------------------------------------------------------
+// SearchHeader (public export)
+// ---------------------------------------------------------------------------
+
+/**
+ * Wrapper that defers rendering of header internals until client-side
+ * hydration is complete, avoiding ``useSearchParams`` Suspense boundary
+ * errors during SSR.
+ */
 export default function SearchHeader() {
   return (
-    <Suspense fallback={<div className="h-24 w-full bg-white" />}>
+    <Suspense
+      fallback={
+        <div className="h-24 w-full bg-white border-b border-gray-200" />
+      }
+    >
       <SearchHeaderContent />
     </Suspense>
   );
