@@ -16,6 +16,7 @@ This is the backend for the Pyxis Search Engine, a Flask-based API that provides
 - Linux (Debian 11/12 or Ubuntu 20.04+ recommended)
 - Python 3.10 or higher
 - Redis server (local or remote)
+- Redis Python client (`redis` package)
 - Miniconda (optional but recommended for environment management)
 - PM2 (Node.js process manager) – for production
 
@@ -55,10 +56,10 @@ pip install -r requirements.txt
 If you do not have a `requirements.txt` file, manually install the core packages:
 
 ```bash
-pip install ddgs flask flask-caching flask-cors python-dotenv waitress requests
+pip install ddgs flask flask-caching flask-cors python-dotenv waitress requests redis
 ```
 
-> **Note:** The `ddgs` library is a DuckDuckGo Search wrapper. Ensure you have the latest version.
+> **Note:** The `ddgs` library is a DuckDuckGo Search wrapper. Ensure you have the latest version. The `redis` package is **required** for Redis caching support; without it you will get a `ModuleNotFoundError: No module named 'redis'`.
 
 ### 4. Install and configure Redis
 
@@ -179,15 +180,15 @@ Detailed endpoint documentation with examples and status of optional modules.
 
 Performs a search of the specified type.
 
-| Parameter     | Description                                                                 | Example                |
-|---------------|-----------------------------------------------------------------------------|------------------------|
-| `q`           | Search query (URL‑encoded)                                                  | `q=python`             |
-| `type`        | `text`, `images`, `videos`, `news`, `books` (default `text`)                | `type=images`          |
-| `region`      | Region code, e.g. `us-en`, `de-de` (default `us-en`)                        | `region=us-en`         |
-| `timelimit`   | Time restriction: `d` (day), `w` (week), `m` (month), `y` (year)            | `timelimit=m`          |
-| `page`        | Page number (1‑based, defaults to 1)                                        | `page=2`               |
-| `max_results` | Results per page (default depends on type)                                  | `max_results=20`       |
-| Additional filters for images/videos: `size`, `color`, `duration`, etc.      |                        |
+| Parameter                                                               | Description                                                      | Example          |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------- | ---------------- |
+| `q`                                                                     | Search query (URL‑encoded)                                       | `q=python`       |
+| `type`                                                                  | `text`, `images`, `videos`, `news`, `books` (default `text`)     | `type=images`    |
+| `region`                                                                | Region code, e.g. `us-en`, `de-de` (default `us-en`)             | `region=us-en`   |
+| `timelimit`                                                             | Time restriction: `d` (day), `w` (week), `m` (month), `y` (year) | `timelimit=m`    |
+| `page`                                                                  | Page number (1‑based, defaults to 1)                             | `page=2`         |
+| `max_results`                                                           | Results per page (default depends on type)                       | `max_results=20` |
+| Additional filters for images/videos: `size`, `color`, `duration`, etc. |                                                                  |
 
 **Example:**
 
@@ -199,10 +200,10 @@ Performs a search of the specified type.
 
 Returns query autocomplete suggestions.
 
-| Parameter     | Description                             | Example               |
-|---------------|-----------------------------------------|-----------------------|
-| `q`           | Partial query (URL‑encoded)             | `q=how+to`            |
-| `max_results` | Maximum number of suggestions (default 10) | `max_results=5`    |
+| Parameter     | Description                                | Example         |
+| ------------- | ------------------------------------------ | --------------- |
+| `q`           | Partial query (URL‑encoded)                | `q=how+to`      |
+| `max_results` | Maximum number of suggestions (default 10) | `max_results=5` |
 
 **Example:**
 
@@ -214,9 +215,9 @@ Returns query autocomplete suggestions.
 
 Fetches an instant answer and a related safe image.
 
-| Parameter     | Description                             | Example               |
-|---------------|-----------------------------------------|-----------------------|
-| `q`           | Query (URL‑encoded)                     | `q=elon+musk`         |
+| Parameter | Description         | Example       |
+| --------- | ------------------- | ------------- |
+| `q`       | Query (URL‑encoded) | `q=elon+musk` |
 
 **Example:**
 
@@ -242,7 +243,7 @@ python/
 
 ## Troubleshooting
 
-- **Redis connection errors**: Ensure Redis is running and the `REDIS_URL` in `.env` is correct.
+- **Redis connection errors**: Ensure Redis is running (`redis-cli ping`) and the `REDIS_URL` in `.env` is correct. Also verify that the Python `redis` package is installed.
 - **Autocomplete not available**: Check that the CSV files exist in `autocomplete/dataset/` and have the correct format.
-- **ModuleNotFoundError**: Verify that you are in the correct Python environment and all dependencies are installed.
+- **ModuleNotFoundError: No module named 'redis'**: Install the missing package with `pip install redis`.
 - **PM2 not starting**: Run `pm2 logs pyxis-flask-backend` to see error details.
