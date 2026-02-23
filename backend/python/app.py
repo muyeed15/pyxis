@@ -75,8 +75,8 @@ cache.init_app(app)
 # ----------------------------------------------------------------------
 # Constants for retry logic, pagination limits, and cache TTLs
 # ----------------------------------------------------------------------
-MAX_RETRIES = 3
-RETRY_DELAYS = [0.5, 1.5, 3.0]  # seconds between retries
+MAX_RETRIES = 5
+RETRY_DELAYS = [0.1, 0.2, 0.4, 0.8]
 
 TEXT_MAX_RESULTS_PER_PAGE = 10
 TEXT_MAX_PAGES = 10
@@ -104,7 +104,7 @@ CACHE_TIMEOUT_INSTANT = 2592000   # 30 days
 
 def ddgs_with_retry(fn):
     """
-    Execute a DuckDuckGo search function with automatic retries.
+    Execute a DuckDuckGo search function with automatic retries using exponential backoff.
 
     Args:
         fn (callable): A function that takes a DDGS instance and returns search results.
@@ -194,16 +194,13 @@ def search():
         q (str): Search keywords (URL‑encoded).
         type (str): One of ``text``, ``images``, ``videos``, ``news``, ``books``.
             Defaults to ``text``.
-        region (str): Region code (e.g. ``us-en``, ``de-de``). Default ``us-en``.
-        timelimit (str, optional): Time restriction – ``d`` (day), ``w`` (week),
-            ``m`` (month), or ``y`` (year).
         page (int, optional): 1‑based page number. Default ``1``.
         max_results (int, optional): Results per page. Default varies by type.
 
-    Additional filter parameters are accepted for images and videos
-    (``size``, ``color``, ``type_image``, ``layout``, ``license_image``,
-    ``resolution``, ``duration``, ``license_videos``).
-    Refer to the ddgs library documentation for full details.
+    All filtering parameters (region, timelimit, size, color, etc.) are ignored
+    for maximum speed. The backend is fixed to the fastest single source:
+        - text, images, videos, news → DuckDuckGo
+        - books → Anna’s Archive
 
     Returns:
         JSON object containing:
@@ -229,24 +226,38 @@ def search():
     if search_type not in ["text", "images", "videos", "news", "books"]:
         return jsonify({"error": "Invalid search type"}), 400
 
-    region = request.args.get("region", "us-en")
-    timelimit = request.args.get("timelimit")
+    # Fixed fast backend per type
+    backend_map = {
+        "text": "duckduckgo",
+        "images": "duckduckgo",
+        "videos": "duckduckgo",
+        "news": "duckduckgo",
+        "books": "annasarchive"
+    }
+    backend = backend_map[search_type]
+
+    # Common pagination
+    page = request.args.get("page", 1, type=int)
+    max_results = request.args.get("max_results")
+    if max_results is not None:
+        max_results = int(max_results)
 
     # ----- Text search -----
     if search_type == "text":
-        page = request.args.get("page", 1, type=int)
         page = max(1, min(page, TEXT_MAX_PAGES))
+        if max_results is None:
+            max_results = TEXT_MAX_RESULTS_PER_PAGE
         try:
             results = ddgs_with_retry(lambda d: d.text(
                 keywords,
-                region=region,
-                safesearch="on",
-                timelimit=timelimit,
-                max_results=TEXT_MAX_RESULTS_PER_PAGE,
+                region="us-en",
+                safesearch="off",
+                timelimit=None,
+                max_results=max_results,
                 page=page,
-                backend="duckduckgo",
+                backend=backend,
             ))
-            has_more = len(results) == TEXT_MAX_RESULTS_PER_PAGE and page < TEXT_MAX_PAGES
+            has_more = len(results) == max_results and page < TEXT_MAX_PAGES
             response_data = {
                 "search_type": search_type,
                 "query": keywords,
@@ -261,77 +272,67 @@ def search():
             print(f"[SEARCH] all retries exhausted — '{keywords}' (text, page {page}): {type(e).__name__}: {e}")
             return jsonify({"error": str(e)}), 500
 
-    # ----- Non-text searches – shared parameters -----
-    safesearch = "on"
-    max_results = request.args.get("max_results", 10, type=int)
-    page = request.args.get("page", 1, type=int)
-
+    # ----- Non-text searches -----
     try:
         # ----- Image search -----
         if search_type == "images":
-            if not request.args.get("max_results"):
+            if max_results is None:
                 max_results = IMAGE_MAX_RESULTS_PER_PAGE
             results = ddgs_with_retry(lambda d: d.images(
                 keywords,
-                region=region,
-                safesearch=safesearch,
-                timelimit=timelimit,
+                region="us-en",
+                safesearch="off",
+                timelimit=None,
                 max_results=max_results,
                 page=page,
-                backend="duckduckgo",
-                size=request.args.get("size"),
-                color=request.args.get("color"),
-                type_image=request.args.get("type_image"),
-                layout=request.args.get("layout"),
-                license_image=request.args.get("license_image"),
+                backend=backend,
+                # All filters omitted
             ))
             has_more = len(results) == max_results and page < IMAGE_MAX_PAGES
             timeout = CACHE_TIMEOUT_IMAGE
 
         # ----- Video search -----
         elif search_type == "videos":
-            if not request.args.get("max_results"):
+            if max_results is None:
                 max_results = VIDEO_MAX_RESULTS_PER_PAGE
             results = ddgs_with_retry(lambda d: d.videos(
                 keywords,
-                region=region,
-                safesearch=safesearch,
-                timelimit=timelimit,
+                region="us-en",
+                safesearch="off",
+                timelimit=None,
                 max_results=max_results,
                 page=page,
-                backend="duckduckgo",
-                resolution=request.args.get("resolution"),
-                duration=request.args.get("duration"),
-                license_videos=request.args.get("license_videos"),
+                backend=backend,
+                # All filters omitted
             ))
             has_more = len(results) == max_results and page < VIDEO_MAX_PAGES
             timeout = CACHE_TIMEOUT_VIDEO
 
         # ----- News search -----
         elif search_type == "news":
-            if not request.args.get("max_results"):
+            if max_results is None:
                 max_results = NEWS_MAX_RESULTS_PER_PAGE
             results = ddgs_with_retry(lambda d: d.news(
                 keywords,
-                region=region,
-                safesearch=safesearch,
-                timelimit=timelimit,
+                region="us-en",
+                safesearch="off",
+                timelimit=None,
                 max_results=max_results,
                 page=page,
-                backend="duckduckgo",
+                backend=backend,
             ))
             has_more = len(results) == max_results and page < NEWS_MAX_PAGES
             timeout = CACHE_TIMEOUT_NEWS
 
         # ----- Books search -----
         elif search_type == "books":
-            if not request.args.get("max_results"):
+            if max_results is None:
                 max_results = BOOKS_MAX_RESULTS_PER_PAGE
             results = ddgs_with_retry(lambda d: d.books(
                 keywords,
                 max_results=max_results,
                 page=page,
-                backend="auto",
+                backend=backend,
             ))
             has_more = len(results) == max_results and page < BOOKS_MAX_PAGES
             timeout = CACHE_TIMEOUT_BOOKS
@@ -402,7 +403,7 @@ def help():
         "api": "Pyxis Search API",
         "version": "1.0",
         "endpoints": {
-            "/search": "q, type (text|images|videos|news|books), region, safesearch, max_results, page, backend",
+            "/search": "q, type (text|images|videos|news|books), page, max_results (filters ignored)",
             "/autocomplete": "q, max_results",
             "/instant": "q",
         },
