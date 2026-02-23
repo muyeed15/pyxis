@@ -11,10 +11,8 @@ export default function HomeSearchBar() {
   const [hasTyped, setHasTyped] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // State for the dynamic typing placeholder
   const [placeholderText, setPlaceholderText] = useState("");
 
-  // Typewriter effect for Pyxis trivia questions
   useEffect(() => {
     const questions = [
       "Do you know what the constellation Pyxis represents in the sky?",
@@ -106,8 +104,7 @@ export default function HomeSearchBar() {
     <div className="w-full max-w-4xl relative" ref={containerRef}>
       <form onSubmit={handleSearch} className="relative w-full">
         <div className="relative flex items-center w-full">
-          
-          {/* THE INPUT: Marked as 'peer' to trigger the icon's state */}
+
           <input
             type="text"
             id="search-input-home"
@@ -128,7 +125,6 @@ export default function HomeSearchBar() {
             autoComplete="off"
           />
 
-          {/* GHOST TEXT: Behind the input */}
           {ghostText && hasTyped && (
             <div className="absolute inset-0 pointer-events-none flex items-center px-7">
               <span className="text-transparent text-lg">{query}</span>
@@ -138,7 +134,6 @@ export default function HomeSearchBar() {
             </div>
           )}
 
-          {/* ICON CONTAINER: Responds to input focus using 'peer-focus' */}
           <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center w-11 h-11 rounded-full border border-transparent peer-focus:border-black">
             {isLoading ? (
               <motion.div
@@ -153,7 +148,6 @@ export default function HomeSearchBar() {
                 viewBox="0 0 24 24"
                 strokeWidth={2}
                 stroke="currentColor"
-                /* Icon is grey, instantly turns black on focus */
                 className="w-5 h-5 sm:w-6 h-6 text-gray-400 peer-focus:text-black"
               >
                 <path
@@ -165,7 +159,6 @@ export default function HomeSearchBar() {
             )}
           </div>
 
-          {/* HIDDEN SUBMIT BUTTON: Placed over the icon area to capture clicks */}
           <button 
             type="submit" 
             className="absolute right-0 top-0 bottom-0 w-16 bg-transparent z-20 rounded-r-full" 
