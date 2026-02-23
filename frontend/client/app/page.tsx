@@ -13,10 +13,7 @@ export default function Home() {
   return (
     <div className="flex min-h-screen flex-col bg-waves relative z-0">
       <header className="flex items-center justify-end px-6 py-5 relative z-20">
-        {/* Sign in button is hidden per previous request */}
       </header>
-
-      {/* CHANGED: z-10 is now z-30 to keep dropdown above footer */}
       <main className="flex flex-1 flex-col items-center justify-center px-4 -mt-16 relative z-30">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[900px] h-[500px] bg-white blur-[80px] rounded-full pointer-events-none -z-10"></div>
 
