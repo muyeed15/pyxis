@@ -26,3 +26,13 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Updated: Using @utility for Tailwind v4, with darker and thicker lines */
+.bg-waves {
+  background-color: #ffffff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='xMidYMid slice'%3E%3Cg fill='none' stroke='%23e5e7eb' stroke-width='2.5'%3E%3Cpath d='M-200,200 C200,450 600,-50 1000,200 C1400,450 1600,200 1600,200' /%3E%3Cpath d='M-200,350 C300,600 700,100 1100,350 C1500,600 1600,350 1600,350' /%3E%3Cpath d='M-200,500 C400,750 800,250 1200,500 C1600,750 1600,500 1600,500' /%3E%3Cpath d='M-200,650 C500,900 900,400 1300,650 C1700,900 1600,650 1600,650' /%3E%3Cpath d='M-200,50 C100,300 500,-200 900,50 C1300,300 1600,50 1600,50' /%3E%3Cpath d='M-200,-100 C0,150 400,-350 800,-100 C1200,150 1600,-100 1600,-100' /%3E%3C/g%3E%3C/svg%3E");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
