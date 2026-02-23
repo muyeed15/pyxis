@@ -11,18 +11,16 @@ const QUICK_LINKS = [
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col bg-white">
-      <header className="flex items-center justify-end px-6 py-5">
-        <Link
-          href="/signin"
-          className="bg-black text-white px-5 py-2 rounded-full text-sm font-medium hover:opacity-80 transition-opacity"
-        >
-          Sign in
-        </Link>
+    <div className="flex min-h-screen flex-col bg-waves relative z-0">
+      <header className="flex items-center justify-end px-6 py-5 relative z-20">
+        {/* Sign in button is hidden per previous request */}
       </header>
 
-      <main className="flex flex-1 flex-col items-center justify-center px-4 -mt-16">
-        <div className="w-full max-w-2xl flex flex-col items-center gap-8">
+      {/* CHANGED: z-10 is now z-30 to keep dropdown above footer */}
+      <main className="flex flex-1 flex-col items-center justify-center px-4 -mt-16 relative z-30">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[900px] h-[500px] bg-white blur-[80px] rounded-full pointer-events-none -z-10"></div>
+
+        <div className="w-full max-w-4xl flex flex-col items-center gap-10">
           <Image
             src="/images/pyxis.svg"
             alt="Pyxis"
@@ -49,7 +47,7 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="py-5 px-6 flex items-center justify-center gap-6 border-t border-gray-100">
+      <footer className="py-5 px-6 flex items-center justify-center gap-6 border-t border-gray-100 relative z-20 bg-white/80 backdrop-blur-sm">
         <span className="text-xs text-gray-400">© {new Date().getFullYear()} Pyxis</span>
         <Link href="/privacy" className="text-xs text-gray-400 hover:text-gray-700 transition-colors">Privacy</Link>
         <Link href="/terms" className="text-xs text-gray-400 hover:text-gray-700 transition-colors">Terms</Link>
