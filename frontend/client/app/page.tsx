@@ -14,17 +14,17 @@ export default function Home() {
     <div className="flex min-h-screen flex-col bg-waves relative z-0">
       <header className="flex items-center justify-end px-6 py-5 relative z-20">
       </header>
-      <main className="flex flex-1 flex-col items-center justify-center px-4 -mt-16 relative z-30">
+      <main className="flex flex-1 flex-col items-center justify-center px-6 sm:px-8 -mt-16 relative z-30">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[900px] h-[500px] bg-white blur-[80px] rounded-full pointer-events-none -z-10"></div>
 
-        <div className="w-full max-w-4xl flex flex-col items-center gap-10">
+        <div className="w-full sm:max-w-4xl flex flex-col items-center gap-8 sm:gap-10">
           <Image
             src="/images/pyxis.svg"
             alt="Pyxis"
             width={260}
             height={88}
             priority
-            className="w-[200px] sm:w-[260px] h-auto select-none"
+            className="w-[180px] sm:w-[260px] h-auto select-none"
             draggable={false}
           />
 
