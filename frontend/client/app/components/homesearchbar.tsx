@@ -5,8 +5,12 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAutocomplete } from "./searchheader";
 
+interface HomeSearchBarProps {
+  searchMode?: string;
+}
 
-export default function HomeSearchBar() {
+
+export default function HomeSearchBar({ searchMode = "text" }: HomeSearchBarProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [hasTyped, setHasTyped] = useState(false);
@@ -75,7 +79,7 @@ export default function HomeSearchBar() {
     if (q.trim()) {
       setIsLoading(true);
       setShowSuggestions(false);
-      router.push(`/search/text?q=${encodeURIComponent(q)}`);
+      router.push(`/search/${searchMode}?q=${encodeURIComponent(q)}`);
     }
   };
 
@@ -148,22 +152,10 @@ export default function HomeSearchBar() {
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke="black"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="absolute inset-0 w-full h-full opacity-0 group-focus-within:opacity-100 stroke-[5px] transition-opacity duration-200"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="16.5" y1="16.5" x2="21.5" y2="21.5" />
-                </svg>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
                   stroke="currentColor"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="absolute inset-0 w-full h-full text-gray-400 stroke-[2px]"
+                  className="absolute inset-0 w-full h-full text-gray-400 group-focus-within:text-black stroke-[2px] transition-colors duration-200"
                 >
                   <circle cx="11" cy="11" r="8" />
                   <line x1="16.5" y1="16.5" x2="21.5" y2="21.5" />
