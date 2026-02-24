@@ -1,15 +1,21 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import HomeSearchBar from "./components/homesearchbar";
 
-const QUICK_LINKS = [
-  { label: "Images", href: "/search/image" },
-  { label: "Videos", href: "/search/video" },
-  { label: "News", href: "/search/news" },
-  { label: "Books", href: "/search/book" },
+const SEARCH_TABS = [
+  { label: "Web", value: "text" }, 
+  { label: "Images", value: "image" },
+  { label: "Videos", value: "video" },
+  { label: "News", value: "news" },
+  { label: "Books", value: "book" },
 ];
 
 export default function Home() {
+  const [searchMode, setSearchMode] = useState("text");
+
   return (
     <div className="flex min-h-screen flex-col bg-waves relative z-0">
       <header className="flex items-center justify-end px-6 py-5 relative z-20">
@@ -28,17 +34,22 @@ export default function Home() {
             draggable={false}
           />
 
-          <HomeSearchBar />
+          
+          <HomeSearchBar searchMode={searchMode} />
 
           <div className="flex items-center gap-1.5 flex-wrap justify-center">
-            {QUICK_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="px-4 py-1.5 rounded-full text-sm text-gray-500 hover:text-black hover:bg-gray-100 transition-colors"
+            {SEARCH_TABS.map((tab) => (
+              <button
+                key={tab.value}
+                onClick={() => setSearchMode(tab.value)}
+                className={`px-4 py-1.5 rounded-full text-sm transition-colors ${
+                  searchMode === tab.value
+                    ? "bg-black text-white" 
+                    : "text-gray-500 hover:text-black hover:bg-gray-100" 
+                }`}
               >
-                {link.label}
-              </Link>
+                {tab.label}
+              </button>
             ))}
           </div>
         </div>
