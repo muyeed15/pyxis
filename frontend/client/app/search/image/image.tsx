@@ -57,6 +57,7 @@ export default function ImageResultsList({
       {results.map((item, i) => (
         <div
           key={`${item.image}-${i}`}
+          id={`pyxis-img-${i}`} 
           className="break-inside-avoid inline-block w-full mb-[0.875rem]"
         >
           <ImageCard
@@ -169,7 +170,16 @@ export function SidePanel({
   const thumb = item.thumbnail?.trim();
   const [fullReady, setFullReady] = useState(false);
   const [headerH, setHeaderH] = useState(0);
-  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+ 
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
 
   useEffect(() => {
     setFullReady(false);
@@ -195,13 +205,6 @@ export function SidePanel({
     return () => window.removeEventListener("resize", measure);
   }, []);
 
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.innerWidth < 1024 && panelRef.current) {
-      const y = panelRef.current.getBoundingClientRect().top + window.scrollY - headerH - 16;
-      window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
-    }
-  }, [index, headerH]);
-
   const hostname = (() => {
     try {
       return new URL(item.url).hostname;
@@ -209,43 +212,32 @@ export function SidePanel({
       return "";
     }
   })();
-  const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
+
   return (
     <motion.div
-      ref={panelRef}
-      initial={isDesktop ? { x: "100%", opacity: 0 } : { y: 30, opacity: 0 }}
-      animate={isDesktop ? { x: 0, opacity: 1 } : { y: 0, opacity: 1 }}
-      exit={isDesktop ? { x: "100%", opacity: 0 } : { y: 30, opacity: 0 }}
+      initial={{ x: "100%", opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ x: "100%", opacity: 0 }}
       transition={{ 
         type: "spring", 
         damping: 25, 
         stiffness: 200 
       }}
-      className="relative w-full h-[75vh] min-h-[480px] bg-white rounded-2xl border border-gray-200 shadow-xl flex flex-col z-30 overflow-hidden lg:fixed lg:right-0 lg:top-[var(--header-h)] lg:w-[488px] lg:h-[calc(100vh-var(--header-h))] lg:min-h-0 lg:border-y-0 lg:border-r-0 lg:border-l lg:rounded-none lg:mb-0 lg:shadow-2xl lg:z-40"
+      className="fixed right-0 top-[var(--header-h)] w-full h-[calc(100vh-var(--header-h))] bg-white shadow-2xl flex flex-col z-40 overflow-hidden lg:w-[488px] lg:border-l lg:border-gray-200"
       style={{
         "--header-h": `${headerH}px`,
       } as React.CSSProperties}
     >
       {/* Floating Header Controls */}
-      <div className="flex items-center justify-between px-4 py-4 shrink-0 z-10">
+      <div className="flex items-center justify-between px-4 py-4 shrink-0 z-10 border-b border-gray-100 lg:border-none">
         <div className="flex items-center gap-1 bg-white rounded-full p-1 shadow-sm border border-gray-200">
           <button
             onClick={onPrev}
             disabled={index === 0}
             className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-50 active:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-gray-700"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <div className="px-2 text-xs font-medium text-gray-500 tabular-nums">
@@ -256,18 +248,8 @@ export function SidePanel({
             disabled={index === results.length - 1}
             className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-50 active:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-gray-700"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </div>
@@ -276,117 +258,57 @@ export function SidePanel({
           onClick={onClose}
           className="w-11 h-11 flex items-center justify-center bg-white rounded-full shadow-sm border border-gray-200 hover:bg-gray-50 active:bg-gray-100 transition-colors text-gray-600"
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
 
       {/* Dynamic Content Container */}
       <div className="flex-1 px-4 pb-6 flex flex-col min-h-0">
-        
-        {/* Unified MD3 Card */}
         <div className="bg-white rounded-[24px] shadow-sm border border-gray-200 flex flex-col flex-1 min-h-0 overflow-hidden relative">
           
-          {/* Top Half: Dynamic Image Area */}
           <div className="relative bg-gray-50 flex-1 min-h-0 md:p-2 flex items-center justify-center overflow-hidden z-0">
             <style>{`@keyframes sidePanelFade { from { opacity: 0 } to { opacity: 1 } }`}</style>
-            
             <div className="relative w-full h-full flex items-center justify-center">
-              {/* Thumbnail */}
               {thumb && (
-                <img
-                  src={thumb}
-                  alt={item.title}
-                  decoding="async"
-                  className="w-full h-full object-cover md:object-contain rounded-t-[24px] md:rounded-xl"
-                />
+                <img src={thumb} alt={item.title} decoding="async" className="w-full h-full object-cover md:object-contain rounded-t-[24px] md:rounded-xl" />
               )}
-
-              {/* Full Image */}
               {fullReady && (
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  decoding="async"
-                  className="absolute inset-0 w-full h-full object-cover md:object-contain rounded-t-[24px] md:rounded-xl"
-                  style={{ animation: "sidePanelFade 0.4s ease forwards" }}
-                />
+                <img src={item.image} alt={item.title} decoding="async" className="absolute inset-0 w-full h-full object-cover md:object-contain rounded-t-[24px] md:rounded-xl" style={{ animation: "sidePanelFade 0.4s ease forwards" }} />
               )}
             </div>
           </div>
 
-          {/* Bottom Half: Details & Action Buttons */}
           <div className="flex flex-col shrink-0 bg-white border-t border-gray-100 z-10">
             <div className="px-4 md:px-5 pt-4 md:pt-5 pb-3 flex flex-col gap-2 md:gap-3">
               <h2 className="text-base md:text-[1.1rem] font-medium text-gray-900 leading-snug">
                 {item.title}
               </h2>
-              
               <div className="flex flex-wrap gap-2">
                 {item.width && item.height && (
                   <span className="inline-flex items-center gap-1.5 text-[11px] md:text-xs font-medium text-gray-600 bg-gray-100/80 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full">
-                    <svg
-                      className="w-3.5 h-3.5 opacity-70"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l-5-5m11 5v-4m0 4h-4m4 0l-5-5"
-                      />
+                    <svg className="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l-5-5m11 5v-4m0 4h-4m4 0l-5-5" />
                     </svg>
                     {item.width} × {item.height}
                   </span>
                 )}
                 <span className="inline-flex items-center gap-1.5 text-[11px] md:text-xs font-medium text-gray-600 bg-gray-100/80 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full max-w-full overflow-hidden">
-                  <img
-                    src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=16`}
-                    alt=""
-                    width={14}
-                    height={14}
-                    className="rounded-sm flex-shrink-0"
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                    }}
-                  />
+                  <img src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=16`} alt="" width={14} height={14} className="rounded-sm flex-shrink-0" onError={(e) => { e.currentTarget.style.display = "none"; }} />
                   <span className="truncate">{item.source || hostname}</span>
                 </span>
               </div>
             </div>
             
             <div className="px-4 md:px-5 pb-4 md:pb-5 pt-1 flex flex-col gap-2 md:gap-2.5 shrink-0">
-              <a
-                href={item.image}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-2.5 md:py-3.5 bg-black text-white rounded-full text-[13px] md:text-sm font-medium text-center hover:bg-gray-800 active:bg-gray-900 transition-colors shadow-sm"
-              >
+              <a href={item.image} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 md:py-3.5 bg-black text-white rounded-full text-[13px] md:text-sm font-medium text-center hover:bg-gray-800 active:bg-gray-900 transition-colors shadow-sm">
                 View Full Image
               </a>
-              <a
-                href={item.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-2.5 md:py-3.5 bg-gray-100 text-gray-800 rounded-full text-[13px] md:text-sm font-medium text-center hover:bg-gray-200 active:bg-gray-300 transition-colors"
-              >
+              <a href={item.url} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 md:py-3.5 bg-gray-100 text-gray-800 rounded-full text-[13px] md:text-sm font-medium text-center hover:bg-gray-200 active:bg-gray-300 transition-colors">
                 Visit Page
               </a>
             </div>
-
           </div>
         </div>
       </div>
@@ -399,28 +321,13 @@ export function SidePanel({
 // ---------------------------------------------------------------------------
 
 function ImageSkeletonGrid() {
-  const heights = [
-    "aspect-square",
-    "aspect-video",
-    "aspect-[4/3]",
-    "aspect-[3/4]",
-  ];
+  const heights = [ "aspect-square", "aspect-video", "aspect-[4/3]", "aspect-[3/4]" ];
 
   return (
-    <div
-      className="columns-2 sm:columns-3 md:columns-4 lg:columns-5"
-      style={{ columnGap: "0.625rem" }}
-    >
+    <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5" style={{ columnGap: "0.625rem" }}>
       {Array.from({ length: 20 }).map((_, i) => (
-        <div
-          key={i}
-          className="break-inside-avoid inline-block w-full mb-[0.875rem] flex flex-col gap-2"
-        >
-          <div
-            className={`w-full bg-gray-200 rounded-xl animate-pulse ${
-              heights[i % 4]
-            }`}
-          />
+        <div key={i} className="break-inside-avoid inline-block w-full mb-[0.875rem] flex flex-col gap-2">
+          <div className={`w-full bg-gray-200 rounded-xl animate-pulse ${heights[i % 4]}`} />
           <div className="flex items-center gap-2">
             <div className="w-3.5 h-3.5 bg-gray-200 rounded animate-pulse flex-shrink-0" />
             <div className="w-16 h-2.5 bg-gray-200 rounded animate-pulse" />
