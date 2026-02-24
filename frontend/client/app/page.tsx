@@ -37,12 +37,12 @@ export default function Home() {
           
           <HomeSearchBar searchMode={searchMode} />
 
-          <div className="flex items-center gap-1.5 flex-wrap justify-center">
+          <div className="w-full flex items-center justify-between sm:justify-center sm:gap-3">
             {SEARCH_TABS.map((tab) => (
               <button
                 key={tab.value}
                 onClick={() => setSearchMode(tab.value)}
-                className={`px-4 py-1.5 rounded-full text-sm transition-colors ${
+                className={`px-2 sm:px-4 py-1.5 rounded-full text-[13px] sm:text-sm whitespace-nowrap transition-colors ${
                   searchMode === tab.value
                     ? "bg-black text-white" 
                     : "text-gray-500 hover:text-black hover:bg-gray-100" 
