@@ -27,7 +27,7 @@ const fetcher = async (url: string) => {
 };
 
 const MAX_RETRIES = 20;
-const PANEL_WIDTH = 380;
+const PANEL_WIDTH = 488; // Updated to match image.tsx
 const IMAGE_RESULTS_PER_PAGE = 20;
 const IMAGE_MAX_PAGES = 10;
 
@@ -190,61 +190,13 @@ export default function PageWrapper({
     if (allResults.length === 0) return relatedKeywords;
 
     const stopWords = new Set([
-      "the",
-      "and",
-      "a",
-      "an",
-      "of",
-      "in",
-      "for",
-      "on",
-      "with",
-      "by",
-      "at",
-      "to",
-      "from",
-      "is",
-      "it",
-      "that",
-      "this",
-      "your",
-      "best",
-      "choose",
-      "thrives",
-      "environment",
-      "climate",
-      "wallpapers",
-      "images",
-      "pictures",
-      "photos",
-      "hd",
-      "4k",
-      "background",
-      "download",
-      "free",
-      "stock",
-      "photo",
-      "image",
-      "picture",
-      "desktop",
-      "phone",
-      "mobile",
-      "screen",
-      "full",
-      "size",
-      "view",
-      "about",
-      "review",
-      "top",
-      "quality",
-      "high",
-      "resolution",
-      "get",
-      "make",
-      "how",
-      "what",
-      "when",
-      "where",
+      "the", "and", "a", "an", "of", "in", "for", "on", "with", "by", "at",
+      "to", "from", "is", "it", "that", "this", "your", "best", "choose",
+      "thrives", "environment", "climate", "wallpapers", "images", "pictures",
+      "photos", "hd", "4k", "background", "download", "free", "stock",
+      "photo", "image", "picture", "desktop", "phone", "mobile", "screen",
+      "full", "size", "view", "about", "review", "top", "quality", "high",
+      "resolution", "get", "make", "how", "what", "when", "where",
     ]);
     query
       .toLowerCase()
@@ -288,11 +240,9 @@ export default function PageWrapper({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.15 }}
-          className="max-w-[1600px] mx-auto px-4 md:px-6 py-4"
-          style={{
-            marginRight: isPanelOpen ? PANEL_WIDTH : 0,
-            transition: "margin-right 0.3s ease",
-          }}
+          className={`max-w-[1600px] mx-auto px-4 md:px-6 py-4 transition-all duration-300 ${
+            isPanelOpen ? "lg:mr-[488px]" : ""
+          }`}
         >
           {!showLoadingState &&
             !showFatalError &&
@@ -313,6 +263,24 @@ export default function PageWrapper({
             </div>
           ) : (
             <div className="flex flex-col gap-6">
+              <AnimatePresence>
+                {isPanelOpen && selectedIndex !== null && (
+                  <SidePanel
+                    results={allResults}
+                    index={selectedIndex}
+                    onClose={() => setSelectedIndex(null)}
+                    onPrev={() =>
+                      setSelectedIndex((i) => (i !== null && i > 0 ? i - 1 : i))
+                    }
+                    onNext={() =>
+                      setSelectedIndex((i) =>
+                        i !== null && i < allResults.length - 1 ? i + 1 : i,
+                      )
+                    }
+                  />
+                )}
+              </AnimatePresence>
+
               <ImageResultsList
                 results={allResults}
                 isLoading={showLoadingState}
@@ -348,24 +316,6 @@ export default function PageWrapper({
             </div>
           )}
         </motion.main>
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {isPanelOpen && selectedIndex !== null && (
-          <SidePanel
-            results={allResults}
-            index={selectedIndex}
-            onClose={() => setSelectedIndex(null)}
-            onPrev={() =>
-              setSelectedIndex((i) => (i !== null && i > 0 ? i - 1 : i))
-            }
-            onNext={() =>
-              setSelectedIndex((i) =>
-                i !== null && i < allResults.length - 1 ? i + 1 : i,
-              )
-            }
-          />
-        )}
       </AnimatePresence>
     </div>
   );

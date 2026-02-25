@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { ImageSearchResultItem } from "../../types";
 
-const PANEL_WIDTH = 380;
+const PANEL_WIDTH = 488;
 const EAGER_LOAD_COUNT = 5;
 
 interface ImageResultsListProps {
@@ -47,23 +47,26 @@ export default function ImageResultsList({
 
   return (
     <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: isOpen
-          ? "repeat(auto-fill, minmax(140px, 1fr))"
-          : "repeat(5, minmax(0, 1fr))",
-        columnGap: "0.625rem",
-        rowGap: "0.875rem",
-      }}
+      className={
+        isOpen
+          ? "columns-2 sm:columns-3 lg:columns-4"
+          : "columns-2 sm:columns-3 md:columns-4 lg:columns-5"
+      }
+      style={{ columnGap: "0.625rem" }}
     >
       {results.map((item, i) => (
-        <ImageCard
+        <div
           key={`${item.image}-${i}`}
-          item={item}
-          index={i}
-          isSelected={selectedIndex === i}
-          onClick={() => onSelect(i === selectedIndex ? null : i)}
-        />
+          id={`pyxis-img-${i}`} 
+          className="break-inside-avoid inline-block w-full mb-[0.875rem]"
+        >
+          <ImageCard
+            item={item}
+            index={i}
+            isSelected={selectedIndex === i}
+            onClick={() => onSelect(i === selectedIndex ? null : i)}
+          />
+        </div>
       ))}
     </div>
   );
@@ -98,14 +101,19 @@ function ImageCard({ item, index, isSelected, onClick }: ImageCardProps) {
     }
   })();
 
+  const ratio =
+    item.width && item.height ? `${item.width}/${item.height}` : "4/3";
+
   return (
     <div
-      className={`cursor-pointer flex flex-col rounded-xl ${isSelected ? "ring-2 ring-black ring-offset-1" : ""}`}
+      className={`cursor-pointer flex flex-col rounded-xl ${
+        isSelected ? "ring-2 ring-black ring-offset-1" : ""
+      }`}
       onClick={onClick}
     >
       <div
         className="relative w-full rounded-xl overflow-hidden bg-gray-200"
-        style={{ aspectRatio: "4/3" }}
+        style={{ aspectRatio: ratio }}
       >
         <img
           src={thumb}
@@ -163,7 +171,16 @@ export function SidePanel({
   const [fullReady, setFullReady] = useState(false);
   const [headerH, setHeaderH] = useState(0);
 
-  // Preload full image silently in the background while thumbnail is visible.
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+ 
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
   useEffect(() => {
     setFullReady(false);
     if (!item.image) return;
@@ -198,166 +215,101 @@ export function SidePanel({
 
   return (
     <motion.div
-      initial={{ x: PANEL_WIDTH, opacity: 0 }}
+      initial={{ x: "100%", opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      exit={{ x: PANEL_WIDTH, opacity: 0 }}
-      transition={{ type: "spring", stiffness: 340, damping: 34, mass: 0.8 }}
-      className="fixed right-0 bg-white border-l border-gray-200 shadow-2xl flex flex-col z-40 overflow-y-auto overflow-x-hidden"
-      style={{
-        top: headerH,
-        width: PANEL_WIDTH,
-        height: `calc(100vh - ${headerH}px)`,
+      exit={{ x: "100%", opacity: 0 }}
+      transition={{ 
+        type: "spring", 
+        damping: 25, 
+        stiffness: 200 
       }}
+      className="fixed right-0 top-[var(--header-h)] w-full h-[calc(100vh-var(--header-h))] bg-white shadow-2xl flex flex-col z-40 overflow-hidden lg:w-[488px] lg:border-l lg:border-gray-200"
+      style={{
+        "--header-h": `${headerH}px`,
+      } as React.CSSProperties}
     >
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-white shrink-0">
-        <div className="flex items-center gap-1">
+      {/* Floating Header Controls */}
+      <div className="flex items-center justify-between px-4 py-4 shrink-0 z-10 border-b border-gray-100 lg:border-none">
+        <div className="flex items-center gap-1 bg-white rounded-full p-1 shadow-sm border border-gray-200">
           <button
             onClick={onPrev}
             disabled={index === 0}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
+            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-50 active:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-gray-700"
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2.5}
-                d="M15 19l-7-7 7-7"
-              />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
+          <div className="px-2 text-xs font-medium text-gray-500 tabular-nums">
+            {index + 1} / {results.length}
+          </div>
           <button
             onClick={onNext}
             disabled={index === results.length - 1}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
+            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-50 active:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-gray-700"
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2.5}
-                d="M9 5l7 7-7 7"
-              />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
-          <span className="text-xs text-gray-400 ml-1 tabular-nums">
-            {index + 1} / {results.length}
-          </span>
         </div>
+
         <button
           onClick={onClose}
-          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-500"
+          className="w-11 h-11 flex items-center justify-center bg-white rounded-full shadow-sm border border-gray-200 hover:bg-gray-50 active:bg-gray-100 transition-colors text-gray-600"
         >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2.5}
-              d="M6 18L18 6M6 6l12 12"
-            />
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
 
-      {/* Image area — thumbnail underneath, full image fades in on top */}
-      <div
-        className="relative bg-gray-100 flex items-center justify-center shrink-0"
-        style={{ minHeight: 240 }}
-      >
-        <style>{`@keyframes sidePanelFade { from { opacity: 0 } to { opacity: 1 } }`}</style>
+      {/* Dynamic Content Container */}
+      <div className="flex-1 px-4 pb-6 flex flex-col min-h-0">
+        <div className="bg-white rounded-[24px] shadow-sm border border-gray-200 flex flex-col flex-1 min-h-0 overflow-hidden relative">
+          
+          <div className="relative bg-gray-50 flex-1 min-h-0 md:p-2 flex items-center justify-center overflow-hidden z-0">
+            <style>{`@keyframes sidePanelFade { from { opacity: 0 } to { opacity: 1 } }`}</style>
+            <div className="relative w-full h-full flex items-center justify-center">
+              {thumb && (
+                <img src={thumb} alt={item.title} decoding="async" className="w-full h-full object-cover md:object-contain rounded-t-[24px] md:rounded-xl" />
+              )}
+              {fullReady && (
+                <img src={item.image} alt={item.title} decoding="async" className="absolute inset-0 w-full h-full object-cover md:object-contain rounded-t-[24px] md:rounded-xl" style={{ animation: "sidePanelFade 0.4s ease forwards" }} />
+              )}
+            </div>
+          </div>
 
-        {/* Thumbnail — always visible immediately */}
-        {thumb && (
-          <img
-            src={thumb}
-            alt={item.title}
-            decoding="async"
-            className="w-full h-auto max-h-[52vh] object-contain"
-          />
-        )}
-
-        {/* Full image — mounts only after preload completes, fades in over thumbnail */}
-        {fullReady && (
-          <img
-            src={item.image}
-            alt={item.title}
-            decoding="async"
-            className="absolute inset-0 w-full h-full object-contain"
-            style={{ animation: "sidePanelFade 0.4s ease forwards" }}
-          />
-        )}
-      </div>
-
-      {/* Metadata */}
-      <div className="flex flex-col gap-4 p-4 flex-1">
-        <p className="text-sm font-semibold text-gray-900 leading-snug">
-          {item.title}
-        </p>
-        <div className="flex flex-wrap gap-3">
-          {item.width && item.height && (
-            <span className="inline-flex items-center gap-1 text-xs text-gray-400 bg-gray-50 px-2.5 py-1 rounded-full">
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"
-                />
-              </svg>
-              {item.width} × {item.height}
-            </span>
-          )}
-          <span className="inline-flex items-center gap-1.5 text-xs text-gray-400 bg-gray-50 px-2.5 py-1 rounded-full max-w-full overflow-hidden">
-            <img
-              src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=16`}
-              alt=""
-              width={14}
-              height={14}
-              className="rounded flex-shrink-0"
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-              }}
-            />
-            <span className="truncate">{item.source || hostname}</span>
-          </span>
-        </div>
-        <div className="flex flex-col gap-2 pt-1">
-          <a
-            href={item.image}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full py-2.5 bg-black text-white rounded-xl text-sm font-medium text-center hover:opacity-90 transition-opacity"
-          >
-            View Full Image
-          </a>
-          <a
-            href={item.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full py-2.5 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium text-center hover:bg-gray-200 transition-colors"
-          >
-            Visit Page
-          </a>
+          <div className="flex flex-col shrink-0 bg-white border-t border-gray-100 z-10">
+            <div className="px-4 md:px-5 pt-4 md:pt-5 pb-3 flex flex-col gap-2 md:gap-3">
+              <h2 className="text-base md:text-[1.1rem] font-medium text-gray-900 leading-snug">
+                {item.title}
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {item.width && item.height && (
+                  <span className="inline-flex items-center gap-1.5 text-[11px] md:text-xs font-medium text-gray-600 bg-gray-100/80 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full">
+                    <svg className="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l-5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+                    </svg>
+                    {item.width} × {item.height}
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-1.5 text-[11px] md:text-xs font-medium text-gray-600 bg-gray-100/80 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full max-w-full overflow-hidden">
+                  <img src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=16`} alt="" width={14} height={14} className="rounded-sm flex-shrink-0" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                  <span className="truncate">{item.source || hostname}</span>
+                </span>
+              </div>
+            </div>
+            
+            <div className="px-4 md:px-5 pb-4 md:pb-5 pt-1 flex flex-col gap-2 md:gap-2.5 shrink-0">
+              <a href={item.image} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 md:py-3.5 bg-black text-white rounded-full text-[13px] md:text-sm font-medium text-center hover:bg-gray-800 active:bg-gray-900 transition-colors shadow-sm">
+                View Full Image
+              </a>
+              <a href={item.url} target="_blank" rel="noopener noreferrer" className="w-full py-2.5 md:py-3.5 bg-gray-100 text-gray-800 rounded-full text-[13px] md:text-sm font-medium text-center hover:bg-gray-200 active:bg-gray-300 transition-colors">
+                Visit Page
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </motion.div>
@@ -369,21 +321,13 @@ export function SidePanel({
 // ---------------------------------------------------------------------------
 
 function ImageSkeletonGrid() {
+  const heights = [ "aspect-square", "aspect-video", "aspect-[4/3]", "aspect-[3/4]" ];
+
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
-        columnGap: "0.625rem",
-        rowGap: "0.875rem",
-      }}
-    >
+    <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5" style={{ columnGap: "0.625rem" }}>
       {Array.from({ length: 20 }).map((_, i) => (
-        <div key={i} className="flex flex-col gap-2">
-          <div
-            className="w-full bg-gray-200 rounded-xl animate-pulse"
-            style={{ aspectRatio: "4/3" }}
-          />
+        <div key={i} className="break-inside-avoid inline-block w-full mb-[0.875rem] flex flex-col gap-2">
+          <div className={`w-full bg-gray-200 rounded-xl animate-pulse ${heights[i % 4]}`} />
           <div className="flex items-center gap-2">
             <div className="w-3.5 h-3.5 bg-gray-200 rounded animate-pulse flex-shrink-0" />
             <div className="w-16 h-2.5 bg-gray-200 rounded animate-pulse" />
