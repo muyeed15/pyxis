@@ -5,11 +5,47 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAutocomplete } from "./searchheader";
 
-export default function HomeSearchBar() {
+interface HomeSearchBarProps {
+  searchMode?: string;
+}
+
+
+export default function HomeSearchBar({ searchMode = "text" }: HomeSearchBarProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [hasTyped, setHasTyped] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const [placeholderText, setPlaceholderText] = useState("");
+
+  useEffect(() => {
+    const questions = [
+      "What compass of light drifts in Pyxis’ hush?",
+      "Who breathed Pyxis into the breathing dark?",
+      "Did Pyxis rise with the first fire of myth?",
+      "From which trembling horizon does it awaken?",
+      "What bright heart kindles within its silence?",
+      "What broken sky-vessel once cradled its glow?",
+      "What far galaxies shimmer in its shadowed deep?",
+      "What blue star-flame pulses as Alpha Pyxidis?",
+      "Can you spot Pyxis between other southern constellations?",
+      "Why does Pyxis still whisper to wandering souls?"
+    ];
+    
+    const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
+    let currentIndex = 0;
+    
+    const typingInterval = setInterval(() => {
+      if (currentIndex < randomQuestion.length) {
+        setPlaceholderText(randomQuestion.slice(0, currentIndex + 1));
+        currentIndex++;
+      } else {
+        clearInterval(typingInterval);
+      }
+    }, 40);
+
+    return () => clearInterval(typingInterval);
+  }, []);
 
   const {
     query,
@@ -35,7 +71,7 @@ export default function HomeSearchBar() {
       document.removeEventListener("mousedown", handle);
       document.removeEventListener("touchstart", handle);
     };
-  }, []);
+  }, [setShowSuggestions]);
 
   const handleSearch = (e?: React.FormEvent, overrideQuery?: string) => {
     if (e) e.preventDefault();
@@ -43,7 +79,7 @@ export default function HomeSearchBar() {
     if (q.trim()) {
       setIsLoading(true);
       setShowSuggestions(false);
-      router.push(`/search/text?q=${encodeURIComponent(q)}`);
+      router.push(`/search/${searchMode}?q=${encodeURIComponent(q)}`);
     }
   };
 
@@ -70,182 +106,104 @@ export default function HomeSearchBar() {
       : "";
 
   return (
-    <div
-      className="w-full max-w-md sm:max-w-lg md:max-w-2xl relative"
-      ref={containerRef}
-    >
+    <div className="w-full max-w-4xl relative" ref={containerRef}>
       <form onSubmit={handleSearch} className="relative w-full">
-        <div className="flex items-center gap-2 relative">
-          <div className="relative flex-1">
-            {ghostText && hasTyped && (
-              <div className="absolute inset-0 pointer-events-none z-0">
-                <div className="absolute inset-0 flex items-center px-4 py-3 sm:px-6 sm:py-3.5">
-                  <span className="text-transparent text-base">{query}</span>
-                  <span className="text-gray-400 text-base">
-                    {ghostText.slice(query.length)}
-                  </span>
-                </div>
-              </div>
-            )}
-            <input
-              type="text"
-              id="search-input-home"
-              name="q"
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setHasTyped(true);
-                setShowSuggestions(true);
-              }}
-              onFocus={() => {
-                setShowSuggestions(true);
-                if (query) setHasTyped(true);
-              }}
-              onKeyDown={handleKeyDown}
-              onBlur={() => setTimeout(() => setHasTyped(false), 200)}
-              className="relative z-10 w-full px-4 py-3 sm:px-6 sm:py-3.5 border border-gray-300 rounded-full focus:outline-none focus:border-black text-base text-black placeholder-gray-500 bg-white"
-              placeholder="Search Pyxis"
-              autoComplete="off"
-            />
-          </div>
+        <div className="relative flex items-center w-full group">
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="flex items-center justify-center bg-black text-white rounded-full hover:opacity-90 transition-opacity disabled:opacity-70 w-12 h-12 sm:w-14 sm:h-14 z-10 shrink-0"
-          >
+          <input
+            type="text"
+            id="search-input-home"
+            name="q"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setHasTyped(true);
+              setShowSuggestions(true);
+            }}
+            onFocus={() => {
+              setShowSuggestions(true);
+              if (query) setHasTyped(true);
+            }}
+            onKeyDown={handleKeyDown}
+            className="peer w-full pl-5 pr-12 py-3 sm:pl-7 sm:pr-16 sm:py-4 border border-gray-300 rounded-full focus:outline-none focus:border-black text-sm sm:text-lg text-black placeholder-gray-400 bg-white shadow-sm truncate"
+            placeholder={placeholderText}
+            autoComplete="off"
+          />
+
+          {ghostText && hasTyped && (
+            <div className="absolute inset-0 pointer-events-none flex items-center px-5 sm:px-7 overflow-hidden whitespace-nowrap">
+              <span className="text-transparent text-sm sm:text-lg">{query}</span>
+              <span className="text-gray-400 text-sm sm:text-lg truncate">
+                {ghostText.slice(query.length)}
+              </span>
+            </div>
+          )}
+
+          <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11">
             {isLoading ? (
               <motion.div
-                className="w-6 h-6 border-2 border-white border-t-transparent rounded-full"
+                className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-gray-300 border-t-black rounded-full"
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
               />
             ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2.5}
-                stroke="currentColor"
-                className="w-6 h-6 sm:w-7 sm:h-7"
-              >
-                <path
+              <div className="relative flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-                />
-              </svg>
+                  className="absolute inset-0 w-full h-full text-gray-400 group-focus-within:text-black stroke-[2px] transition-colors duration-200"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="16.5" y1="16.5" x2="21.5" y2="21.5" />
+                </svg>
+              </div>
             )}
-          </button>
+          </div>
+
+          <button 
+            type="submit" 
+            className="absolute right-0 top-0 bottom-0 w-16 bg-transparent z-20 rounded-r-full" 
+            disabled={isLoading}
+          />
         </div>
 
         <AnimatePresence>
-          {showSuggestions &&
-            (suggestions.length > 0 || richSuggestions.length > 0) && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.15 }}
-                className="absolute top-full left-0 w-full mt-2 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden z-30 py-2"
-              >
-                {richSuggestions.map((item, i) => (
-                  <div
-                    key={`rich-${i}`}
-                    onClick={() => {
-                      setQuery(item.title);
-                      handleSearch(undefined, item.title);
-                    }}
-                    className="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer flex items-center gap-4 transition-colors"
-                  >
-                    <div className="shrink-0 w-12 h-12 rounded-lg bg-gray-200 overflow-hidden">
-                      {item.thumbnail ? (
-                        <img
-                          src={item.thumbnail}
-                          alt={item.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                          <svg
-                            className="w-6 h-6"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                            />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-black font-semibold text-sm text-left">
-                        {item.title}
-                      </span>
-                      <span className="text-gray-500 text-xs line-clamp-1 text-left">
-                        {item.description}
-                      </span>
-                    </div>
+          {showSuggestions && (suggestions.length > 0 || richSuggestions.length > 0) && (
+            <motion.div
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 5 }}
+              className="absolute top-full left-0 w-full mt-3 bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden z-50 py-3"
+            >
+              <div className="max-h-[35vh] overflow-y-auto overscroll-contain py-3">
+              {richSuggestions.map((item, i) => (
+                <div key={i} onClick={() => handleSearch(undefined, item.title)} className="px-5 py-3 hover:bg-gray-50 cursor-pointer flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden">
+                    {item.thumbnail && <img src={item.thumbnail} alt="" className="w-full h-full object-cover" />}
                   </div>
-                ))}
-                {suggestions.map((s, i) => (
-                  <div
-                    key={i}
-                    onClick={() => {
-                      setQuery(s);
-                      handleSearch(undefined, s);
-                    }}
-                    onMouseDown={(e) => e.preventDefault()}
-                    className="px-5 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-3"
-                  >
-                    <svg
-                      className="w-4 h-4 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
-                    <span className="text-black">
-                      {query &&
-                      s.toLowerCase().startsWith(query.toLowerCase()) ? (
-                        <>
-                          <span className="font-semibold">
-                            {s.substring(0, query.length)}
-                          </span>
-                          <span>{s.substring(query.length)}</span>
-                        </>
-                      ) : (
-                        <span>{s}</span>
-                      )}
-                    </span>
+                  <div className="flex flex-col">
+                    <span className="text-black font-medium text-sm">{item.title}</span>
+                    <span className="text-gray-500 text-xs">{item.description}</span>
                   </div>
-                ))}
-              </motion.div>
-            )}
+                </div>
+              ))}
+              {suggestions.map((s, i) => (
+                <div key={i} onClick={() => handleSearch(undefined, s)} className="px-6 py-2.5 hover:bg-gray-50 cursor-pointer flex items-center gap-3">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <span className="text-black text-sm">{s}</span>
+                </div>
+              ))}
+              </div>
+            </motion.div>
+          )}
         </AnimatePresence>
       </form>
-
-      {isLoading && (
-        <div className="absolute bottom-[-8px] left-0 w-full h-[2px] bg-gray-100 overflow-hidden rounded-full">
-          <motion.div
-            className="h-full bg-black"
-            initial={{ x: "-100%", width: "50%" }}
-            animate={{ x: "200%", width: "50%" }}
-            transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
-          />
-        </div>
-      )}
     </div>
   );
 }
