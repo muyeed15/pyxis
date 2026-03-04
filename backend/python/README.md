@@ -7,6 +7,7 @@ This is the backend for the Pyxis Search Engine, a Flask-based API that provides
 - **Search endpoints**: text, images, videos, news, books (via `ddgs` library)
 - **Autocomplete suggestions** (local CSV‑based engine)
 - **Instant answers** with optional related image (DuckDuckGo + Wikipedia/Commons fallback)
+- **Adult content filtering** – blocks results from banned domains and containing banned keywords (loaded from CSV files)
 - **Redis caching** to reduce latency and external API calls
 - **PM2 process management** for production
 - **CORS enabled** for frontend integration
@@ -16,7 +17,6 @@ This is the backend for the Pyxis Search Engine, a Flask-based API that provides
 - Linux (Debian 11/12 or Ubuntu 20.04+ recommended)
 - Python 3.10 or higher
 - Redis server (local or remote)
-- Redis Python client (`redis` package)
 - Miniconda (optional but recommended for environment management)
 - PM2 (Node.js process manager) – for production
 
@@ -56,10 +56,15 @@ pip install -r requirements.txt
 If you do not have a `requirements.txt` file, manually install the core packages:
 
 ```bash
-pip install ddgs flask flask-caching flask-cors python-dotenv waitress requests redis
+pip install ddgs flask flask-caching flask-cors python-dotenv waitress requests redis tldextract typing_extensions
 ```
 
-> **Note:** The `ddgs` library is a DuckDuckGo Search wrapper. Ensure you have the latest version. The `redis` package is **required** for Redis caching support; without it you will get a `ModuleNotFoundError: No module named 'redis'`.
+> **Important notes about dependencies:**
+>
+> - `ddgs` is a DuckDuckGo Search wrapper. Ensure you have the latest version.
+> - `redis` is **required** for Redis caching support; without it you will get a `ModuleNotFoundError: No module named 'redis'`.
+> - `tldextract` is used for domain extraction in the adult content filter. It is now a required package.
+> - `typing_extensions` is used for certain type hints (optional but recommended).
 
 ### 4. Install and configure Redis
 
@@ -79,6 +84,22 @@ redis-cli ping
 # Should return PONG
 ```
 
+#### Redis Cache Management (Flushing)
+
+Over time you may want to clear the entire Redis cache – for example, after updating the filtering rules or to force fresh results. You can do this with the `redis-cli` command:
+
+```bash
+redis-cli flushall
+```
+
+This command removes **all keys** from **all databases** in your Redis instance. Use it carefully, especially in production, because it will empty the cache completely and may temporarily increase load on external APIs until the cache is repopulated.
+
+If you are using a specific Redis database (e.g., database 1), you can flush only that database:
+
+```bash
+redis-cli -n 1 flushdb
+```
+
 ### 5. Configure environment variables
 
 Copy the example environment file:
@@ -93,7 +114,9 @@ Edit `.env` to set your Redis URL (if different from default):
 REDIS_URL=redis://localhost:6379/0
 ```
 
-### 6. Prepare autocomplete dataset
+### 6. Prepare datasets
+
+#### Autocomplete dataset
 
 The autocomplete engine requires three CSV files inside the `autocomplete/dataset/` directory:
 
@@ -102,6 +125,13 @@ The autocomplete engine requires three CSV files inside the `autocomplete/datase
 - `patterns.csv` – columns: `type`, `pattern`
 
 Place these files in `autocomplete/dataset/` before starting the server.
+
+#### Adult content filter lists
+
+The filter engine expects two CSV files inside the `filters/` directory:
+
+- `blocked_keywords.csv` – one keyword per row (header optional). Any result containing these keywords (as substrings) will be dropped.
+- `blocked_domains.csv` – one base domain name per row (header optional). Any result whose extracted base domain matches, or whose URL contains that domain string, will be dropped.
 
 ## Running the Application
 
@@ -233,6 +263,9 @@ python/
 ├── autocomplete/               # Autocomplete module
 │   ├── autocomplete.py
 │   └── dataset/                # CSV files
+├── filters/                    # Adult content filter lists
+│   ├── blocked_keywords.csv
+│   └── blocked_domains.csv
 ├── instantsearch/              # Instant answer module
 │   └── instantsearch.py
 ├── ecosystem.config.js         # PM2 configuration
@@ -245,5 +278,7 @@ python/
 
 - **Redis connection errors**: Ensure Redis is running (`redis-cli ping`) and the `REDIS_URL` in `.env` is correct. Also verify that the Python `redis` package is installed.
 - **Autocomplete not available**: Check that the CSV files exist in `autocomplete/dataset/` and have the correct format.
-- **ModuleNotFoundError: No module named 'redis'**: Install the missing package with `pip install redis`.
+- **Adult filter not working**: Verify that `filters/blocked_keywords.csv` and `filters/blocked_domains.csv` exist and contain valid entries. The filter rules are applied at startup; restart the server after changing these files.
+- **ModuleNotFoundError: No module named 'tldextract'** or **'typing_extensions'**: Install the missing package with `pip install tldextract` or `pip install typing_extensions`.
 - **PM2 not starting**: Run `pm2 logs pyxis-flask-backend` to see error details.
+- **Clearing the cache**: Use `redis-cli flushall` to delete all cached responses. Useful after updating filter lists or when testing new features.
