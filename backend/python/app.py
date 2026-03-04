@@ -11,19 +11,137 @@ It exposes endpoints for:
 All endpoints support caching (Redis) to reduce latency and external API calls.
 Cache keys are built from sorted query parameters to ensure parameter-order-independent
 cache hits (e.g. ``?q=car&type=images`` and ``?type=images&q=car`` resolve to the same key).
+
+SafeSearch policy: adult content is always filtered. The ``safesearch`` parameter is
+hard-coded to ``"on"`` for every search type and cannot be overridden by callers.
 """
 
 from flask import Flask, jsonify, request
 from flask_caching import Cache
 from ddgs import DDGS
+import csv
 import os
 import time
+import tldextract
 import urllib.parse
 from flask_cors import CORS
 from dotenv import load_dotenv
 
 # Load environment variables from .env file (e.g., REDIS_URL)
 load_dotenv()
+
+# ----------------------------------------------------------------------
+# SafeSearch policy – ALWAYS ON, never caller-overridable
+# ----------------------------------------------------------------------
+SAFE_SEARCH = "on"
+
+# ----------------------------------------------------------------------
+# Adult content filtering – loaded from CSV files
+# ----------------------------------------------------------------------
+_FILTER_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "filters")
+_KEYWORDS_CSV = os.path.join(_FILTER_DIR, "blocked_keywords.csv")
+_DOMAINS_CSV  = os.path.join(_FILTER_DIR, "blocked_domains.csv")
+
+
+def _load_csv_set(path: str) -> set[str]:
+    """
+    Load a single-column CSV file into a set of lowercase stripped strings.
+    The first row is treated as a header and skipped.
+    Returns an empty set if the file is missing or unreadable.
+    """
+    result: set[str] = set()
+    try:
+        with open(path, newline="", encoding="utf-8") as fh:
+            reader = csv.reader(fh)
+            next(reader, None)  # skip header
+            for row in reader:
+                if not row:
+                    continue
+                value = row[0].strip().lower()
+                if value:
+                    result.add(value)
+    except FileNotFoundError:
+        print(f"[FILTER] CSV not found, skipping: {path}")
+    except Exception as e:
+        print(f"[FILTER] Failed to load {path}: {e}")
+    return result
+
+
+# Load filter lists at startup – reload by restarting the server.
+BLOCKED_QUERY_KEYWORDS: set[str] = _load_csv_set(_KEYWORDS_CSV)
+BLOCKED_DOMAINS: set[str]        = _load_csv_set(_DOMAINS_CSV)
+
+
+
+
+def is_query_blocked(query: str) -> bool:
+    """Return True if the query contains any blocked keyword."""
+    q = query.lower()
+    return any(kw in q for kw in BLOCKED_QUERY_KEYWORDS)
+
+
+def _extract_base_domain(url: str) -> str:
+    """
+    Extract just the registered domain name (no TLD, no subdomain) from a URL
+    using tldextract, so that xvideos.com / xvideos.es / xvideos.red all
+    resolve to the same base name 'xvideos' for blocklist matching.
+    """
+    try:
+        return tldextract.extract(url).domain.lower()
+    except Exception:
+        return ""
+
+
+def _build_haystack(r: dict) -> str:
+    """
+    Flatten every possible field of a result — including deeply nested
+    values — into a single lowercased string for keyword scanning.
+    Uses recursive extraction so no nested field is ever missed.
+    """
+    def _extract(obj) -> list[str]:
+        if isinstance(obj, str):
+            return [obj]
+        if isinstance(obj, dict):
+            return [s for v in obj.values() for s in _extract(v)]
+        if isinstance(obj, (list, tuple)):
+            return [s for v in obj for s in _extract(v)]
+        return [str(obj)] if obj is not None else []
+
+    return " ".join(_extract(r)).lower()
+
+
+def _result_is_clean(r: dict) -> bool:
+    """
+    Return True only if the result passes ALL checks:
+      1. Its extracted base domain is not in BLOCKED_DOMAINS.
+      2. No blocked domain name appears anywhere in the raw URL string
+         (catches paths like /bestialitysextaboo.net/...).
+      3. No blocked keyword appears anywhere in any field — including
+         as a substring, so 'sexy' is caught by 'sex', 'bestiality'
+         is caught by 'bestial', etc.
+    One match anywhere = result dropped.
+    """
+    raw_url = (r.get("href") or r.get("url") or r.get("content") or "").lower()
+
+    # Check 1: extracted base domain
+    if _extract_base_domain(raw_url) in BLOCKED_DOMAINS:
+        return False
+
+    # Check 2: any blocked domain name present anywhere in the raw URL
+    if any(bd in raw_url for bd in BLOCKED_DOMAINS):
+        return False
+
+    # Check 3: keyword substring scan across all fields
+    haystack = _build_haystack(r)
+    if any(kw in haystack for kw in BLOCKED_QUERY_KEYWORDS):
+        return False
+
+    return True
+
+
+def filter_results(results: list[dict]) -> list[dict]:
+    """Return only results that pass every content check."""
+    return [r for r in results if _result_is_clean(r)]
 
 # ----------------------------------------------------------------------
 # Cache configuration
@@ -136,10 +254,18 @@ def make_cache_key(*args, **kwargs):
     ``?q=car&type=images`` vs ``?type=images&q=car``) resolve to the same
     Redis key and therefore the same cached response.
 
+    Note: any ``safesearch`` parameter supplied by the caller is stripped from
+    the key (since it is always overridden to ``"on"``), so cache hits remain
+    consistent regardless of what the caller sends.
+
     Returns:
         str: A stable cache key in the form ``<path>?<sorted-query-string>``.
     """
-    params = sorted(request.args.items())  # sort for order-independence
+    # Exclude 'safesearch' from the key – it is always "on" and must not
+    # create duplicate cache entries if a caller passes different values.
+    params = sorted(
+        (k, v) for k, v in request.args.items() if k != "safesearch"
+    )
     sorted_qs = urllib.parse.urlencode(params)
     return f"{request.path}?{sorted_qs}"
 
@@ -197,10 +323,13 @@ def search():
         page (int, optional): 1‑based page number. Default ``1``.
         max_results (int, optional): Results per page. Default varies by type.
 
-    All filtering parameters (region, timelimit, size, color, etc.) are ignored
-    for maximum speed. The backend is fixed to the fastest single source:
+    Note: SafeSearch is always enforced to ``"on"``. Any ``safesearch``
+    parameter supplied by the caller is silently ignored.
+
+    All other filtering parameters (region, timelimit, size, color, etc.) are
+    ignored for maximum speed. The backend is fixed to the fastest single source:
         - text, images, videos, news → DuckDuckGo
-        - books → Anna’s Archive
+        - books → Anna's Archive
 
     Returns:
         JSON object containing:
@@ -221,6 +350,17 @@ def search():
         return jsonify({"error": "Missing parameter: q"}), 400
 
     keywords = urllib.parse.unquote(raw_keywords)
+
+    if is_query_blocked(keywords):
+        return jsonify({
+            "search_type": request.args.get("type", "text").lower(),
+            "query": keywords,
+            "page": request.args.get("page", 1, type=int),
+            "has_more": False,
+            "count": 0,
+            "results": [],
+        })
+
     search_type = request.args.get("type", "text").lower()
 
     if search_type not in ["text", "images", "videos", "news", "books"]:
@@ -251,12 +391,13 @@ def search():
             results = ddgs_with_retry(lambda d: d.text(
                 keywords,
                 region="us-en",
-                safesearch="off",
+                safesearch=SAFE_SEARCH,   # always "on"
                 timelimit=None,
                 max_results=max_results,
                 page=page,
                 backend=backend,
             ))
+            results = filter_results(results)
             has_more = len(results) == max_results and page < TEXT_MAX_PAGES
             response_data = {
                 "search_type": search_type,
@@ -281,12 +422,11 @@ def search():
             results = ddgs_with_retry(lambda d: d.images(
                 keywords,
                 region="us-en",
-                safesearch="off",
+                safesearch=SAFE_SEARCH,   # always "on"
                 timelimit=None,
                 max_results=max_results,
                 page=page,
                 backend=backend,
-                # All filters omitted
             ))
             has_more = len(results) == max_results and page < IMAGE_MAX_PAGES
             timeout = CACHE_TIMEOUT_IMAGE
@@ -298,12 +438,11 @@ def search():
             results = ddgs_with_retry(lambda d: d.videos(
                 keywords,
                 region="us-en",
-                safesearch="off",
+                safesearch=SAFE_SEARCH,   # always "on"
                 timelimit=None,
                 max_results=max_results,
                 page=page,
                 backend=backend,
-                # All filters omitted
             ))
             has_more = len(results) == max_results and page < VIDEO_MAX_PAGES
             timeout = CACHE_TIMEOUT_VIDEO
@@ -315,7 +454,7 @@ def search():
             results = ddgs_with_retry(lambda d: d.news(
                 keywords,
                 region="us-en",
-                safesearch="off",
+                safesearch=SAFE_SEARCH,   # always "on"
                 timelimit=None,
                 max_results=max_results,
                 page=page,
@@ -326,6 +465,9 @@ def search():
 
         # ----- Books search -----
         elif search_type == "books":
+            # The ddgs books() API does not expose a safesearch parameter,
+            # but Anna's Archive (the only backend) does not serve adult content
+            # by default, so no extra flag is needed here.
             if max_results is None:
                 max_results = BOOKS_MAX_RESULTS_PER_PAGE
             results = ddgs_with_retry(lambda d: d.books(
@@ -343,7 +485,7 @@ def search():
             "page": page,
             "has_more": has_more,
             "count": len(results),
-            "results": results,
+            "results": filter_results(results),
         }
         cache.set(cache_key, response_data, timeout=timeout)
         return jsonify(response_data)
@@ -403,7 +545,7 @@ def help():
         "api": "Pyxis Search API",
         "version": "1.0",
         "endpoints": {
-            "/search": "q, type (text|images|videos|news|books), page, max_results (filters ignored)",
+            "/search": "q, type (text|images|videos|news|books), page, max_results (filters ignored; safesearch always on)",
             "/autocomplete": "q, max_results",
             "/instant": "q",
         },
@@ -415,6 +557,9 @@ def help():
             "books": f"{base_url}/search?q=science+fiction&type=books&max_results=10&page=1",
             "autocomplete": f"{base_url}/autocomplete?q=how+to",
             "instant": f"{base_url}/instant?q=elon+musk",
+        },
+        "policy": {
+            "safesearch": "always on – adult content is filtered for all search types",
         },
         "status": {
             "autocomplete": "available" if AUTOCOMPLETE_AVAILABLE else "unavailable",
