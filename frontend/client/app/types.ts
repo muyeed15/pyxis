@@ -41,6 +41,15 @@ export interface  NewsSearchResultItem{
   date: string;
 }
 
+export interface BookSearchResultItem {
+  title: string;
+  author?:string;
+  url: string;
+  image:string;
+  description?: string;
+  year?: string;
+}
+
 export interface AutocompleteData {
   suggestions: string[];
 }
@@ -51,5 +60,5 @@ export interface APIResponse {
   count: number;
   page?: number;
   has_more?: boolean;
-  results: TextSearchResultItem[] | ImageSearchResultItem[] | VideoSearchResultItem[] | NewsSearchResultItem[];
+  results: TextSearchResultItem[] | ImageSearchResultItem[] | VideoSearchResultItem[] | NewsSearchResultItem[] | BookSearchResultItem[];
 }
