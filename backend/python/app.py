@@ -4,7 +4,7 @@ with autocomplete suggestions and instant answers.
 
 This module initialises a Flask app with CORS support and Redis caching.
 It exposes endpoints for:
-    - Text, image, video, news, and book searches (via ddgs library)
+    - Text, image, video, news, and book searches 
     - Query autocompletion (using a local autocomplete engine)
     - Instant answers with optional image (using DuckDuckGo Instant Answer API + image fallback)
 
@@ -24,6 +24,7 @@ import os
 import time
 import tldextract
 import urllib.parse
+import requests  # <-- Added for the Open Library Books API
 from flask_cors import CORS
 from dotenv import load_dotenv
 
@@ -70,8 +71,6 @@ def _load_csv_set(path: str) -> set[str]:
 # Load filter lists at startup – reload by restarting the server.
 BLOCKED_QUERY_KEYWORDS: set[str] = _load_csv_set(_KEYWORDS_CSV)
 BLOCKED_DOMAINS: set[str]        = _load_csv_set(_DOMAINS_CSV)
-
-
 
 
 def is_query_blocked(query: str) -> bool:
@@ -223,15 +222,6 @@ CACHE_TIMEOUT_INSTANT = 2592000   # 30 days
 def ddgs_with_retry(fn):
     """
     Execute a DuckDuckGo search function with automatic retries using exponential backoff.
-
-    Args:
-        fn (callable): A function that takes a DDGS instance and returns search results.
-
-    Returns:
-        The result of the search function.
-
-    Raises:
-        The last exception encountered if all retries are exhausted.
     """
     last_exc = None
     for attempt in range(MAX_RETRIES):
@@ -248,21 +238,7 @@ def ddgs_with_retry(fn):
 def make_cache_key(*args, **kwargs):
     """
     Generate a normalised, order-independent cache key for the current request.
-
-    Query parameters are sorted alphabetically before being joined, ensuring
-    that requests with identical parameters in different orders (e.g.
-    ``?q=car&type=images`` vs ``?type=images&q=car``) resolve to the same
-    Redis key and therefore the same cached response.
-
-    Note: any ``safesearch`` parameter supplied by the caller is stripped from
-    the key (since it is always overridden to ``"on"``), so cache hits remain
-    consistent regardless of what the caller sends.
-
-    Returns:
-        str: A stable cache key in the form ``<path>?<sorted-query-string>``.
     """
-    # Exclude 'safesearch' from the key – it is always "on" and must not
-    # create duplicate cache entries if a caller passes different values.
     params = sorted(
         (k, v) for k, v in request.args.items() if k != "safesearch"
     )
@@ -275,19 +251,6 @@ def make_cache_key(*args, **kwargs):
 # ----------------------------------------------------------------------
 @app.route("/autocomplete", methods=["GET"])
 def autocomplete_suggestions():
-    """
-    Return autocomplete suggestions for a partial query.
-
-    Query parameters:
-        q (str): The partial query (URL‑encoded).
-        max_results (int, optional): Maximum number of suggestions (default 10).
-
-    Returns:
-        JSON object with:
-            - query: the decoded query
-            - suggestions: list of suggestion strings
-            - count: number of suggestions returned
-    """
     cache_key = make_cache_key()
     cached = cache.get(cache_key)
     if cached is not None:
@@ -313,33 +276,6 @@ def autocomplete_suggestions():
 
 @app.route("/search", methods=["GET"])
 def search():
-    """
-    Perform a search of the specified type using DuckDuckGo.
-
-    Query parameters (common):
-        q (str): Search keywords (URL‑encoded).
-        type (str): One of ``text``, ``images``, ``videos``, ``news``, ``books``.
-            Defaults to ``text``.
-        page (int, optional): 1‑based page number. Default ``1``.
-        max_results (int, optional): Results per page. Default varies by type.
-
-    Note: SafeSearch is always enforced to ``"on"``. Any ``safesearch``
-    parameter supplied by the caller is silently ignored.
-
-    All other filtering parameters (region, timelimit, size, color, etc.) are
-    ignored for maximum speed. The backend is fixed to the fastest single source:
-        - text, images, videos, news → DuckDuckGo
-        - books → Anna's Archive
-
-    Returns:
-        JSON object containing:
-            - search_type: the type of search performed
-            - query: the decoded keywords
-            - page: current page number
-            - has_more: ``true`` if additional pages are available
-            - count: number of results in this response
-            - results: list of result items (structure varies by search type)
-    """
     cache_key = make_cache_key()
     cached = cache.get(cache_key)
     if cached is not None:
@@ -372,9 +308,9 @@ def search():
         "images": "duckduckgo",
         "videos": "duckduckgo",
         "news": "duckduckgo",
-        "books": "annasarchive"
+        "books": "openlibrary" # <-- Updated to prevent KeyError
     }
-    backend = backend_map[search_type]
+    backend = backend_map.get(search_type, "duckduckgo")
 
     # Common pagination
     page = request.args.get("page", 1, type=int)
@@ -463,21 +399,60 @@ def search():
             has_more = len(results) == max_results and page < NEWS_MAX_PAGES
             timeout = CACHE_TIMEOUT_NEWS
 
-        # ----- Books search -----
+        # ----- Books search (Open Library API) -----
         elif search_type == "books":
-            # The ddgs books() API does not expose a safesearch parameter,
-            # but Anna's Archive (the only backend) does not serve adult content
-            # by default, so no extra flag is needed here.
             if max_results is None:
                 max_results = BOOKS_MAX_RESULTS_PER_PAGE
-            results = ddgs_with_retry(lambda d: d.books(
-                keywords,
-                max_results=max_results,
-                page=page,
-                backend=backend,
-            ))
-            has_more = len(results) == max_results and page < BOOKS_MAX_PAGES
-            timeout = CACHE_TIMEOUT_BOOKS
+            
+            # Open Library uses simple page/limit parameters
+            open_library_url = f"https://openlibrary.org/search.json?q={urllib.parse.quote(keywords)}&limit={max_results}&page={page}"
+            
+            try:
+                # Add a User-Agent header as a best practice for Open Library
+                headers = {'User-Agent': 'PyxisSearchEngine/1.0'}
+                resp = requests.get(open_library_url, headers=headers, timeout=10)
+                resp.raise_for_status()
+                data = resp.json()
+                
+                raw_items = data.get("docs", [])
+                results = []
+                
+                for item in raw_items:
+                    # Extract cover image (M size for the cards)
+                    cover_id = item.get("cover_i")
+                    image = f"https://covers.openlibrary.org/b/id/{cover_id}-M.jpg" if cover_id else None
+                    
+                    # Extract authors
+                    authors = item.get("author_name", [])
+                    author_str = ", ".join(authors) if authors else "Unknown"
+                    
+                    # Get publish year
+                    year = item.get("first_publish_year")
+                    year_str = str(year) if year else ""
+
+                    # Build URL back to the book on Open Library
+                    book_key = item.get("key", "")
+                    book_url = f"https://openlibrary.org{book_key}" if book_key else ""
+
+                    results.append({
+                        "title": item.get("title", "Untitled"),
+                        "author": author_str,
+                        "url": book_url,
+                        "image": image,
+                        "description": "", 
+                        "year": year_str
+                    })
+                
+                # Check if there are more results than what we've fetched so far
+                total_found = data.get("numFound", 0)
+                has_more = total_found > (page * max_results) and page < BOOKS_MAX_PAGES
+                timeout = CACHE_TIMEOUT_BOOKS
+                
+            except Exception as e:
+                print(f"[BOOKS API ERROR]: {e}")
+                results = []
+                has_more = False
+                timeout = CACHE_TIMEOUT_BOOKS
 
         response_data = {
             "search_type": search_type,
@@ -485,7 +460,7 @@ def search():
             "page": page,
             "has_more": has_more,
             "count": len(results),
-            "results": filter_results(results),
+            "results": filter_results(results), # Your robust filtering logic is still applied here!
         }
         cache.set(cache_key, response_data, timeout=timeout)
         return jsonify(response_data)
@@ -496,18 +471,6 @@ def search():
 
 @app.route("/instant", methods=["GET"])
 def instant_answer():
-    """
-    Fetch an instant answer and a related image for a query.
-
-    Query parameters:
-        q (str): The query (URL‑encoded).
-
-    Returns:
-        JSON object with:
-            - query: the decoded query
-            - answer: the textual instant answer, or ``null`` if unavailable
-            - image_url: URL of a related safe image, or ``null`` if unavailable
-    """
     cache_key = make_cache_key()
     cached = cache.get(cache_key)
     if cached is not None:
@@ -533,13 +496,6 @@ def instant_answer():
 
 @app.route("/help", methods=["GET"])
 def help():
-    """
-    Return API documentation and status information.
-
-    Returns:
-        JSON object with endpoint descriptions, example URLs, and service
-        availability flags for optional modules (autocomplete, instant answer).
-    """
     base_url = request.host_url.rstrip("/")
     return jsonify({
         "api": "Pyxis Search API",
@@ -570,14 +526,8 @@ def help():
 
 @app.route("/", methods=["GET"])
 def index():
-    """
-    Root endpoint – returns basic API information and a link to the help page.
-    """
     return jsonify({"api": "Pyxis Search API", "docs": "/help"})
 
 
-# ----------------------------------------------------------------------
-# Run the Flask development server
-# ----------------------------------------------------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True, threaded=True)
