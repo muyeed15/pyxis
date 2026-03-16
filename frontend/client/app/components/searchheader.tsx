@@ -16,18 +16,6 @@ export interface RichSuggestion {
 /**
  * Shared autocomplete hook used by both {@link SearchHeader} and the home
  * search bar.
- *
- * Fires two parallel requests on each debounced keystroke:
- *  - Internal ``/api/autocomplete`` for keyword suggestions.
- *  - Wikipedia ``prefixsearch`` for rich entity cards (title + thumbnail).
- *
- * Requests are aborted when a newer keystroke arrives or the component
- * unmounts, preventing stale responses from overwriting fresher ones.
- *
- * **Sync behaviour:** When ``initialQuery`` changes (e.g. because the shared
- * header is kept mounted across tab navigation and ``searchParams`` updates),
- * the local ``query`` state is synchronised so the input always reflects the
- * current URL query.
  */
 export function useAutocomplete(initialQuery = "") {
   const [query, setQuery] = useState(initialQuery);
@@ -36,9 +24,6 @@ export function useAutocomplete(initialQuery = "") {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
-  // Sync local query whenever the URL-derived initialQuery changes.
-  // This handles the case where SearchHeader stays mounted across tab switches
-  // and searchParams updates without a full remount.
   useEffect(() => {
     setQuery(initialQuery);
   }, [initialQuery]);
@@ -130,9 +115,6 @@ function SearchHeaderContent() {
   };
 
   const activeTab = getActiveTab();
-
-  // Derive the current query from the URL so the input always reflects the
-  // active search even when the component stays mounted across navigations.
   const urlQuery = searchParams.get("q") || "";
 
   const [isLoading, setIsLoading] = useState(false);
@@ -147,13 +129,11 @@ function SearchHeaderContent() {
     setShowSuggestions,
   } = useAutocomplete(urlQuery);
 
-  // Clear loading state and suggestions when navigation completes.
   useEffect(() => {
     setIsLoading(false);
     setShowSuggestions(false);
   }, [searchParams]);
 
-  // Dismiss suggestion dropdown on outside click / tap.
   useEffect(() => {
     const handle = (e: MouseEvent | TouchEvent) => {
       if (
@@ -205,14 +185,7 @@ function SearchHeaderContent() {
       name: "All",
       path: "text",
       icon: (
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <circle cx="11" cy="11" r="8" />
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
@@ -222,14 +195,7 @@ function SearchHeaderContent() {
       name: "Images",
       path: "image",
       icon: (
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
           <circle cx="9" cy="9" r="2" />
           <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
@@ -240,14 +206,7 @@ function SearchHeaderContent() {
       name: "Videos",
       path: "video",
       icon: (
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="m22 8-6 4 6 4V8Z" />
           <rect width="14" height="12" x="2" y="6" rx="2" ry="2" />
         </svg>
@@ -257,14 +216,7 @@ function SearchHeaderContent() {
       name: "News",
       path: "news",
       icon: (
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
           <path d="M18 14h-8" />
           <path d="M15 18h-5" />
@@ -276,14 +228,7 @@ function SearchHeaderContent() {
       name: "Books",
       path: "book",
       icon: (
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
           <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
         </svg>
@@ -292,7 +237,7 @@ function SearchHeaderContent() {
   ];
 
   return (
-    <header className="sticky top-0 bg-white z-50 pt-4 md:pt-6 border-b border-gray-200 transition-colors">
+    <header className="sticky top-0 bg-white/80 backdrop-blur-xl z-50 pt-4 md:pt-6 border-zinc-100 transition-colors shadow-sm">
       <div className="max-w-[1200px] mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between mb-4 md:mb-0 md:absolute md:inset-x-0 md:top-6 md:px-8 pointer-events-none">
           <Link href="/" className="shrink-0 pointer-events-auto">
@@ -301,34 +246,33 @@ function SearchHeaderContent() {
               alt="Pyxis"
               width={90}
               height={30}
-              className="w-[80px] h-auto md:w-[110px]"
+              className="w-[80px] h-auto md:w-[105px]"
               priority
             />
           </Link>
           <Link
             href="/signin"
-            className="px-4 py-1.5 md:px-5 md:py-2.5 bg-black text-white rounded-full text-sm font-medium hover:opacity-90 transition-opacity pointer-events-auto"
+            className="px-5 py-2.5 bg-zinc-900 text-white rounded-full text-sm font-medium hover:bg-zinc-800 transition-colors pointer-events-auto shadow-sm"
           >
             Sign In
           </Link>
         </div>
 
-        <div className="flex pb-4">
+        <div className="flex pb-4 md:pb-5">
           <div
             ref={containerRef}
-            className="w-full md:max-w-2xl relative md:mt-1"
+            className="w-full md:max-w-[680px] relative md:mt-0"
           >
             <form
               onSubmit={handleSearch}
-              className="relative w-full text-gray-500 focus-within:text-black"
+              className="relative w-full group"
             >
-              {/* Ghost text for tab-completion hint */}
               <input
                 type="text"
                 readOnly
                 value={ghostText}
                 aria-hidden="true"
-                className="absolute inset-0 w-full h-11 pl-5 pr-12 rounded-full border border-transparent bg-transparent text-base text-gray-400 pointer-events-none z-0"
+                className="absolute inset-0 w-full h-12 pl-6 pr-12 rounded-full border border-transparent bg-transparent text-[15px] text-zinc-400 pointer-events-none z-0"
               />
               <input
                 type="text"
@@ -341,13 +285,13 @@ function SearchHeaderContent() {
                 }}
                 onFocus={() => setShowSuggestions(true)}
                 onKeyDown={handleKeyDown}
-                className="relative z-10 w-full h-11 pl-5 pr-12 rounded-full border border-gray-300 focus:outline-none focus:border-black transition-all text-base bg-white text-black placeholder-gray-500 shadow-sm"
-                placeholder="Search..."
+                className="relative z-10 w-full h-12 pl-6 pr-14 rounded-full border border-zinc-100/80 bg-zinc-50/50 text-[15px] text-zinc-900 placeholder-zinc-500 shadow-sm transition-all duration-300 focus:outline-none focus:bg-white focus:border-zinc-300 focus:shadow-md hover:bg-white hover:border-zinc-300"
+                placeholder="Search Pyxis..."
                 autoComplete="off"
               />
               <button
                 type="submit"
-                className="absolute right-0 top-0 h-full w-12 flex items-center justify-center text-black hover:opacity-70 transition-opacity z-20"
+                className="absolute right-1 top-1 bottom-1 w-12 flex items-center justify-center text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 rounded-full transition-all z-20"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -370,11 +314,11 @@ function SearchHeaderContent() {
               {showSuggestions &&
                 (suggestions.length > 0 || richSuggestions.length > 0) && (
                   <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.1 }}
-                    className="absolute top-12 left-0 w-full bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-30 py-2"
+                    initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="absolute top-14 left-0 w-full bg-white rounded-3xl shadow-xl border border-zinc-100/80 overflow-hidden z-30 py-3"
                   >
                     {richSuggestions.map((item, i) => (
                       <div
@@ -383,43 +327,38 @@ function SearchHeaderContent() {
                           setQuery(item.title);
                           handleSearch(undefined, item.title);
                         }}
-                        className="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer flex items-center gap-4 transition-colors"
+                        className="px-5 py-3 hover:bg-zinc-50/80 cursor-pointer flex items-center gap-4 transition-colors group"
                       >
-                        <div className="shrink-0 w-10 h-10 rounded-lg bg-gray-200 overflow-hidden">
+                        <div className="shrink-0 w-11 h-11 rounded-xl bg-zinc-100 overflow-hidden border border-zinc-100">
                           {item.thumbnail ? (
                             <img
                               src={item.thumbnail}
                               alt={item.title}
-                              className="w-full h-full object-cover"
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-400">
-                              <svg
-                                className="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                />
+                            <div className="w-full h-full flex items-center justify-center text-zinc-300">
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                               </svg>
                             </div>
                           )}
                         </div>
-                        <div className="flex flex-col">
-                          <span className="text-black font-semibold text-sm">
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-zinc-900 font-semibold text-[15px] truncate">
                             {item.title}
                           </span>
-                          <span className="text-gray-500 text-xs line-clamp-1">
+                          <span className="text-zinc-500 text-xs truncate">
                             {item.description}
                           </span>
                         </div>
                       </div>
                     ))}
+                    
+                    {richSuggestions.length > 0 && suggestions.length > 0 && (
+                       <div className="h-px w-full bg-zinc-100 my-1" />
+                    )}
+
                     {suggestions.map((s, i) => (
                       <div
                         key={i}
@@ -427,23 +366,13 @@ function SearchHeaderContent() {
                           setQuery(s);
                           handleSearch(undefined, s);
                         }}
-                        className="px-5 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-3"
+                        className="px-6 py-2.5 hover:bg-zinc-50 cursor-pointer flex items-center gap-4 transition-colors"
                       >
-                        <svg
-                          className="w-4 h-4 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                          />
+                        <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
-                        <span className="text-black text-sm md:text-base">
-                          <span className="font-semibold">
+                        <span className="text-zinc-800 text-[15px]">
+                          <span className="font-semibold text-zinc-950">
                             {s.substring(0, query.length)}
                           </span>
                           {s.substring(query.length)}
@@ -459,7 +388,7 @@ function SearchHeaderContent() {
 
       {/* Tab bar */}
       <div className="w-full max-w-[1200px] mx-auto px-4 md:px-8">
-        <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-0">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.path;
             return (
@@ -477,16 +406,21 @@ function SearchHeaderContent() {
                   }
                   if (!isActive) setIsLoading(true);
                 }}
-                className={`relative py-3 text-sm font-medium transition-colors duration-200 ease-out select-none whitespace-nowrap ${isActive ? "text-black" : "text-gray-500 hover:text-black"}`}
+                className={`relative px-4 py-3 text-[14px] font-medium transition-all duration-200 ease-out select-none whitespace-nowrap rounded-t-xl ${isActive ? "text-zinc-700" : "text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50/80"}`}
               >
-                <span
-                  className={`flex items-center gap-2 pb-[1px] border-b-2 ${isActive ? "border-black" : "border-transparent"} ${!query.trim() && !isActive ? "opacity-40 cursor-not-allowed" : ""}`}
-                >
-                  <span className={isActive ? "opacity-100" : "opacity-70"}>
+                <span className={`flex items-center gap-2 ${!query.trim() && !isActive ? "opacity-40 cursor-not-allowed" : ""}`}>
+                  <span className={isActive ? "text-zinc-700" : "text-zinc-400"}>
                     {tab.icon}
                   </span>
                   <span>{tab.name}</span>
                 </span>
+                {isActive && (
+                  <motion.div 
+                    layoutId="activeTabIndicator"
+                    className="absolute bottom-0 left-0 w-full h-[3.5px] bg-zinc-900 rounded-t-full"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
+                )}
               </Link>
             );
           })}
@@ -495,9 +429,9 @@ function SearchHeaderContent() {
 
       {/* Progress bar shown during navigation */}
       {isLoading && (
-        <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gray-100 overflow-hidden z-50">
+        <div className="absolute bottom-0 left-0 w-full h-[2px] bg-zinc-100 overflow-hidden z-50">
           <motion.div
-            className="h-full bg-black"
+            className="h-full bg-zinc-900"
             initial={{ x: "-100%", width: "50%" }}
             animate={{ x: "200%", width: "50%" }}
             transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
@@ -512,16 +446,11 @@ function SearchHeaderContent() {
 // SearchHeader (public export)
 // ---------------------------------------------------------------------------
 
-/**
- * Wrapper that defers rendering of header internals until client-side
- * hydration is complete, avoiding ``useSearchParams`` Suspense boundary
- * errors during SSR.
- */
 export default function SearchHeader() {
   return (
     <Suspense
       fallback={
-        <div className="h-24 w-full bg-white border-b border-gray-200" />
+        <div className="h-[136px] md:h-[144px] w-full bg-white border-b border-zinc-100" />
       }
     >
       <SearchHeaderContent />
