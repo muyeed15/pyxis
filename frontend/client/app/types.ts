@@ -32,6 +32,24 @@ export interface VideoSearchResultItem {
   };
 }
 
+export interface  NewsSearchResultItem{
+  title: string;
+  url: string;
+  body: string;
+  image?: string;
+  source: string;
+  date: string;
+}
+
+export interface BookSearchResultItem {
+  title: string;
+  author?:string;
+  url: string;
+  image:string;
+  description?: string;
+  year?: string;
+}
+
 export interface AutocompleteData {
   suggestions: string[];
 }
@@ -42,5 +60,5 @@ export interface APIResponse {
   count: number;
   page?: number;
   has_more?: boolean;
-  results: TextSearchResultItem[] | ImageSearchResultItem[] | VideoSearchResultItem[];
+  results: TextSearchResultItem[] | ImageSearchResultItem[] | VideoSearchResultItem[] | NewsSearchResultItem[] | BookSearchResultItem[];
 }

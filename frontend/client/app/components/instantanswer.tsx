@@ -24,13 +24,14 @@ export default function InstantAnswer({
       initial={{ opacity: 0, y: 20, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: "spring", stiffness: 130, damping: 22, delay: 0.05 }}
-      className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm"
+      // Perfectly matching the text.tsx cards: bg-zinc-50 and border-zinc-100
+      className="overflow-hidden rounded-3xl border border-zinc-100 bg-zinc-50 hover:shadow-md hover:border-zinc-200 transition-all duration-300"
     >
       <motion.div
         initial={{ opacity: 0, scale: 1.06 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.55, ease: [0.25, 0.1, 0.25, 1] }}
-        className="relative w-full overflow-hidden bg-gray-50"
+        className="relative w-full overflow-hidden bg-zinc-100/50"
       >
         {!imageError ? (
           <img
@@ -42,7 +43,7 @@ export default function InstantAnswer({
             onError={() => setImageError(true)}
           />
         ) : (
-          <div className="w-full aspect-video bg-gray-100 flex items-center justify-center text-gray-400">
+          <div className="w-full aspect-video bg-zinc-100/50 flex items-center justify-center text-zinc-400">
             <svg
               className="w-12 h-12 opacity-30"
               fill="none"
@@ -66,7 +67,7 @@ export default function InstantAnswer({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-white/80 backdrop-blur-md border border-gray-200 text-gray-500 text-[10px] font-medium px-2.5 py-1 rounded-full hover:text-gray-800 transition-colors"
+          className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-zinc-50 backdrop-blur-md border border-zinc-100/60 text-zinc-500 text-[10px] font-medium px-2.5 py-1 rounded-full hover:text-zinc-900 transition-colors shadow-sm"
         >
           <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm0 22C6.5 22 2 17.5 2 12S6.5 2 12 2s10 4.5 10 10-4.5 10-10 10z" />
@@ -81,7 +82,7 @@ export default function InstantAnswer({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.18, duration: 0.35 }}
-          className="text-[10px] font-semibold uppercase tracking-[0.15em] text-gray-400 mb-2.5"
+          className="text-[10px] font-semibold uppercase tracking-[0.15em] text-zinc-400 mb-2.5"
         >
           Quick Answer
         </motion.p>
@@ -90,7 +91,7 @@ export default function InstantAnswer({
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.24, duration: 0.4, ease: "easeOut" }}
-          className="text-sm text-gray-500 leading-relaxed"
+          className="text-sm text-zinc-700 leading-relaxed"
         >
           {answer}
         </motion.p>

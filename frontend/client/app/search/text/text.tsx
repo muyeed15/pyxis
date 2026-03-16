@@ -24,14 +24,14 @@ const itemVariants: Variants = {
 export default function TextResultsList({ results }: TextResultsListProps) {
   if (!results || results.length === 0) {
     return (
-      <div className="p-10 text-center text-gray-400 text-sm">
-        No results found.
+      <div className="p-10 text-center text-zinc-500 text-sm bg-zinc-50 rounded-2xl border border-zinc-100/40 max-w-[680px]">
+        No results found for your query.
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-3 max-w-[680px]">
+    <div className="flex flex-col gap-6 max-w-[780px]">
       {results.map((item, index) => {
         const uniqueKey = `${item.href}-${index}`;
 
@@ -42,7 +42,7 @@ export default function TextResultsList({ results }: TextResultsListProps) {
           hostname = "web";
         }
 
-        const faviconUrl = `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
+        const faviconUrl = `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
 
         return (
           <motion.div
@@ -51,41 +51,44 @@ export default function TextResultsList({ results }: TextResultsListProps) {
             custom={index}
             initial="hidden"
             animate="visible"
-            className="group bg-white border border-gray-100 rounded-2xl px-5 py-4 shadow-sm hover:shadow-md hover:border-gray-200 transition-all duration-200"
+            // Softened border to border-zinc-100/40 to blend better with the white background
+            className="group flex flex-col gap-3 bg-zinc-50 border border-zinc-100/40 rounded-3xl px-5 py-[16px] hover:shadow-md hover:border-zinc-200 transition-all duration-300"
           >
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-5 h-5 flex items-center justify-center shrink-0">
+            <div className="flex items-center gap-3">
+              {/* Softened the inner border here as well */}
+              <div className="w-9 h-9 rounded-full bg-zinc-50 border border-zinc-200/60 flex items-center justify-center shrink-0 shadow-inner overflow-hidden">
                 <img
                   src={faviconUrl}
                   alt=""
-                  className="w-4 h-4 object-contain"
+                  className="w-5 h-5 object-contain"
                   onError={(e) => {
                     e.currentTarget.style.display = "none";
                   }}
                 />
               </div>
-              <span className="text-xs font-medium text-gray-500 truncate">
-                {hostname}
-              </span>
-              <span className="text-gray-200 text-xs select-none">·</span>
-              <span className="text-xs text-gray-400 truncate hidden sm:block">
-                {item.href}
-              </span>
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-semibold text-zinc-900 truncate">
+                  {hostname}
+                </span>
+                <span className="text-xs text-zinc-500 truncate">
+                  {item.href}
+                </span>
+              </div>
             </div>
 
             <a
               href={item.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="block mb-1.5"
+              className="block mt-1"
             >
-              <h3 className="text-[15px] font-semibold text-gray-900 group-hover:underline underline-offset-2 decoration-gray-400 leading-snug line-clamp-2">
+              <h3 className="text-xl font-bold leading-snug text-zinc-950 group-hover:underline decoration-zinc-400 underline-offset-2 line-clamp-2 tracking-tight">
                 {item.title}
               </h3>
             </a>
 
             <p
-              className="text-sm text-gray-600 leading-relaxed line-clamp-2"
+              className="text-base text-zinc-700 leading-relaxed line-clamp-2"
               dangerouslySetInnerHTML={{ __html: item.body }}
             />
           </motion.div>
