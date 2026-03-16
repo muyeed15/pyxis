@@ -5,7 +5,7 @@ import useSWR from "swr";
 import type { APIResponse, BookSearchResultItem, AutocompleteData } from "../../types";
 import SearchHeader from "../../components/searchheader";
 import BookResultsList from "./book";
-import RelatedSearches from "../../components/relatedsearches";
+import LibraryCategories from "./librarycategories";
 
 const BOOK_MAX_PAGES = 10;
 const MAX_RETRIES = 20;
@@ -128,11 +128,10 @@ export default function PageWrapper({
       <SearchHeader />
 
       <main className="max-w-[1200px] mx-auto px-4 md:px-8 py-6">
-        {related.length > 0 && (
-          <div className="mb-8">
-            <RelatedSearches keywords={related} currentQuery={query} />
-          </div>
-        )}
+        {/* Replaced RelatedSearches with our new Library Vibe component */}
+        <div className="mb-6">
+          <LibraryCategories currentQuery={query} />
+        </div>
 
         <div className="flex-1 min-w-0">
           {showFatalError ? (
