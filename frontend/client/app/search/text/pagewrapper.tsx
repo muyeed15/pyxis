@@ -17,19 +17,19 @@ const TEXT_MAX_PAGES = 10;
 function SidebarSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="mb-6 border border-gray-200 rounded-xl overflow-hidden bg-white flex flex-col">
-        <div className="w-full h-32 bg-gray-100 animate-pulse" />
+      <div className="mb-6 border border-zinc-200 rounded-xl overflow-hidden bg-white flex flex-col">
+        <div className="w-full h-32 bg-zinc-100 animate-pulse" />
         <div className="p-5 space-y-3">
-          <div className="h-3 bg-gray-100 rounded w-1/3 animate-pulse" />
-          <div className="h-3 bg-gray-100 rounded w-full animate-pulse" />
-          <div className="h-3 bg-gray-100 rounded w-5/6 animate-pulse" />
+          <div className="h-3 bg-zinc-100 rounded w-1/3 animate-pulse" />
+          <div className="h-3 bg-zinc-100 rounded w-full animate-pulse" />
+          <div className="h-3 bg-zinc-100 rounded w-5/6 animate-pulse" />
         </div>
       </div>
-      <div className="p-4 border border-gray-100 rounded-lg bg-gray-50 space-y-3">
-        <div className="h-3 bg-gray-200 rounded w-1/3 animate-pulse" />
+      <div className="p-4 border border-zinc-100 rounded-lg bg-zinc-50 space-y-3">
+        <div className="h-3 bg-zinc-200 rounded w-1/3 animate-pulse" />
         <div className="space-y-2">
-          <div className="h-3 bg-gray-200 rounded w-3/4 animate-pulse" />
-          <div className="h-3 bg-gray-200 rounded w-1/2 animate-pulse" />
+          <div className="h-3 bg-zinc-200 rounded w-3/4 animate-pulse" />
+          <div className="h-3 bg-zinc-200 rounded w-1/2 animate-pulse" />
         </div>
       </div>
     </div>
@@ -142,9 +142,6 @@ export default function PageWrapper({
     }
   }, [textData, currentPage]);
 
-  // --------------------------------------------------------------------------
-  // loadMore with automatic retries (exponential backoff)
-  // --------------------------------------------------------------------------
   const loadMore = useCallback(async () => {
     const nextPage = currentPage + 1;
     if (nextPage > TEXT_MAX_PAGES || loadingMore || !hasMore) return;
@@ -168,13 +165,12 @@ export default function PageWrapper({
         setAllResults((prev) => [...prev, ...newResults]);
         setCurrentPage(nextPage);
         setHasMore((data.has_more ?? false) && nextPage < TEXT_MAX_PAGES);
-        success = true; // exit loop
+        success = true;
       } catch (error) {
         attempt++;
         if (attempt === maxRetries) {
           setLoadMoreError(true);
         } else {
-          // wait before retrying (1s, 2s, 4s)
           await new Promise((resolve) =>
             setTimeout(resolve, 1000 * Math.pow(2, attempt)),
           );
@@ -207,9 +203,9 @@ export default function PageWrapper({
             ) : showLoadingState ? (
               <div className="flex flex-col items-center justify-center py-20 gap-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                  <div className="w-2.5 h-2.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                  <div className="w-2.5 h-2.5 bg-gray-400 rounded-full animate-bounce" />
+                  <div className="w-2.5 h-2.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                  <div className="w-2.5 h-2.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                  <div className="w-2.5 h-2.5 bg-zinc-400 rounded-full animate-bounce" />
                 </div>
               </div>
             ) : (
@@ -217,7 +213,7 @@ export default function PageWrapper({
                 <TextResultsList results={allResults} />
 
                 {loadMoreError && (
-                  <p className="mt-6 text-sm text-gray-500 text-center italic">
+                  <p className="mt-6 text-sm text-zinc-500 text-center italic">
                     Nothing new right now
                   </p>
                 )}
@@ -227,13 +223,13 @@ export default function PageWrapper({
                     <button
                       onClick={loadMore}
                       disabled={loadingMore}
-                      className="w-full py-3 bg-gray-50 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 font-medium rounded-lg transition-colors border border-gray-200"
+                      className="w-full py-3 bg-zinc-50 hover:bg-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed text-zinc-700 font-medium rounded-2xl transition-colors border border-zinc-200"
                     >
                       {loadingMore ? (
                         <span className="flex items-center justify-center gap-2">
-                          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                          <span className="w-2 h-2 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                          <span className="w-2 h-2 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                          <span className="w-2 h-2 bg-zinc-400 rounded-full animate-bounce" />
                         </span>
                       ) : (
                         "Show More Results"
