@@ -68,7 +68,7 @@ export default function VideoResultsList({
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))",
             gap: "1.5rem",
             width: "100%",
           }}
@@ -81,8 +81,8 @@ export default function VideoResultsList({
           {/* 2. Top Results List */}
           <div
             style={{
-              backgroundColor: "#fafafa", // zinc-50
-              borderRadius: "16px",
+              backgroundColor: "#f4f4f5", // zinc-50
+              borderRadius: "18px",
               padding: "1.25rem",
               display: "flex",
               flexDirection: "column",
@@ -104,7 +104,7 @@ export default function VideoResultsList({
               style={{
                 display: "flex",
                 flexDirection: "column",
-                gap: "1.25rem",
+                gap: "0.5rem",
                 flexGrow: 1,
                 justifyContent: "flex-start",
               }}
@@ -118,8 +118,8 @@ export default function VideoResultsList({
           {/* 3. Shorts Carousel */}
           <div
             style={{
-              backgroundColor: "#fafafa", // zinc-50
-              borderRadius: "16px",
+              backgroundColor: "#f4f4f5", // zinc-50
+              borderRadius: "18px",
               padding: "1.25rem",
               display: "flex",
               flexDirection: "column",
@@ -156,11 +156,10 @@ export default function VideoResultsList({
           </div>
         </div>
 
-        {/* BOTTOM GRID SECTION (5 columns) */}
+        {/* BOTTOM GRID SECTION */}
         <div
+          className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(5, 1fr)",
             gap: "1.5rem",
             width: "100%",
             marginTop: "0.5rem",
@@ -174,12 +173,11 @@ export default function VideoResultsList({
     );
   }
 
-  // Fallback Grid if < 6 results – also 5 columns
+  // Fallback Grid if < 6 results
   return (
     <div
+      className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
       style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(5, 1fr)",
         gap: "1.5rem",
         width: "100%",
         paddingBottom: "2.5rem",
@@ -215,7 +213,7 @@ function HeroCard({
         display: "flex",
         flexDirection: "column",
         height: "100%",
-        backgroundColor: "#fafafa", // zinc-50
+        backgroundColor: "#f4f4f5", // zinc-50
         borderRadius: "16px",
         overflow: "hidden",
         border: "1px solid #f4f4f5", // zinc-100
@@ -330,10 +328,10 @@ function ListCard({
         display: "flex",
         gap: "0.75rem",
         alignItems: "flex-start",
-        background: "transparent",
+        backgroundColor: "#f4f4f5",
         border: "0.5px solid #f4f4f5", 
-        boxShadow: "0 4px 12px rgba(0,0,0,0.08)", // Softened shadow
-        borderRadius: "8px",
+        
+        borderRadius: "18px",
         padding: "0.5rem",
       }}
     >
@@ -635,7 +633,7 @@ function VideoSkeletonGrid() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))",
           gap: "1.5rem",
           width: "100%",
         }}
@@ -675,9 +673,8 @@ function VideoSkeletonGrid() {
         </div>
       </div>
       <div
+        className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(5, 1fr)",
           gap: "1.5rem",
           width: "100%",
         }}
