@@ -8,13 +8,33 @@ interface VideoResultsListProps {
   isLoading?: boolean;
 }
 
+// 1. URL INTERCEPTOR: Forces YouTube to give us 16:9 thumbnails without black bars
 const getThumbnail = (item: VideoSearchResultItem) => {
-  return typeof item.images === "string"
-    ? item.images
-    : item.images?.large ||
+  let url =
+    typeof item.images === "string"
+      ? item.images
+      : item.images?.large ||
         item.images?.medium ||
         item.images?.small ||
         "/images/placeholder-video.svg";
+
+  if (url.includes("ytimg.com/vi/")) {
+    url = url.replace(
+      /hqdefault\.jpg|default\.jpg|sddefault\.jpg|mqdefault\.jpg/g,
+      "maxresdefault.jpg"
+    );
+  }
+  return url;
+};
+
+// 2. SMART FALLBACK: If maxres fails, drop down to mqdefault (which also lacks black bars)
+const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+  const target = e.currentTarget;
+  if (target.src.includes("maxresdefault.jpg")) {
+    target.src = target.src.replace("maxresdefault.jpg", "mqdefault.jpg");
+  } else {
+    target.src = "https://picsum.photos/seed/fallback/640/360";
+  }
 };
 
 const formatViews = (views?: number) => {
@@ -64,37 +84,34 @@ export default function VideoResultsList({
 
     return (
       <div className="flex flex-col gap-8 pb-12 w-full max-w-[1600px] mx-auto">
-        {/* BENTO BOX */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))",
             gap: "1.5rem",
             width: "100%",
           }}
         >
-          {/* 1. Hero Video */}
           <div style={{ display: "flex", flexDirection: "column" }}>
             <HeroCard item={heroVideo} index={0} />
           </div>
 
-          {/* 2. Top Results List */}
           <div
             style={{
-              backgroundColor: "#fafafa", // zinc-50
-              borderRadius: "16px",
+              backgroundColor: "#f4f4f5",
+              borderRadius: "18px",
               padding: "1.25rem",
               display: "flex",
               flexDirection: "column",
-              border: "1px solid #f4f4f5", // zinc-100
-              boxShadow: "0 1px 3px rgba(0,0,0,0.05)", // Softened shadow
+              border: "1px solid #f4f4f5",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
             }}
           >
             <h3
               style={{
                 fontWeight: 600,
-                color: "#18181b", // zinc-900
-                fontSize: "14px",
+                color: "#18181b",
+                fontSize: "20px",
                 marginBottom: "1rem",
               }}
             >
@@ -104,7 +121,7 @@ export default function VideoResultsList({
               style={{
                 display: "flex",
                 flexDirection: "column",
-                gap: "1.25rem",
+                gap: "0.5rem",
                 flexGrow: 1,
                 justifyContent: "flex-start",
               }}
@@ -115,16 +132,15 @@ export default function VideoResultsList({
             </div>
           </div>
 
-          {/* 3. Shorts Carousel */}
           <div
             style={{
-              backgroundColor: "#fafafa", // zinc-50
-              borderRadius: "16px",
+              backgroundColor: "#f4f4f5",
+              borderRadius: "18px",
               padding: "1.25rem",
               display: "flex",
               flexDirection: "column",
-              border: "1px solid #f4f4f5", // zinc-100
-              boxShadow: "0 1px 3px rgba(0,0,0,0.05)", // Softened shadow
+              border: "1px solid #f4f4f5",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
             }}
           >
             <div
@@ -136,7 +152,7 @@ export default function VideoResultsList({
               }}
             >
               <h3
-                style={{ fontWeight: 600, color: "#18181b", fontSize: "14px" }} // zinc-900
+                style={{ fontWeight: 600, color: "#18181b", fontSize: "20px" }}
               >
                 Shorts
               </h3>
@@ -156,11 +172,9 @@ export default function VideoResultsList({
           </div>
         </div>
 
-        {/* BOTTOM GRID SECTION (5 columns) */}
         <div
+          className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(5, 1fr)",
             gap: "1.5rem",
             width: "100%",
             marginTop: "0.5rem",
@@ -174,12 +188,10 @@ export default function VideoResultsList({
     );
   }
 
-  // Fallback Grid if < 6 results – also 5 columns
   return (
     <div
+      className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
       style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(5, 1fr)",
         gap: "1.5rem",
         width: "100%",
         paddingBottom: "2.5rem",
@@ -195,7 +207,7 @@ export default function VideoResultsList({
 }
 
 // ----------------------------------------------------------------------
-// Card components with index for loading priority
+// 3. AspectRatios Fixed in Card Components
 // ----------------------------------------------------------------------
 
 function HeroCard({
@@ -215,21 +227,29 @@ function HeroCard({
         display: "flex",
         flexDirection: "column",
         height: "100%",
-        backgroundColor: "#fafafa", // zinc-50
+        backgroundColor: "#f4f4f5",
         borderRadius: "16px",
         overflow: "hidden",
-        border: "1px solid #f4f4f5", // zinc-100
-        boxShadow: "0 1px 3px rgba(0,0,0,0.05)", // Softened shadow
+        border: "1px solid #f4f4f5",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
       }}
     >
       <div
         style={{
           position: "relative",
           width: "100%",
-          paddingTop: "70%",
-          backgroundColor: "#f4f4f5", // zinc-100 placeholder bg
+          aspectRatio: "16 / 9", // Fixed Aspect Ratio
+          backgroundColor: "transparent",
+          overflow: "hidden",
         }}
       >
+        <img
+          src={getThumbnail(item)}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover blur-2xl scale-125 saturate-150 opacity-70"
+          aria-hidden="true"
+        />
+
         <img
           src={getThumbnail(item)}
           alt={item.title}
@@ -241,22 +261,20 @@ function HeroCard({
             width: "100%",
             height: "100%",
             objectFit: "cover",
+            zIndex: 10,
           }}
           loading="eager"
           fetchPriority="high"
-          onError={(e) =>
-            (e.currentTarget.src =
-              "https://picsum.photos/seed/fallback/640/360")
-          }
+          onError={handleImageError}
         />
 
-        <div className="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute inset-0 z-20 bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <div className="w-16 h-16 bg-black/60 rounded-full flex items-center justify-center backdrop-blur-sm">
             <PlayIcon className="w-8 h-8 text-white ml-1" />
           </div>
         </div>
         {item.duration && (
-          <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-md px-2 py-1 rounded text-xs font-bold text-white">
+          <div className="absolute bottom-3 right-3 z-20 bg-black/80 backdrop-blur-md px-2 py-1 rounded text-xs font-bold text-white">
             {item.duration}
           </div>
         )}
@@ -272,11 +290,11 @@ function HeroCard({
         }}
       >
         <h2
-          className="group-hover:text-zinc-600 transition-colors" // Match theme hover
+          className="group-hover:text-zinc-600 transition-colors"
           style={{
             fontSize: "18px",
             fontWeight: 700,
-            color: "#18181b", // zinc-900
+            color: "#18181b",
             lineHeight: "1.2",
             display: "-webkit-box",
             WebkitLineClamp: 2,
@@ -293,7 +311,7 @@ function HeroCard({
             gap: "0.5rem",
             fontSize: "12px",
             fontWeight: 500,
-            color: "#71717a", // zinc-500
+            color: "#71717a",
             marginTop: "auto",
             paddingTop: "0.5rem",
           }}
@@ -330,24 +348,30 @@ function ListCard({
         display: "flex",
         gap: "0.75rem",
         alignItems: "flex-start",
-        background: "transparent",
-        border: "0.5px solid #f4f4f5", 
-        boxShadow: "0 4px 12px rgba(0,0,0,0.08)", // Softened shadow
-        borderRadius: "8px",
+        backgroundColor: "#f4f4f5",
+        border: "0.5px solid #f4f4f5",
+        borderRadius: "18px",
         padding: "0.5rem",
       }}
     >
       <div
         style={{
           position: "relative",
-          width: "120px",
+          width: "140px", 
           flexShrink: 0,
-          paddingTop: "22%",
-          backgroundColor: "#f4f4f5", // zinc-100 placeholder bg
+          aspectRatio: "16 / 9", // Fixed Aspect Ratio
+          backgroundColor: "transparent",
           borderRadius: "8px",
           overflow: "hidden",
         }}
       >
+        <img
+          src={getThumbnail(item)}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover blur-xl scale-125 saturate-150 opacity-70"
+          aria-hidden="true"
+        />
+
         <img
           src={getThumbnail(item)}
           alt={item.title}
@@ -358,15 +382,17 @@ function ListCard({
             width: "100%",
             height: "100%",
             objectFit: "cover",
+            zIndex: 10,
           }}
           loading="lazy"
           fetchPriority={index < 3 ? "high" : "auto"}
+          onError={handleImageError}
         />
-        <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute inset-0 z-20 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <PlayIcon className="w-5 h-5 text-white ml-0.5 opacity-90" />
         </div>
         {item.duration && (
-          <div className="absolute bottom-1 right-1 bg-black/80 px-1 rounded text-[10px] font-bold text-white">
+          <div className="absolute bottom-1 right-1 z-20 bg-black/80 px-1 rounded text-[10px] font-bold text-white">
             {item.duration}
           </div>
         )}
@@ -381,11 +407,11 @@ function ListCard({
         }}
       >
         <h4
-          className="group-hover:text-zinc-600" // Match theme hover
+          className="group-hover:text-zinc-600"
           style={{
             fontSize: "13px",
             fontWeight: 600,
-            color: "#18181b", // zinc-900
+            color: "#18181b",
             lineHeight: "1.3",
             display: "-webkit-box",
             WebkitLineClamp: 3,
@@ -398,7 +424,7 @@ function ListCard({
         <span
           style={{
             fontSize: "11px",
-            color: "#71717a", // zinc-500
+            color: "#71717a",
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -516,13 +542,20 @@ function StandardCard({
         style={{
           position: "relative",
           width: "100%",
-          paddingTop: "56.25%",
-          backgroundColor: "#f4f4f5", // zinc-100
+          aspectRatio: "16 / 9", // Fixed Aspect Ratio
+          backgroundColor: "transparent",
           borderRadius: "12px",
           overflow: "hidden",
-          border: "1px solid #f4f4f5", // zinc-100
+          border: "1px solid #f4f4f5",
         }}
       >
+        <img
+          src={getThumbnail(item)}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover blur-xl scale-125 saturate-150 opacity-60"
+          aria-hidden="true"
+        />
+
         <img
           src={getThumbnail(item)}
           alt={item.title}
@@ -534,17 +567,19 @@ function StandardCard({
             width: "100%",
             height: "100%",
             objectFit: "cover",
+            zIndex: 10,
           }}
           loading="lazy"
           fetchPriority={index < 8 ? "high" : "auto"}
+          onError={handleImageError}
         />
-        <div className="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute inset-0 z-20 bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <div className="w-10 h-10 bg-black/60 rounded-full flex items-center justify-center backdrop-blur-sm">
             <PlayIcon className="w-5 h-5 text-white ml-0.5" />
           </div>
         </div>
         {item.duration && (
-          <div className="absolute bottom-1.5 right-1.5 bg-black/80 px-1.5 py-0.5 rounded text-[11px] font-bold text-white">
+          <div className="absolute bottom-1.5 right-1.5 z-20 bg-black/80 px-1.5 py-0.5 rounded text-[11px] font-bold text-white">
             {item.duration}
           </div>
         )}
@@ -559,11 +594,11 @@ function StandardCard({
         }}
       >
         <h3
-          className="group-hover:text-zinc-600 transition-colors" // Match theme hover
+          className="group-hover:text-zinc-600 transition-colors"
           style={{
             fontSize: "14px",
             fontWeight: 600,
-            color: "#18181b", // zinc-900
+            color: "#18181b",
             lineHeight: "1.2",
             display: "-webkit-box",
             WebkitLineClamp: 2,
@@ -580,7 +615,7 @@ function StandardCard({
             alignItems: "center",
             gap: "0.25rem",
             fontSize: "12px",
-            color: "#71717a", // zinc-500
+            color: "#71717a",
             marginTop: "2px",
           }}
         >
@@ -588,7 +623,7 @@ function StandardCard({
             <span
               style={{
                 fontWeight: 500,
-                color: "#52525b", // zinc-600
+                color: "#52525b",
                 maxWidth: "100px",
                 whiteSpace: "nowrap",
                 overflow: "hidden",
@@ -635,29 +670,29 @@ function VideoSkeletonGrid() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))",
           gap: "1.5rem",
           width: "100%",
         }}
       >
         <div
-          className="bg-zinc-200 rounded-2xl animate-pulse" // Updated to zinc
-          style={{ width: "100%", paddingTop: "56.25%" }}
+          className="bg-zinc-200 rounded-2xl animate-pulse"
+          style={{ width: "100%", aspectRatio: "16 / 9" }}
         />
         <div
-          className="bg-zinc-50 rounded-2xl p-4" // Updated to zinc
+          className="bg-zinc-50 rounded-2xl p-4"
           style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
         >
           {[...Array(3)].map((_, i) => (
             <div
               key={i}
-              className="bg-zinc-200 rounded-xl animate-pulse" // Updated to zinc
+              className="bg-zinc-200 rounded-xl animate-pulse"
               style={{ height: "80px" }}
             />
           ))}
         </div>
         <div
-          className="bg-zinc-50 rounded-2xl p-4" // Updated to zinc
+          className="bg-zinc-50 rounded-2xl p-4"
           style={{
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
@@ -665,19 +700,18 @@ function VideoSkeletonGrid() {
           }}
         >
           <div
-            className="bg-zinc-200 rounded-xl animate-pulse" // Updated to zinc
-            style={{ width: "100%", paddingTop: "177.77%" }}
+            className="bg-zinc-200 rounded-xl animate-pulse"
+            style={{ width: "100%", aspectRatio: "9 / 16" }}
           />
           <div
-            className="bg-zinc-200 rounded-xl animate-pulse" // Updated to zinc
-            style={{ width: "100%", paddingTop: "177.77%" }}
+            className="bg-zinc-200 rounded-xl animate-pulse"
+            style={{ width: "100%", aspectRatio: "9 / 16" }}
           />
         </div>
       </div>
       <div
+        className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(5, 1fr)",
           gap: "1.5rem",
           width: "100%",
         }}
@@ -688,11 +722,11 @@ function VideoSkeletonGrid() {
             style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
           >
             <div
-              className="bg-zinc-200 rounded-xl animate-pulse" // Updated to zinc
-              style={{ width: "100%", paddingTop: "56.25%" }}
+              className="bg-zinc-200 rounded-xl animate-pulse"
+              style={{ width: "100%", aspectRatio: "16 / 9" }}
             />
             <div
-              className="bg-zinc-200 rounded animate-pulse" // Updated to zinc
+              className="bg-zinc-200 rounded animate-pulse"
               style={{ width: "75%", height: "1rem" }}
             />
           </div>

@@ -51,11 +51,9 @@ export default function TextResultsList({ results }: TextResultsListProps) {
             custom={index}
             initial="hidden"
             animate="visible"
-            // Softened border to border-zinc-100/40 to blend better with the white background
-            className="group flex flex-col gap-3 bg-zinc-50 border border-zinc-100/40 rounded-3xl px-5 py-[16px] hover:shadow-md hover:border-zinc-200 transition-all duration-300"
+            className="group flex flex-col gap-3 bg-zinc-100 border border-zinc-100/40 rounded-3xl px-5 py-[16px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_25px_rgba(0,0,0,0.05)] hover:border-zinc-200 relative z-0 hover:z-10"
           >
             <div className="flex items-center gap-3">
-              {/* Softened the inner border here as well */}
               <div className="w-9 h-9 rounded-full bg-zinc-50 border border-zinc-200/60 flex items-center justify-center shrink-0 shadow-inner overflow-hidden">
                 <img
                   src={faviconUrl}
