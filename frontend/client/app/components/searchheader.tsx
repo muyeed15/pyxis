@@ -252,7 +252,7 @@ function SearchHeaderContent() {
           </Link>
           <Link
             href="/signin"
-            className="px-5 py-2.5 bg-zinc-900 text-white rounded-full text-sm font-medium hover:bg-zinc-800 transition-colors pointer-events-auto shadow-sm"
+            className="hidden px-5 py-2.5 bg-zinc-900 text-white rounded-full text-sm font-medium hover:bg-zinc-800 transition-colors pointer-events-auto shadow-sm"
           >
             Sign In
           </Link>
@@ -285,7 +285,7 @@ function SearchHeaderContent() {
                 }}
                 onFocus={() => setShowSuggestions(true)}
                 onKeyDown={handleKeyDown}
-                className="relative z-10 w-full h-12 pl-6 pr-14 rounded-full border border-zinc-100/80 bg-zinc-50/50 text-[15px] text-zinc-900 placeholder-zinc-500 shadow-sm transition-all duration-300 focus:outline-none focus:bg-white focus:border-zinc-300 focus:shadow-md hover:bg-white hover:border-zinc-300"
+                className="relative z-10 w-full h-12 pl-6 pr-14 rounded-full border border-zinc-300 bg-zinc-50/50 text-[15px] text-zinc-900 placeholder-zinc-500 shadow-sm transition-all duration-300 focus:outline-none focus:bg-white focus:border-zinc-100 focus:shadow-md hover:bg-white hover:border-zinc-300"
                 placeholder="Search Pyxis..."
                 autoComplete="off"
               />
