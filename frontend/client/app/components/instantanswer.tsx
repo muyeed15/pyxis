@@ -15,8 +15,13 @@ export default function InstantAnswer({
   query,
 }: InstantAnswerProps) {
   const [imageError, setImageError] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   if (!answer || !imageUrl) return null;
+
+  // Rough heuristic: only show the toggle button if the text is long enough
+  // to actually need clamping (around 200 characters is a safe bet for 5 lines)
+  const isLongText = answer.length > 200;
 
   return (
     <motion.div
@@ -24,8 +29,7 @@ export default function InstantAnswer({
       initial={{ opacity: 0, y: 20, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: "spring", stiffness: 130, damping: 22, delay: 0.05 }}
-      // Perfectly matching the text.tsx cards: bg-zinc-50 and border-zinc-100
-      className="overflow-hidden rounded-3xl border border-zinc-100 bg-zinc-50 hover:shadow-md hover:border-zinc-200 transition-all duration-300"
+      className="overflow-hidden rounded-3xl border border-zinc-100 bg-zinc-100 hover:shadow-md hover:border-zinc-200 transition-all duration-300"
     >
       <motion.div
         initial={{ opacity: 0, scale: 1.06 }}
@@ -87,14 +91,28 @@ export default function InstantAnswer({
           Quick Answer
         </motion.p>
 
-        <motion.p
+        <motion.div
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.24, duration: 0.4, ease: "easeOut" }}
-          className="text-sm text-zinc-700 leading-relaxed"
         >
-          {answer}
-        </motion.p>
+          <p
+            className={`text-sm text-zinc-700 leading-relaxed transition-all duration-300 ${
+              !isExpanded ? "line-clamp-5" : ""
+            }`}
+          >
+            {answer}
+          </p>
+          
+          {isLongText && (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="mt-2 text-[13px] font-semibold text-zinc-500 hover:text-zinc-900 transition-colors"
+            >
+              {isExpanded ? "Show less" : "See more"}
+            </button>
+          )}
+        </motion.div>
       </div>
     </motion.div>
   );
