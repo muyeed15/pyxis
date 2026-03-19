@@ -210,6 +210,17 @@ export default function PageWrapper({
               </div>
             ) : (
               <>
+                {/* Mobile Instant Answer */}
+                <div className="block lg:hidden mb-8">
+                  {activeInstantAnswer && !activeInstantAnswer.error && (
+                    <InstantAnswer
+                      answer={activeInstantAnswer.answer}
+                      imageUrl={activeInstantAnswer.image_url}
+                      query={query}
+                    />
+                  )}
+                </div>
+
                 <TextResultsList results={allResults} />
 
                 {loadMoreError && (
