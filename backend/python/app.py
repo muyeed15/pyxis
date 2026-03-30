@@ -324,24 +324,31 @@ def search():
         if max_results is None:
             max_results = TEXT_MAX_RESULTS_PER_PAGE
         try:
-            results = ddgs_with_retry(lambda d: d.text(
+            # Explicitly cast to a list to prevent TypeError crashes!
+            raw_results = list(ddgs_with_retry(lambda d: d.text(
                 keywords,
                 region="us-en",
-                safesearch=SAFE_SEARCH,   # always "on"
+                safesearch=SAFE_SEARCH,
                 timelimit=None,
                 max_results=max_results,
                 page=page,
                 backend=backend,
-            ))
-            results = filter_results(results)
-            has_more = len(results) == max_results and page < TEXT_MAX_PAGES
+            )))
+            
+            # Apply your safety filters
+            safe_results = filter_results(raw_results)
+            
+            # Calculate has_more using the UNFILTERED length, BUT ensure we 
+            # don't show the button if safe_results is completely empty
+            has_more = (len(raw_results) == max_results) and (page < TEXT_MAX_PAGES) and (len(safe_results) > 0)
+            
             response_data = {
                 "search_type": search_type,
                 "query": keywords,
                 "page": page,
                 "has_more": has_more,
-                "count": len(results),
-                "results": results,
+                "count": len(safe_results),
+                "results": safe_results,
             }
             cache.set(cache_key, response_data, timeout=CACHE_TIMEOUT_TEXT)
             return jsonify(response_data)

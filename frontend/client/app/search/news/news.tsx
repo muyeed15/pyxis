@@ -22,6 +22,7 @@ const ArticleImage = ({ src, alt, articleUrl }: { src?: string; alt: string; art
     setImgSrc(src || fallbackLogo);
     setHasFailed(false);
   }, [src, fallbackLogo]);
+  
   if (hasFailed) {
     return (
       <div className="w-full h-full bg-zinc-100 flex items-center justify-center text-zinc-400">
@@ -102,7 +103,7 @@ export default function NewsResultsList({ results }: NewsResultsProps) {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="group flex flex-col gap-5 bg-zinc-50 border border-zinc-100 p-6 rounded-[32px] hover:shadow-lg hover:border-zinc-200 transition-all duration-300"
+              className="group flex flex-col gap-5 bg-zinc-100 border border-zinc-100 p-6 rounded-[32px] hover:shadow-lg hover:border-zinc-200 transition-all duration-300"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-zinc-50 border border-zinc-200 flex items-center justify-center shrink-0 shadow-inner overflow-hidden">
@@ -147,7 +148,7 @@ export default function NewsResultsList({ results }: NewsResultsProps) {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 * index, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="group flex flex-col-reverse sm:flex-row gap-4 sm:items-center bg-zinc-100/50 hover:bg-zinc-100 border border-zinc-100/70 p-4 rounded-3xl transition-colors duration-300"
+                className="group flex flex-col-reverse sm:flex-row gap-4 sm:items-center bg-zinc-100 hover:bg-zinc-200/60 border border-zinc-100/70 p-4 rounded-3xl transition-colors duration-300"
               >
                 <div className="flex-1 flex flex-col gap-1.5 min-w-0">
                   <h3 className="text-lg font-bold leading-snug text-zinc-950 group-hover:underline decoration-zinc-400 underline-offset-2 line-clamp-2 pr-2">
@@ -188,7 +189,7 @@ export default function NewsResultsList({ results }: NewsResultsProps) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.4 }}
-                className="group flex flex-col md:flex-row gap-5 bg-zinc-50 border border-zinc-100 rounded-3xl p-5 hover:shadow-md hover:border-zinc-200 transition-all duration-300 max-w-[780px]"
+                className="group flex flex-col md:flex-row gap-5 bg-zinc-100 border border-zinc-100 rounded-3xl p-5 hover:shadow-md hover:border-zinc-200 transition-all duration-300 max-w-[780px]"
               >
                 <div className="w-full md:w-[180px] h-[180px] md:h-[120px] shrink-0 overflow-hidden rounded-2xl border border-zinc-100 bg-zinc-100 shadow-inner">
                    <ArticleImage src={article.image} alt={article.title} articleUrl={article.url} />

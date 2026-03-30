@@ -239,7 +239,27 @@ function SearchHeaderContent() {
   return (
     <header className="sticky top-0 bg-white/80 backdrop-blur-xl z-50 pt-4 md:pt-6 border-zinc-100 transition-colors shadow-sm">
       <div className="max-w-[1200px] mx-auto px-4 md:px-8">
-        <div className="flex items-center justify-between mb-4 md:mb-0 md:absolute md:inset-x-0 md:top-6 md:px-8 pointer-events-none">
+
+        {/* --- NEW: MOBILE ONLY PROFILE/SIGN-IN BUTTON --- */}
+        <div className="flex md:hidden items-center justify-end mb-3">
+          <Link
+            href="/signin"
+            className="hidden w-8 h-8 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-500 hover:text-zinc-700 hover:bg-zinc-200 transition-colors shadow-sm"
+            aria-label="Sign In"
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              viewBox="0 0 24 24" 
+              fill="currentColor" 
+              className="w-5 h-5"
+            >
+              <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clipRule="evenodd" />
+            </svg>
+          </Link>
+        </div>
+        
+        {/* EXACTLY YOUR ORIGINAL DESKTOP LOGO */}
+        <div className="hidden md:flex items-center justify-between mb-4 md:mb-0 md:absolute md:inset-x-0 md:top-6 md:px-8 pointer-events-none">
           <Link href="/" className="shrink-0 pointer-events-auto">
             <Image
               src="/images/pyxis.svg"
@@ -259,21 +279,42 @@ function SearchHeaderContent() {
         </div>
 
         <div className="flex pb-4 md:pb-5">
+          {/* THE FIX: Added `md:ml-[110px] lg:ml-0`. 
+            This dodges the logo on tablet, but drops back to 0 margin on desktop! 
+          */}
           <div
             ref={containerRef}
-            className="w-full md:max-w-[680px] relative md:mt-0"
+            className="w-full md:max-w-[680px] relative md:mt-0 md:ml-[110px] lg:ml-0 transition-all"
           >
             <form
               onSubmit={handleSearch}
               className="relative w-full group"
             >
+              {/* MOBILE ONLY: The inner logo you requested */}
+              <Link 
+                href="/" 
+                className="absolute left-[18px] top-1/2 -translate-y-1/2 md:hidden z-20 flex items-center"
+              >
+                <Image
+                  src="/images/pyxis.svg"
+                  alt="Pyxis"
+                  width={60}
+                  height={20}
+                  className="w-[56px] h-auto object-contain opacity-90"
+                  priority
+                />
+              </Link>
+
+              {/* Ghost Text - Added pl-[84px] for mobile logo space, md:pl-6 for normal desktop */}
               <input
                 type="text"
                 readOnly
                 value={ghostText}
                 aria-hidden="true"
-                className="absolute inset-0 w-full h-12 pl-6 pr-12 rounded-full border border-transparent bg-transparent text-[15px] text-zinc-400 pointer-events-none z-0"
+                className="absolute inset-0 w-full h-12 pl-[84px] md:pl-6 pr-12 rounded-full border border-transparent bg-transparent text-[15px] text-zinc-400 pointer-events-none z-0"
               />
+              
+              {/* Actual Input - Added pl-[84px] for mobile logo space, md:pl-6 for normal desktop */}
               <input
                 type="text"
                 id="search-input-header"
@@ -285,7 +326,7 @@ function SearchHeaderContent() {
                 }}
                 onFocus={() => setShowSuggestions(true)}
                 onKeyDown={handleKeyDown}
-                className="relative z-10 w-full h-12 pl-6 pr-14 rounded-full border border-zinc-300 bg-zinc-50/50 text-[15px] text-zinc-900 placeholder-zinc-500 shadow-sm transition-all duration-300 focus:outline-none focus:bg-white focus:border-zinc-100 focus:shadow-md hover:bg-white hover:border-zinc-300"
+                className="relative z-10 w-full h-12 pl-[84px] md:pl-6 pr-14 rounded-full border border-zinc-300 bg-zinc-50/50 text-[15px] text-zinc-900 placeholder-zinc-500 shadow-sm transition-all duration-300 focus:outline-none focus:bg-white focus:border-zinc-100 focus:shadow-md hover:bg-white hover:border-zinc-300"
                 placeholder="Search Pyxis..."
                 autoComplete="off"
               />
@@ -388,7 +429,8 @@ function SearchHeaderContent() {
 
       {/* Tab bar */}
       <div className="w-full max-w-[1200px] mx-auto px-4 md:px-8">
-        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-0">
+        {/* THE FIX: Added `md:ml-[110px] lg:ml-0` here too so the tabs match the search bar */}
+        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-0 md:ml-[110px] lg:ml-0 transition-all">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.path;
             return (

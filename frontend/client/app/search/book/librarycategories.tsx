@@ -49,7 +49,7 @@ export default function LibraryCategories({ currentQuery }: LibraryCategoriesPro
         </h3>
       </div>
 
-      <div className="flex overflow-x-auto no-scrollbar pb-8 -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap gap-5">
+      <div className="flex overflow-x-auto no-scrollbar pt-3 pb-8 -mx-4 px-4 md:-mx-8 md:px-8 lg:mx-0 lg:px-0 lg:flex-wrap gap-3 md:gap-4 lg:gap-5">
         {POPULAR_CATEGORIES.map((category, index) => {
           const isActive = currentQuery.toLowerCase() === category.toLowerCase();
 
@@ -64,14 +64,14 @@ export default function LibraryCategories({ currentQuery }: LibraryCategoriesPro
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.04 }}
-                // Removed the border! Now relying purely on soft shadows and background colors
-                className={`flex items-center px-5 py-2.5 rounded-full whitespace-nowrap transition-all duration-300 ${
+                className={`flex items-center px-4 py-2 md:px-5 md:py-2.5 rounded-full whitespace-nowrap transition-all duration-300 ${
                   isActive 
-                    ? "bg-zinc-800 text-white shadow-md" 
-                    : "bg-white text-zinc-500 shadow-sm hover:shadow hover:text-zinc-900"
+                    ? "bg-zinc-800 text-white border border-zinc-800 shadow-[0_4px_12px_rgba(0,0,0,0.2)]" 
+                    : "bg-zinc-100 text-zinc-600 border border-zinc-200/80 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_16px_-4px_rgba(0,0,0,0.12)] hover:-translate-y-1 hover:text-zinc-900 hover:border-zinc-300"
                 }`}
               >
-                <span className="text-[14px] font-medium tracking-wide">
+                {/* Responsive text: 13px on mobile, 14px on tablet/desktop */}
+                <span className="text-[13px] md:text-[14px] font-medium tracking-wide">
                   {category}
                 </span>
               </motion.div>
