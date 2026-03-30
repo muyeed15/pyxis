@@ -164,20 +164,21 @@ export default function PageWrapper({
                   )}
 
                   {hasMore && (
-                    <div className="flex justify-center mt-4 mb-8">
+                    <div className="flex justify-center mt-4 mb-8 w-full px-4">
                       <button
                         onClick={loadMore}
                         disabled={loadingMore}
-                        className="px-6 py-3 bg-gray-50 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 font-medium rounded-lg transition-colors border border-gray-200"
+                        // Updated classes for the pill shape, white bg, slate text, and shadow
+                        className="w-full max-w-[300px] py-3.5 px-8 bg-white hover:bg-gray-50 active:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-medium text-[17px] rounded-full transition-all border border-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
                       >
                         {loadingMore ? (
-                          <span className="flex items-center gap-2">
-                            <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                            <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                            <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                          <span className="flex items-center justify-center gap-2">
+                            <span className="w-2 h-2 bg-slate-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                            <span className="w-2 h-2 bg-slate-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                            <span className="w-2 h-2 bg-slate-500 rounded-full animate-bounce" />
                           </span>
                         ) : (
-                          "Show More Results"
+                          "Show More Videos" // Change to "Show More Books" if you want it exactly like the image
                         )}
                       </button>
                     </div>
