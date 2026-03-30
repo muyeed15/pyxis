@@ -230,20 +230,22 @@ export default function PageWrapper({
                 )}
 
                 {hasMore && (
-                  <div className="mt-8 mb-12 max-w-[680px]">
+                  <div className="mt-8 mb-12 max-w-[800px] flex justify-center">
                     <button
                       onClick={loadMore}
                       disabled={loadingMore}
-                      className="w-full py-3 bg-zinc-50 hover:bg-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed text-zinc-700 font-medium rounded-2xl transition-colors border border-zinc-200"
+                      className="w-full max-w-[800px] py-4 px-8 bg-[#f7f7f7] hover:bg-[#efefef] disabled:opacity-50 disabled:cursor-not-allowed text-[#1c1c1c] font-semibold text-base rounded-3xl
+                      transition-colors border-none"
                     >
                       {loadingMore ? (
                         <span className="flex items-center justify-center gap-2">
-                          <span className="w-2 h-2 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                          <span className="w-2 h-2 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                          <span className="w-2 h-2 bg-zinc-400 rounded-full animate-bounce" />
+                          {/* Use dark grey dots for better visibility on the new button color */}
+                          <span className="w-2 h-2 bg-[#1c1c1c] rounded-full animate-bounce [animation-delay:-0.3s]" />
+                          <span className="w-2 h-2 bg-[#1c1c1c] rounded-full animate-bounce [animation-delay:-0.15s]" />
+                          <span className="w-2 h-2 bg-[#1c1c1c] rounded-full animate-bounce" />
                         </span>
                       ) : (
-                        "Show More Results"
+                        "Show More Latest News"
                       )}
                     </button>
                   </div>
